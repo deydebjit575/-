@@ -30,9 +30,9 @@ export const NotificationCentre: React.FC = () => {
     switch (type) {
       case 'emergency': return <AlertOctagon className="w-5 h-5 text-rose-600" />;
       case 'ambulance': return <Ambulance className="w-5 h-5 text-amber-600" />;
-      case 'bed': return <Bed className="w-5 h-5 text-teal-600" />;
-      case 'vault': return <FileText className="w-5 h-5 text-indigo-600" />;
-      default: return <Info className="w-5 h-5 text-slate-600" />;
+      case 'bed': return <Bed className="w-5 h-5 text-[#2E7D32]" />;
+      case 'vault': return <FileText className="w-5 h-5 text-[#2E7D32]" />;
+      default: return <Info className="w-5 h-5 text-[#555555]" />;
     }
   };
 
@@ -43,33 +43,33 @@ export const NotificationCentre: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+    <div className="min-h-screen bg-white py-8 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-soft flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-teal-700 uppercase tracking-widest">
+            <span className="text-xs font-bold text-[#2E7D32] uppercase tracking-wider">
               Notification & SMS Gateway Feed
             </span>
-            <h1 className="text-2xl sm:text-3xl font-black text-navy-950">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#171717]">
               {language === 'bn' ? 'বিজ্ঞপ্তি ও এসএমএস কেন্দ্র' : 'Notification Center'}
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#555555]">
               {language === 'bn' ? 'জরুরি অ্যালার্ট, বেড নিশ্চয়তা ও ভারতীয় DLT এসএমএস বার্তা।' : 'In-app notifications and DLT-compliant SMS emergency dispatch logs.'}
             </p>
           </div>
 
           <button
             onClick={markAllNotificationsAsRead}
-            className="flex items-center space-x-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
+            className="flex items-center space-x-1.5 px-4 py-2 bg-white border border-[#D5E8D7] hover:bg-[#F1F8F2] text-[#171717] rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-2xs"
           >
-            <CheckCheck className="w-4 h-4 text-teal-700" />
+            <CheckCheck className="w-4 h-4 text-[#2E7D32]" />
             <span>{language === 'bn' ? 'সব পঠিত হিসেবে চিহ্নিত করুন' : 'Mark All as Read'}</span>
           </button>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex items-center space-x-2 border-b border-slate-200 pb-2">
+        <div className="flex items-center space-x-2 border-b border-[#D5E8D7] pb-2 overflow-x-auto">
           {[
             { id: 'all', label: language === 'bn' ? 'সকল নোটিফিকেশন' : 'All Alerts' },
             { id: 'emergency', label: language === 'bn' ? 'জরুরি ও অ্যাম্বুলেন্স' : 'Emergency & Ambulance' },
@@ -78,10 +78,10 @@ export const NotificationCentre: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 activeTab === tab.id
-                  ? 'bg-navy-900 text-white shadow-xs'
-                  : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-[#2E7D32] text-white shadow-xs'
+                  : 'text-[#555555] hover:bg-[#E8F5E9]'
               }`}
             >
               {tab.label}
@@ -100,31 +100,31 @@ export const NotificationCentre: React.FC = () => {
               }}
               className={`p-5 rounded-2xl border transition-all cursor-pointer flex items-start space-x-4 ${
                 notif.isRead
-                  ? 'bg-white border-slate-200 shadow-soft'
-                  : 'bg-teal-50/50 border-teal-300 shadow-md ring-1 ring-teal-400/20'
+                  ? 'bg-white border-[#D5E8D7] shadow-2xs'
+                  : 'bg-[#E8F5E9] border-[#2E7D32] shadow-xs ring-1 ring-[#2E7D32]/20'
               }`}
             >
-              <div className="p-3 bg-white rounded-xl shadow-xs shrink-0">
+              <div className="p-3 bg-white border border-[#D5E8D7] rounded-xl shadow-2xs shrink-0">
                 {getIcon(notif.type)}
               </div>
 
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-bold text-navy-950 text-sm">
+                  <h4 className="font-bold text-[#171717] text-sm">
                     {language === 'bn' && notif.titleBn ? notif.titleBn : notif.title}
                   </h4>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-[#555555]">
                     {new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-[#555555] leading-relaxed">
                   {language === 'bn' && notif.messageBn ? notif.messageBn : notif.message}
                 </p>
 
                 {/* SMS DLT Stamp Indicator */}
-                <div className="pt-2 flex items-center space-x-2 text-[10px] text-slate-400">
-                  <MessageSquare className="w-3 h-3 text-emerald-600" />
+                <div className="pt-2 flex items-center space-x-2 text-[10px] text-[#555555]">
+                  <MessageSquare className="w-3 h-3 text-[#2E7D32]" />
                   <span>DLT Registered Entity: SUSTHAYAN-GOV • SMS Delivered</span>
                 </div>
               </div>

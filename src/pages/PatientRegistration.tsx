@@ -73,16 +73,16 @@ export const PatientRegistration: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 flex items-center justify-center">
-      <div className="max-w-lg w-full bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-elevated space-y-6">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 flex items-center justify-center">
+      <div className="max-w-lg w-full bg-[#E8F5E9] rounded-3xl p-6 sm:p-10 border border-[#D5E8D7] shadow-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center mx-auto shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-[#2E7D32] text-white flex items-center justify-center mx-auto shadow-sm">
             <Heart className="w-6 h-6 fill-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-navy-950 font-bengali">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#171717] font-bengali">
             {language === 'bn' ? 'সুস্থায়ন রোগী নিবন্ধন' : 'Register as Patient'}
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#555555]">
             {language === 'bn'
               ? 'আপনার জরুরি চিকিৎসা ভল্ট ও নিকটস্থ হাসপাতাল সেবা সক্রিয় করতে ফর্মটি পূরণ করুন।'
               : 'Create your private MediVault and emergency response account.'}
@@ -111,18 +111,18 @@ export const PatientRegistration: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">
+            <label className="block text-xs font-bold text-[#171717] mb-1">
               {language === 'bn' ? 'সম্পূর্ণ নাম (Full Name) *' : 'Full Name *'}
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <User className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
                 placeholder={language === 'bn' ? 'যেমন: অজয় মুখার্জী' : 'e.g. Anirban Mukherjee'}
                 value={fullName}
                 onChange={e => setFullName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
               />
             </div>
           </div>
@@ -130,7 +130,7 @@ export const PatientRegistration: React.FC = () => {
           {/* Age & Phone */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
+              <label className="block text-xs font-bold text-[#171717] mb-1">
                 {language === 'bn' ? 'বয়স (Age) *' : 'Age *'}
               </label>
               <input
@@ -141,23 +141,23 @@ export const PatientRegistration: React.FC = () => {
                 placeholder="68"
                 value={age}
                 onChange={e => setAge(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
+              <label className="block text-xs font-bold text-[#171717] mb-1">
                 {language === 'bn' ? 'ফোন নম্বর (Phone Number) *' : 'Phone Number *'}
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Phone className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="tel"
                   required
                   placeholder="9830012345"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium font-mono"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium font-mono outline-hidden"
                 />
               </div>
             </div>
@@ -165,21 +165,21 @@ export const PatientRegistration: React.FC = () => {
 
           {/* Location Dropdown */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">
+            <label className="block text-xs font-bold text-[#171717] mb-1">
               {language === 'bn' ? 'অবস্থান এলাকা (Location) *' : 'Location Area *'}
             </label>
             <div className="relative">
-              <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <MapPin className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <select
                 value={location}
                 onChange={e => setLocation(e.target.value as LocationArea)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 bg-white font-bold text-teal-900"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#D5E8D7] text-sm focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 bg-white font-bold text-[#171717] outline-hidden"
               >
                 <option value="Panihati, West Bengal">Panihati, West Bengal (পানিহাটি, পশ্চিমবঙ্গ)</option>
                 <option value="Dum Dum, West Bengal">Dum Dum, West Bengal (দমদম, পশ্চিমবঙ্গ)</option>
               </select>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-[#555555] mt-1">
               {language === 'bn'
                 ? 'আপনার নির্বাচিত এলাকার ভিত্তিতে নিকটস্থ জরুরি হাসপাতাল ও সেবা সমন্বয় করা হবে।'
                 : 'Hospital discovery will default to your locality.'}
@@ -189,35 +189,35 @@ export const PatientRegistration: React.FC = () => {
           {/* Password & Confirm Password */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
+              <label className="block text-xs font-bold text-[#171717] mb-1">
                 {language === 'bn' ? 'পাসওয়ার্ড (Password) *' : 'Password *'}
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1">
+              <label className="block text-xs font-bold text-[#171717] mb-1">
                 {language === 'bn' ? 'পাসওয়ার্ড নিশ্চিত করুন *' : 'Confirm Password *'}
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   required
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
                 />
               </div>
             </div>
@@ -226,7 +226,7 @@ export const PatientRegistration: React.FC = () => {
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2"
+              className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white font-black text-sm rounded-xl shadow-sm transition-all flex items-center justify-center space-x-2"
             >
               <span>{language === 'bn' ? 'অ্যাকাউন্ট তৈরি ও ড্যাশবোর্ডে প্রবেশ' : 'Create Account & Proceed'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -234,11 +234,11 @@ export const PatientRegistration: React.FC = () => {
           </div>
         </form>
 
-        <div className="text-center text-xs text-slate-600 pt-3 border-t border-slate-100 flex items-center justify-center space-x-1">
+        <div className="text-center text-xs text-[#555555] pt-3 border-t border-[#D5E8D7] flex items-center justify-center space-x-1">
           <span>{language === 'bn' ? 'ইতোমধ্যে অ্যাকাউন্ট রয়েছে?' : 'Already have an account?'}</span>
           <button
             onClick={() => navigateTo('login')}
-            className="font-bold text-teal-700 hover:underline"
+            className="font-bold text-[#2E7D32] hover:underline"
           >
             {language === 'bn' ? 'লগইন করুন (Sign In)' : 'Sign In'}
           </button>

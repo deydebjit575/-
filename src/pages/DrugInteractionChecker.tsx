@@ -36,18 +36,18 @@ export const DrugInteractionChecker: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+    <div className="min-h-screen bg-white py-8 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-soft space-y-3">
-          <div className="flex items-center space-x-2 text-teal-700 font-bold text-xs">
+        <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-3">
+          <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs uppercase tracking-wider">
             <Pill className="w-4 h-4" />
             <span>MediVault Clinical Pharmacology Safety</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-navy-950">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#171717]">
             {language === 'bn' ? 'ওষুধের পার্শ্বপ্রতিক্রিয়া ও মিথস্ক্রিয়া পরীক্ষক' : 'Drug Interaction Checker'}
           </h1>
-          <p className="text-xs text-slate-600 leading-relaxed">
+          <p className="text-xs text-[#555555] leading-relaxed">
             {language === 'bn'
               ? 'একাধিক ওষুধ একসাথে সেবনের পূর্বে সম্ভাব্য বিপজ্জনক ড্রাগ-ড্রাগ ইন্টারঅ্যাকশন (যেমন: রক্তক্ষরণ, কিডনি চাপ বা কার্যক্ষমতা হ্রাস) পরীক্ষা করুন।'
               : 'Evaluate potential drug-drug interactions, risks, and clinical advice before taking new combinations.'}
@@ -55,11 +55,11 @@ export const DrugInteractionChecker: React.FC = () => {
         </div>
 
         {/* Checker Form */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-soft space-y-6">
+        <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-6">
           <form onSubmit={handleCheck} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
+                <label className="block text-xs font-bold text-[#171717] mb-1">
                   {language === 'bn' ? '১ম ওষুধ (Drug 1) *' : 'First Medication *'}
                 </label>
                 <input
@@ -68,12 +68,12 @@ export const DrugInteractionChecker: React.FC = () => {
                   placeholder="e.g. Aspirin, Clopidogrel, Telmisartan"
                   value={drug1}
                   onChange={e => setDrug1(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] outline-hidden font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">
+                <label className="block text-xs font-bold text-[#171717] mb-1">
                   {language === 'bn' ? '২য় ওষুধ (Drug 2) *' : 'Second Medication *'}
                 </label>
                 <input
@@ -82,14 +82,14 @@ export const DrugInteractionChecker: React.FC = () => {
                   placeholder="e.g. Warfarin, Omeprazole, Spironolactone"
                   value={drug2}
                   onChange={e => setDrug2(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] outline-hidden font-medium"
                 />
               </div>
             </div>
 
             {/* Quick Pill Selector */}
             <div className="space-y-1.5 pt-2">
-              <span className="text-[11px] font-bold text-slate-500 block">
+              <span className="text-[11px] font-bold text-[#555555] block">
                 {language === 'bn' ? 'দ্রুত নির্বাচনের জন্য সাধারণ ওষুধসমূহ:' : 'Common medications (Click to fill):'}
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -102,7 +102,7 @@ export const DrugInteractionChecker: React.FC = () => {
                       else if (!drug2) setDrug2(m);
                       else setDrug1(m);
                     }}
-                    className="px-2.5 py-1 bg-slate-100 hover:bg-teal-50 hover:text-teal-800 text-slate-700 text-xs font-medium rounded-lg border border-slate-200 transition-colors"
+                    className="px-2.5 py-1 bg-white hover:bg-[#F1F8F2] text-[#171717] text-xs font-medium rounded-lg border border-[#D5E8D7] transition-colors cursor-pointer shadow-2xs"
                   >
                     + {m}
                   </button>
@@ -113,7 +113,7 @@ export const DrugInteractionChecker: React.FC = () => {
             <div className="pt-3">
               <button
                 type="submit"
-                className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2"
+                className="w-full py-3 bg-[#2E7D32] hover:bg-[#256B2A] text-white font-black text-sm rounded-xl shadow-xs transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <Search className="w-4 h-4" />
                 <span>{language === 'bn' ? 'ইন্টারঅ্যাকশন পরীক্ষা করুন' : 'Check Drug Interaction'}</span>
@@ -124,21 +124,21 @@ export const DrugInteractionChecker: React.FC = () => {
 
         {/* Results Box */}
         {result && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-elevated space-y-5 animate-in fade-in slide-in-from-bottom-3">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-5 animate-in fade-in slide-in-from-bottom-3">
+            <div className="flex items-center justify-between pb-4 border-b border-[#D5E8D7]">
               <div className="flex items-center space-x-3">
-                <div className={`p-3 rounded-2xl ${
+                <div className={`p-3 rounded-2xl border ${
                   result.severity === 'High'
-                    ? 'bg-rose-100 text-rose-700'
+                    ? 'bg-rose-50 border-rose-200 text-rose-700'
                     : result.severity === 'Moderate'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-emerald-100 text-emerald-700'
+                    ? 'bg-amber-50 border-amber-200 text-amber-800'
+                    : 'bg-white border-[#D5E8D7] text-[#2E7D32]'
                 }`}>
                   <Pill className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[11px] uppercase font-bold text-slate-400">মিথস্ক্রিয়ার তীব্রতা:</span>
-                  <h3 className="text-xl font-black text-navy-950">
+                  <span className="text-[11px] uppercase font-bold text-[#555555]">মিথস্ক্রিয়ার তীব্রতা:</span>
+                  <h3 className="text-xl font-black text-[#171717]">
                     {result.severity === 'High' && '🚨 উচ্চ ঝুঁকি (Severe Risk)'}
                     {result.severity === 'Moderate' && '⚠️ মাঝারি সতর্কতা (Moderate Risk)'}
                     {result.severity === 'Minor' && 'ℹ️ মৃদু প্রভাব (Minor Impact)'}
@@ -147,32 +147,32 @@ export const DrugInteractionChecker: React.FC = () => {
                 </div>
               </div>
 
-              <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
+              <span className={`px-3 py-1 rounded-full text-xs font-black uppercase border ${
                 result.severity === 'High'
-                  ? 'bg-rose-100 text-rose-800'
+                  ? 'bg-rose-50 border-rose-200 text-rose-700'
                   : result.severity === 'Moderate'
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-amber-50 border-amber-200 text-amber-800'
+                  : 'bg-white border-[#D5E8D7] text-[#2E7D32]'
               }`}>
                 {result.severity}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                <span className="font-bold text-slate-900 block text-sm">বর্ণনা ও সম্ভাব্য প্রভাব:</span>
-                <p className="text-slate-700 leading-relaxed">{result.description}</p>
+              <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-2xs">
+                <span className="font-bold text-[#171717] block text-sm">বর্ণনা ও সম্ভাব্য প্রভাব:</span>
+                <p className="text-[#555555] leading-relaxed">{result.description}</p>
               </div>
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                <span className="font-bold text-slate-900 block text-sm">মেকানিজম ও প্রক্রিয়া:</span>
-                <p className="text-slate-700 leading-relaxed">{result.mechanism}</p>
+              <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-2xs">
+                <span className="font-bold text-[#171717] block text-sm">মেকানিজম ও প্রক্রিয়া:</span>
+                <p className="text-[#555555] leading-relaxed">{result.mechanism}</p>
               </div>
             </div>
 
-            <div className="p-4 bg-teal-50 rounded-2xl border border-teal-200 text-xs space-y-1">
-              <span className="font-bold text-teal-900 block text-sm">চিকিৎসাগত পরামর্শ ও সতর্কতা:</span>
-              <p className="text-teal-950 leading-relaxed font-medium">{result.clinicalAdvice}</p>
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] text-xs space-y-1 shadow-2xs">
+              <span className="font-bold text-[#2E7D32] block text-sm">চিকিৎসাগত পরামর্শ ও সতর্কতা:</span>
+              <p className="text-[#171717] leading-relaxed font-medium">{result.clinicalAdvice}</p>
             </div>
           </div>
         )}

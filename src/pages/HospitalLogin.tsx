@@ -49,25 +49,21 @@ export const HospitalLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 flex items-center justify-center relative overflow-hidden">
-      {/* Background glowing medical grid accents */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div className="max-w-xl w-full bg-slate-950/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-6 relative z-10 text-white">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 flex items-center justify-center relative">
+      <div className="max-w-xl w-full bg-[#E8F5E9] border border-[#D5E8D7] rounded-3xl p-6 sm:p-10 shadow-sm space-y-6 relative z-10 text-[#171717]">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-teal-600 to-cyan-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-teal-500/20">
+          <div className="w-14 h-14 rounded-2xl bg-[#2E7D32] text-white flex items-center justify-center mx-auto shadow-md">
             <Building2 className="w-8 h-8" />
           </div>
-          <div className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-[11px] font-bold border border-teal-500/30">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+          <div className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-white text-[#2E7D32] text-[11px] font-bold border border-[#D5E8D7]">
+            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-[#2E7D32]" />
             <span>Authorized Healthcare Personnel Only</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight">
             {language === 'bn' ? 'হাসপাতাল ট্রায়াজ ও ইআর পোর্টাল' : 'Hospital Emergency Staff Portal'}
           </h1>
-          <p className="text-xs text-slate-400 max-w-md mx-auto">
+          <p className="text-xs text-[#555555] max-w-md mx-auto">
             {language === 'bn'
               ? 'অনুমোদিত জরুরি চিকিৎসক ও ট্রায়াজ ডেস্ক কর্মীদের জন্য সংরক্ষিত প্রবেশদ্বার।'
               : 'Sign in to review incoming emergency SOS requests, verify ICU beds, and coordinate life-saving triage.'}
@@ -75,13 +71,13 @@ export const HospitalLogin: React.FC = () => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 p-1.5 bg-slate-900 rounded-2xl border border-slate-800 text-xs font-bold">
+        <div className="grid grid-cols-2 p-1.5 bg-white rounded-2xl border border-[#D5E8D7] text-xs font-bold">
           <button
             onClick={() => setActiveTab('quick')}
             className={`py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
               activeTab === 'quick'
-                ? 'bg-teal-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#2E7D32] text-white shadow-sm'
+                : 'text-[#555555] hover:text-[#171717]'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -91,8 +87,8 @@ export const HospitalLogin: React.FC = () => {
             onClick={() => setActiveTab('custom')}
             className={`py-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
               activeTab === 'custom'
-                ? 'bg-teal-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-[#2E7D32] text-white shadow-sm'
+                : 'text-[#555555] hover:text-[#171717]'
             }`}
           >
             <KeyRound className="w-3.5 h-3.5" />
@@ -101,8 +97,8 @@ export const HospitalLogin: React.FC = () => {
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-rose-950/70 border border-rose-600/50 text-rose-200 text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center space-x-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -110,9 +106,9 @@ export const HospitalLogin: React.FC = () => {
         {activeTab === 'quick' ? (
           /* Quick Demo Staff Logins */
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+            <div className="flex items-center justify-between text-xs text-[#555555] px-1">
               <span>{language === 'bn' ? 'যাচাইকৃত হাসপাতাল নির্বাচন করুন:' : 'Select Verified Partner Hospital:'}</span>
-              <span className="text-[10px] font-bold text-teal-400 bg-teal-950 px-2 py-0.5 rounded border border-teal-800">
+              <span className="text-[10px] font-bold text-[#2E7D32] bg-white px-2 py-0.5 rounded border border-[#D5E8D7]">
                 Multi-Tenant Isolated
               </span>
             </div>
@@ -122,28 +118,28 @@ export const HospitalLogin: React.FC = () => {
                 <div
                   key={account.id}
                   onClick={() => handleQuickLogin(account.id)}
-                  className="p-4 rounded-2xl bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800 hover:border-teal-500/50 cursor-pointer transition-all flex items-center justify-between group"
+                  className="p-4 rounded-2xl bg-white hover:bg-[#F1F8F2] border border-[#D5E8D7] hover:border-[#2E7D32] cursor-pointer transition-all flex items-center justify-between group shadow-xs"
                 >
                   <div className="space-y-1 min-w-0 pr-3">
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-sm text-white group-hover:text-teal-300 transition-colors truncate">
+                      <span className="font-bold text-sm text-[#171717] group-hover:text-[#2E7D32] transition-colors truncate">
                         {account.hospitalName}
                       </span>
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]">
                         {account.hospitalId}
                       </span>
                     </div>
-                    <p className="text-xs text-teal-400 font-medium">
+                    <p className="text-xs text-[#2E7D32] font-semibold">
                       {account.fullName}
                     </p>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-[#555555]">
                       {account.designation} • 📞 {account.phone}
                     </p>
                   </div>
 
                   <button
                     type="button"
-                    className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shrink-0 flex items-center space-x-1 shadow-sm"
+                    className="px-3.5 py-1.5 rounded-xl bg-[#2E7D32] hover:bg-[#256B2A] text-white font-bold text-xs shrink-0 flex items-center space-x-1 shadow-xs transition-colors"
                   >
                     <span>{language === 'bn' ? 'প্রবেশ' : 'Sign In'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -156,41 +152,41 @@ export const HospitalLogin: React.FC = () => {
           /* Custom Credentials Login Form */
           <form onSubmit={handleCustomSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#171717] mb-1">
                 {language === 'bn' ? 'হাসপাতাল স্টাফ ইউজারনেম / ইমেইল *' : 'Staff Username or Email *'}
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   required
                   placeholder="panihati.er or sagoredutta.er"
                   value={usernameInput}
                   onChange={e => setUsernameInput(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#171717] mb-1">
                 {language === 'bn' ? 'পাসওয়ার্ড (Password) *' : 'Staff Password *'}
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   placeholder="••••••••"
                   value={passwordInput}
                   onChange={e => setPasswordInput(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white font-black text-sm rounded-xl shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center space-x-2"
+              className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white font-black text-sm rounded-xl shadow-sm transition-all flex items-center justify-center space-x-2"
             >
               <span>{language === 'bn' ? 'হাসপাতাল পোর্টালে লগইন করুন' : 'Sign In to Hospital Portal'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -199,9 +195,9 @@ export const HospitalLogin: React.FC = () => {
         )}
 
         {/* Security and Tenant Notice */}
-        <div className="p-3.5 bg-slate-900/60 rounded-2xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
-          <div className="flex items-center text-teal-400 font-bold">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-teal-400 shrink-0" />
+        <div className="p-3.5 bg-white rounded-2xl border border-[#D5E8D7] text-[11px] text-[#555555] space-y-1">
+          <div className="flex items-center text-[#2E7D32] font-bold">
+            <ShieldCheck className="w-3.5 h-3.5 mr-1 text-[#2E7D32] shrink-0" />
             <span>Patient-Controlled Confidentiality Rule:</span>
           </div>
           <p>
@@ -210,11 +206,11 @@ export const HospitalLogin: React.FC = () => {
         </div>
 
         {/* Return to Patient Portal Link */}
-        <div className="text-center text-xs text-slate-400 pt-2 border-t border-slate-800">
+        <div className="text-center text-xs text-[#555555] pt-2 border-t border-[#D5E8D7]">
           <span>{language === 'bn' ? 'আপনি কি একজন রোগী বা অভিভাবক?' : 'Are you a patient or family guardian?'}</span>{' '}
           <button
             onClick={() => navigateTo('login')}
-            className="font-bold text-teal-400 hover:text-teal-300 hover:underline"
+            className="font-bold text-[#2E7D32] hover:text-[#256B2A] hover:underline"
           >
             {language === 'bn' ? 'রোগী পোর্টালে ফিরে যান (Patient Portal)' : 'Go to Patient Portal'}
           </button>

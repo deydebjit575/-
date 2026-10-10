@@ -1,62 +1,127 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-@layer base {
-  :root {
-    --primary: 13 148 136;
-    --navy: 16 42 67;
-  }
+:root {
+  /* Susthayan Medical Green Light Palette */
+  --med-bg-page: #FFFFFF;
+  --med-bg-card: #E8F5E9;
+  --med-bg-card-alt: #F1F8F2;
+  --med-bg-input: #FFFFFF;
+  --med-primary: #2E7D32;
+  --med-primary-hover: #256B2A;
+  --med-border: #D5E8D7;
+  --med-border-subtle: #E0EFE2;
+  --med-text-main: #171717;
+  --med-text-secondary: #555555;
+  --med-text-muted: #777777;
+}
 
+@layer base {
   body {
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: #FFFFFF !important;
+    color: #171717;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #171717;
+  }
 }
 
-/* Custom Scrollbar for Senior Friendly navigation */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F1F8F2;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #C4DEC7;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #A3CBA7;
 }
 
 /* Accessible focus outlines */
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid #0d9488;
+  outline: 2px solid #2E7D32;
   outline-offset: 2px;
+}
+
+/* Reusable Medical Design System Utilities */
+.med-card {
+  background-color: #E8F5E9 !important;
+  border: 1px solid #D5E8D7 !important;
+  border-radius: 16px;
+  color: #171717;
+}
+
+.med-card-alt {
+  background-color: #F1F8F2 !important;
+  border: 1px solid #D5E8D7 !important;
+  border-radius: 16px;
+  color: #171717;
+}
+
+.med-card-white {
+  background-color: #FFFFFF !important;
+  border: 1px solid #D5E8D7 !important;
+  border-radius: 16px;
+  color: #171717;
+}
+
+.med-btn-primary {
+  background-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.med-btn-primary:hover {
+  background-color: #256B2A !important;
+}
+
+.med-btn-secondary {
+  background-color: #FFFFFF !important;
+  color: #2E7D32 !important;
+  border: 1px solid #D5E8D7 !important;
+  border-radius: 12px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.med-btn-secondary:hover {
+  background-color: #F1F8F2 !important;
+  border-color: #2E7D32 !important;
+}
+
+.med-input {
+  background-color: #FFFFFF !important;
+  border: 1px solid #D5E8D7 !important;
+  color: #171717 !important;
+  border-radius: 12px;
+}
+.med-input:focus {
+  border-color: #2E7D32 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.18);
 }
 
 /* Pulse animation for SOS */
 @keyframes sosPulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
   }
   70% {
-    box-shadow: 0 0 0 25px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 18px rgba(220, 38, 38, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
   }
 }
 
 .animate-sos-pulse {
   animation: sosPulse 2s infinite;
-}
-
-/* Glassmorphism utility */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
 }

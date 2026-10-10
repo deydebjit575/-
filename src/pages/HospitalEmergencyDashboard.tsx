@@ -16,27 +16,18 @@ import {
   Search,
   Filter,
   Eye,
-  RefreshCw,
   Lock,
-  AlertTriangle,
   History,
   Activity,
-  Layers,
   ChevronRight,
   ShieldCheck,
   CheckCircle,
-  ExternalLink,
   MapPin,
   ArrowRight,
   Sliders,
   X,
   Phone,
-  AlertCircle,
-  Share2,
-  Calendar,
-  Info,
-  LogOut,
-  ArrowUpRight
+  Info
 } from 'lucide-react';
 import {
   BedCategoryType,
@@ -123,7 +114,6 @@ export const HospitalEmergencyDashboard: React.FC = () => {
   const [lastSyncTime, setLastSyncTime] = useState<string>(() => new Date().toLocaleTimeString());
 
   useEffect(() => {
-    // Update sync clock periodically
     const timer = setInterval(() => {
       setLastSyncTime(new Date().toLocaleTimeString());
     }, 15000);
@@ -146,7 +136,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
     return bedRecords.filter(b => isMatchingHospital(b.hospitalId, currentUser.hospitalId));
   }, [bedRecords, currentUser?.hospitalId]);
 
-  // 3. OVERVIEW CARDS: DERIVED DYNAMIC METRIC COUNTS (Strictly zero hardcoded numbers)
+  // 3. OVERVIEW CARDS: DERIVED DYNAMIC METRIC COUNTS
   const metrics = useMemo(() => {
     const list = hospitalEmergencyRequests;
     const newRequests = list.filter(r => r.status === 'SUBMITTED' || r.status === 'PENDING').length;
@@ -155,13 +145,11 @@ export const HospitalEmergencyDashboard: React.FC = () => {
     const declinedOrRedirected = list.filter(r => r.status === 'REJECTED' || r.status === 'DECLINED' || r.status === 'REDIRECTED').length;
     const timedOut = list.filter(r => r.status === 'TIMED_OUT').length;
 
-    // ICU record
     const icuRecord = currentHospitalBeds.find(b => b.category === 'ICU');
     const availableIcu = icuRecord
       ? Math.max(0, icuRecord.totalCapacity - (icuRecord.occupiedCount ?? (icuRecord.totalCapacity - icuRecord.availableCount)))
       : 0;
 
-    // Active ambulances
     const activeAmbulanceCount = list.filter(
       r => r.ambulanceRequested &&
            r.ambulanceDetails &&
@@ -223,16 +211,16 @@ export const HospitalEmergencyDashboard: React.FC = () => {
   // 5. AUTHENTICATION & ACCESS GUARD
   if (!currentUser || currentUser.role !== 'hospital_staff') {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
-          <div className="w-16 h-16 rounded-2xl bg-rose-950/80 border border-rose-800 text-rose-400 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-white text-[#171717] flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-[#E8F5E9] border border-[#D5E8D7] rounded-3xl p-8 text-center space-y-6 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-white border border-[#D5E8D7] text-[#2E7D32] flex items-center justify-center mx-auto shadow-xs">
             <Lock className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-white">
+            <h2 className="text-2xl font-black text-[#171717]">
               {language === 'bn' ? 'অনুমোদিত প্রবেশাধিকার প্রয়োজন' : 'Hospital Staff Authorization Required'}
             </h2>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-[#555555] leading-relaxed">
               {language === 'bn'
                 ? 'এই পোর্টালটি শুধুমাত্র যাচাইকৃত হাসপাতাল ইআর ও ট্রায়াজ ডেস্ক কর্মীদের জন্য সংরক্ষিত।'
                 : 'This emergency command portal is strictly restricted to verified hospital triage staff and duty medical officers.'}
@@ -241,14 +229,14 @@ export const HospitalEmergencyDashboard: React.FC = () => {
           <div className="pt-2 space-y-3">
             <button
               onClick={() => navigateTo('hospital-login')}
-              className="w-full py-3.5 px-4 bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-teal-600/20 transition-all flex items-center justify-center space-x-2"
+              className="w-full py-3.5 px-4 bg-[#2E7D32] hover:bg-[#256B2A] text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center space-x-2"
             >
-              <Building2 className="w-4 h-4" />
+              <Building2 className="w-4 h-4 text-white" />
               <span>{language === 'bn' ? 'হাসপাতাল স্টাফ লগইন করুন' : 'Sign In as Hospital Staff'}</span>
             </button>
             <button
               onClick={() => navigateTo('landing')}
-              className="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl transition-all"
+              className="w-full py-2.5 px-4 bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] font-bold text-xs rounded-xl transition-all"
             >
               {language === 'bn' ? 'হোম পেজে ফিরে যান' : 'Return to Home'}
             </button>
@@ -258,7 +246,6 @@ export const HospitalEmergencyDashboard: React.FC = () => {
     );
   }
 
-  // Helper to open Document review modal
   const handleOpenDocReview = (req: EmergencyRequest) => {
     setDocsModalRequest(req);
     if (req.accessGrantToken) {
@@ -266,7 +253,6 @@ export const HospitalEmergencyDashboard: React.FC = () => {
     }
   };
 
-  // Helper to start inline editing bed record
   const handleStartEditBed = (recordId: string, currentTotal: number, currentOccupied: number, notes?: string) => {
     setEditingBedRecordId(recordId);
     setEditTotalCapacity(currentTotal);
@@ -274,7 +260,6 @@ export const HospitalEmergencyDashboard: React.FC = () => {
     setEditBedNotes(notes || '');
   };
 
-  // Helper to save bed record changes
   const handleSaveBedChanges = (recordId: string) => {
     if (editTotalCapacity < 0 || editOccupiedCount < 0) {
       showToast('error', 'Invalid Bed Input', 'Bed numbers must be non-negative values.');
@@ -292,63 +277,63 @@ export const HospitalEmergencyDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1d] text-slate-100 py-6 px-4 sm:px-6">
+    <div className="min-h-screen bg-white text-[#171717] py-6 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto space-y-6">
 
         {/* ================= SECTION A: HOSPITAL HEADER ================= */}
-        <header className="bg-slate-900/90 backdrop-blur-md rounded-3xl p-6 border border-slate-800 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <header className="bg-[#E8F5E9] rounded-3xl p-6 border border-[#D5E8D7] shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-teal-500/10 text-teal-300 border border-teal-500/30 text-xs font-bold flex items-center space-x-1.5">
-                <Building2 className="w-3.5 h-3.5 text-teal-400" />
+              <span className="px-3 py-1 rounded-full bg-white text-[#2E7D32] border border-[#D5E8D7] text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+                <Building2 className="w-3.5 h-3.5 text-[#2E7D32]" />
                 <span>SUSTHAYAN Emergency Hospital Portal</span>
               </span>
 
-              <span className="px-2.5 py-0.5 rounded-md bg-slate-800 text-teal-300 border border-slate-700 text-[11px] font-mono font-semibold flex items-center space-x-1">
-                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+              <span className="px-2.5 py-0.5 rounded-md bg-white text-[#2E7D32] border border-[#D5E8D7] text-[11px] font-mono font-semibold flex items-center space-x-1 shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-[#2E7D32] animate-pulse"></span>
                 <span>Sync Active ({lastSyncTime})</span>
               </span>
 
-              <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-800 text-[11px] font-bold">
+              <span className="px-2.5 py-0.5 rounded-md bg-white text-[#555555] border border-[#D5E8D7] text-[11px] font-bold">
                 Hospital ID: {currentUser.hospitalId}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center space-x-2">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#171717] tracking-tight flex items-center space-x-2">
               <span>{hospitalDisplayName}</span>
               {currentHospitalInfo?.isVerifiedPartner && (
-                <span title="Verified Healthcare Facility" className="inline-flex text-teal-400">
+                <span title="Verified Healthcare Facility" className="inline-flex text-[#2E7D32]">
                   <CheckCircle2 className="w-5 h-5" />
                 </span>
               )}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#555555]">
               <span className="flex items-center space-x-1">
-                <User className="w-3.5 h-3.5 text-teal-400" />
+                <User className="w-3.5 h-3.5 text-[#2E7D32]" />
                 <span>Duty Staff:</span>
-                <strong className="text-white ml-1">{currentUser.displayName}</strong>
-                <span className="text-slate-400">({currentUser.staffDesignation || 'Triage Officer'})</span>
+                <strong className="text-[#171717] ml-1">{currentUser.displayName}</strong>
+                <span className="text-[#777777]">({currentUser.staffDesignation || 'Triage Officer'})</span>
               </span>
               <span>•</span>
               <span className="flex items-center space-x-1">
-                <PhoneCall className="w-3.5 h-3.5 text-cyan-400" />
+                <PhoneCall className="w-3.5 h-3.5 text-[#2E7D32]" />
                 <span>ER Helpline:</span>
-                <strong className="text-white ml-1">{hospitalEmergencyPhone}</strong>
+                <strong className="text-[#171717] ml-1">{hospitalEmergencyPhone}</strong>
               </span>
               <span>•</span>
-              <span className="text-slate-400 flex items-center">
-                <MapPin className="w-3.5 h-3.5 mr-1 text-slate-500" />
+              <span className="text-[#555555] flex items-center">
+                <MapPin className="w-3.5 h-3.5 mr-1 text-[#2E7D32]" />
                 {hospitalAreaLocality}
               </span>
             </div>
           </div>
 
           {/* Staff Switcher for Multi-Tenant Isolation Testing */}
-          <div className="bg-slate-950/80 p-3 rounded-2xl border border-slate-800 space-y-2 shrink-0 w-full lg:w-auto">
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
+          <div className="bg-white p-3.5 rounded-2xl border border-[#D5E8D7] space-y-2 shrink-0 w-full lg:w-auto shadow-xs">
+            <div className="flex items-center justify-between text-[11px] font-bold text-[#555555]">
               <span>Authorized Hospital Session:</span>
-              <span className="text-[10px] text-teal-400 font-medium">Tenant Switcher</span>
+              <span className="text-[10px] text-[#2E7D32] font-semibold">Tenant Switcher</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {hospitalStaffAccounts.map(account => {
@@ -359,12 +344,12 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                     onClick={() => switchHospitalStaffAccount(account.id)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
                       isActive
-                        ? 'bg-teal-600 text-white shadow-md shadow-teal-600/30 ring-1 ring-teal-400'
-                        : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-slate-800'
+                        ? 'bg-[#2E7D32] text-white shadow-xs'
+                        : 'bg-[#F1F8F2] text-[#171717] hover:bg-[#E8F5E9] border border-[#D5E8D7]'
                     }`}
                   >
                     <span>{account.hospitalName.split(' ')[0]}</span>
-                    {isActive && <CheckCircle2 className="w-3 h-3 text-teal-200" />}
+                    {isActive && <CheckCircle2 className="w-3 h-3 text-white" />}
                   </button>
                 );
               })}
@@ -375,96 +360,96 @@ export const HospitalEmergencyDashboard: React.FC = () => {
         {/* ================= SECTION B: DASHBOARD OVERVIEW CARDS ================= */}
         <section aria-label="Dashboard Overview Metrics" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
           {/* 1. New Emergency Requests */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-rose-900/50 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#D32F2F] uppercase tracking-wider">
                 New Requests
               </span>
-              <AlertOctagon className="w-4 h-4 text-rose-400" />
+              <AlertOctagon className="w-4 h-4 text-[#D32F2F]" />
             </div>
-            <div className="text-2xl font-black text-rose-400">{metrics.newRequests}</div>
-            <span className="text-[10px] text-slate-400 block">Pending triage</span>
+            <div className="text-2xl font-black text-[#D32F2F]">{metrics.newRequests}</div>
+            <span className="text-[10px] text-[#555555] block">Pending triage</span>
           </div>
 
           {/* 2. Under Review */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-amber-900/50 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#171717] uppercase tracking-wider">
                 Under Review
               </span>
-              <Clock className="w-4 h-4 text-amber-400" />
+              <Clock className="w-4 h-4 text-[#2E7D32]" />
             </div>
-            <div className="text-2xl font-black text-amber-400">{metrics.underReview}</div>
-            <span className="text-[10px] text-slate-400 block">Staff evaluating</span>
+            <div className="text-2xl font-black text-[#171717]">{metrics.underReview}</div>
+            <span className="text-[10px] text-[#555555] block">Staff evaluating</span>
           </div>
 
           {/* 3. Accepted Requests */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-emerald-900/50 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#2E7D32] uppercase tracking-wider">
                 Accepted
               </span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 text-[#2E7D32]" />
             </div>
-            <div className="text-2xl font-black text-emerald-400">{metrics.accepted}</div>
-            <span className="text-[10px] text-slate-400 block">Bed reserved</span>
+            <div className="text-2xl font-black text-[#2E7D32]">{metrics.accepted}</div>
+            <span className="text-[10px] text-[#555555] block">Bed reserved</span>
           </div>
 
           {/* 4. Declined / Redirected */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-slate-700 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#171717] uppercase tracking-wider">
                 Declined / Redir
               </span>
-              <XCircle className="w-4 h-4 text-slate-400" />
+              <XCircle className="w-4 h-4 text-[#555555]" />
             </div>
-            <div className="text-2xl font-black text-slate-300">{metrics.declinedOrRedirected}</div>
-            <span className="text-[10px] text-slate-400 block">Case redirected</span>
+            <div className="text-2xl font-black text-[#171717]">{metrics.declinedOrRedirected}</div>
+            <span className="text-[10px] text-[#555555] block">Case redirected</span>
           </div>
 
           {/* 5. Timed-out Requests */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-purple-900/50 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#171717] uppercase tracking-wider">
                 Timed Out
               </span>
-              <History className="w-4 h-4 text-purple-400" />
+              <History className="w-4 h-4 text-[#555555]" />
             </div>
-            <div className="text-2xl font-black text-purple-400">{metrics.timedOut}</div>
-            <span className="text-[10px] text-slate-400 block">&gt;15 min timeout</span>
+            <div className="text-2xl font-black text-[#171717]">{metrics.timedOut}</div>
+            <span className="text-[10px] text-[#555555] block">&gt;15 min timeout</span>
           </div>
 
           {/* 6. Available ICU Beds */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-teal-900/50 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-teal-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#2E7D32] uppercase tracking-wider">
                 Available ICU
               </span>
-              <Bed className="w-4 h-4 text-teal-400" />
+              <Bed className="w-4 h-4 text-[#2E7D32]" />
             </div>
-            <div className="text-2xl font-black text-teal-400">
+            <div className="text-2xl font-black text-[#2E7D32]">
               {metrics.hasIcuData ? `${metrics.availableIcu}` : 'N/A'}
             </div>
-            <span className="text-[10px] text-slate-400 block">
+            <span className="text-[10px] text-[#555555] block">
               {metrics.hasIcuData ? `of ${metrics.icuTotal} capacity` : 'Data not available'}
             </span>
           </div>
 
           {/* 7. Active Ambulances */}
-          <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 hover:border-cyan-900/50 transition-all space-y-1.5">
+          <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] shadow-xs space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-[#2E7D32] uppercase tracking-wider">
                 Ambulances
               </span>
-              <Ambulance className="w-4 h-4 text-cyan-400" />
+              <Ambulance className="w-4 h-4 text-[#2E7D32]" />
             </div>
-            <div className="text-2xl font-black text-cyan-400">{metrics.activeAmbulanceCount}</div>
-            <span className="text-[10px] text-slate-400 block">Active dispatches</span>
+            <div className="text-2xl font-black text-[#171717]">{metrics.activeAmbulanceCount}</div>
+            <span className="text-[10px] text-[#555555] block">Active dispatches</span>
           </div>
         </section>
 
         {/* ================= SECTION NAVIGATION TABS ================= */}
-        <nav aria-label="Portal Navigation" className="flex border-b border-slate-800 space-x-2 pb-1 overflow-x-auto scrollbar-none">
+        <nav aria-label="Portal Navigation" className="flex border-b border-[#D5E8D7] space-x-2 pb-1 overflow-x-auto scrollbar-none">
           {[
             {
               id: 'inbox',
@@ -499,18 +484,18 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`flex items-center space-x-2 px-4 py-3 rounded-2xl font-bold text-xs shrink-0 transition-all border ${
                   isActive
-                    ? 'bg-teal-600 text-white border-teal-500 shadow-lg shadow-teal-600/20'
-                    : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                    ? 'bg-[#E8F5E9] text-[#2E7D32] border-[#D5E8D7] shadow-xs'
+                    : 'bg-white text-[#555555] border-[#D5E8D7] hover:bg-[#F1F8F2] hover:text-[#171717]'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#2E7D32]' : 'text-[#555555]'}`} />
                 <span>{tab.label}</span>
                 {tab.count !== null && (
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
                       isActive
-                        ? 'bg-white text-teal-900'
-                        : 'bg-slate-800 text-teal-300 border border-slate-700'
+                        ? 'bg-[#2E7D32] text-white'
+                        : 'bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]'
                     }`}
                   >
                     {tab.count}
@@ -525,26 +510,26 @@ export const HospitalEmergencyDashboard: React.FC = () => {
         {activeTab === 'inbox' && (
           <div className="space-y-4 animate-in fade-in">
             {/* Search and Filters Bar */}
-            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            <div className="bg-[#E8F5E9] p-4 rounded-2xl border border-[#D5E8D7] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 shadow-xs">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Search by patient name, ID, emergency symptoms, or address..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-teal-500"
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-[#D5E8D7] rounded-xl text-xs text-[#171717] placeholder-slate-400 focus:outline-none focus:border-[#2E7D32]"
                 />
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 {/* Status Filter */}
-                <div className="flex items-center space-x-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
-                  <Filter className="w-3.5 h-3.5 text-slate-400" />
+                <div className="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#D5E8D7] text-xs">
+                  <Filter className="w-3.5 h-3.5 text-[#2E7D32]" />
                   <select
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value as any)}
-                    className="bg-transparent text-white font-medium text-xs focus:outline-none"
+                    className="bg-transparent text-[#171717] font-medium text-xs focus:outline-none"
                   >
                     <option value="ALL">All Statuses ({hospitalEmergencyRequests.length})</option>
                     <option value="SUBMITTED">Submitted / Pending</option>
@@ -557,12 +542,12 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                 </div>
 
                 {/* Priority Filter */}
-                <div className="flex items-center space-x-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
-                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
+                <div className="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#D5E8D7] text-xs">
+                  <Sliders className="w-3.5 h-3.5 text-[#2E7D32]" />
                   <select
                     value={priorityFilter}
                     onChange={e => setPriorityFilter(e.target.value as any)}
-                    className="bg-transparent text-white font-medium text-xs focus:outline-none"
+                    className="bg-transparent text-[#171717] font-medium text-xs focus:outline-none"
                   >
                     <option value="ALL">All Triage Priorities</option>
                     <option value="CRITICAL">Critical (Red)</option>
@@ -572,11 +557,11 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                 </div>
 
                 {/* Sort Order */}
-                <div className="flex items-center space-x-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+                <div className="flex items-center space-x-1.5 bg-white px-3 py-1.5 rounded-xl border border-[#D5E8D7] text-xs">
                   <select
                     value={sortBy}
                     onChange={e => setSortBy(e.target.value as any)}
-                    className="bg-transparent text-white font-medium text-xs focus:outline-none"
+                    className="bg-transparent text-[#171717] font-medium text-xs focus:outline-none"
                   >
                     <option value="newest">Sort: Newest First</option>
                     <option value="priority">Sort: Highest Priority</option>
@@ -587,10 +572,10 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
             {/* Empty State vs Real Requests */}
             {filteredRequests.length === 0 ? (
-              <div className="bg-slate-900/50 rounded-3xl p-12 text-center text-slate-400 border border-slate-800 space-y-3">
-                <AlertOctagon className="w-10 h-10 text-slate-600 mx-auto" />
-                <h3 className="text-base font-bold text-white">No emergency requests yet</h3>
-                <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              <div className="bg-[#E8F5E9] rounded-3xl p-12 text-center text-[#555555] border border-[#D5E8D7] space-y-3 shadow-xs">
+                <AlertOctagon className="w-10 h-10 text-[#2E7D32] mx-auto" />
+                <h3 className="text-base font-bold text-[#171717]">No emergency requests yet</h3>
+                <p className="text-xs text-[#555555] max-w-md mx-auto leading-relaxed">
                   {hospitalEmergencyRequests.length === 0
                     ? `There are currently no emergency assistance requests routed to ${hospitalDisplayName}. Requests submitted by patients via Nearby Hospitals will appear here in real time.`
                     : 'No requests matched your search or filter criteria. Try clearing filters to see all requests.'}
@@ -602,7 +587,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                       setStatusFilter('ALL');
                       setPriorityFilter('ALL');
                     }}
-                    className="mt-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-teal-300 rounded-xl text-xs font-bold"
+                    className="mt-2 px-4 py-2 bg-white hover:bg-[#F1F8F2] text-[#2E7D32] border border-[#D5E8D7] rounded-xl text-xs font-bold"
                   >
                     Reset Search & Filters
                   </button>
@@ -622,12 +607,12 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                   return (
                     <article
                       key={req.id}
-                      className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 hover:border-slate-700 transition-all space-y-4"
+                      className="bg-[#E8F5E9] rounded-2xl p-5 border border-[#D5E8D7] hover:border-[#2E7D32] transition-all space-y-4 shadow-xs"
                     >
                       {/* Top Header Line */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#D5E8D7] text-xs">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-teal-300 bg-teal-950/80 px-2.5 py-0.5 rounded-lg border border-teal-800">
+                          <span className="font-mono text-xs font-bold text-[#2E7D32] bg-white px-2.5 py-0.5 rounded-lg border border-[#D5E8D7]">
                             {req.id}
                           </span>
 
@@ -635,16 +620,16 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
                               req.status === 'SUBMITTED' || req.status === 'PENDING'
-                                ? 'bg-rose-950 text-rose-300 border border-rose-800'
+                                ? 'bg-white text-[#D32F2F] border border-rose-300'
                                 : req.status === 'UNDER_REVIEW'
-                                ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                                ? 'bg-white text-amber-700 border border-amber-300'
                                 : req.status === 'ACCEPTED' || req.status === 'BED_CONFIRMED'
-                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                ? 'bg-[#2E7D32] text-white'
                                 : req.status === 'REDIRECTED'
-                                ? 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                                ? 'bg-white text-cyan-800 border border-cyan-300'
                                 : req.status === 'TIMED_OUT'
-                                ? 'bg-purple-950 text-purple-300 border border-purple-800'
-                                : 'bg-slate-800 text-slate-300 border border-slate-700'
+                                ? 'bg-white text-purple-800 border border-purple-300'
+                                : 'bg-white text-[#555555] border border-[#D5E8D7]'
                             }`}
                           >
                             Status: {req.status}
@@ -654,10 +639,10 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                           <span
                             className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
                               isCritical
-                                ? 'bg-rose-950 text-rose-400 border border-rose-800 font-black'
+                                ? 'bg-rose-100 text-[#D32F2F] border border-rose-300 font-black'
                                 : isUrgent
-                                ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                                : 'bg-slate-800 text-slate-400'
+                                ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                : 'bg-white text-[#555555] border border-[#D5E8D7]'
                             }`}
                           >
                             {req.priority || 'STANDARD'} PRIORITY
@@ -665,29 +650,29 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                           {/* Ambulance Badge */}
                           {req.ambulanceRequested && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-800 flex items-center space-x-1">
-                              <Ambulance className="w-3 h-3 mr-0.5" />
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-[#2E7D32] border border-[#D5E8D7] flex items-center space-x-1">
+                              <Ambulance className="w-3 h-3 mr-0.5 text-[#2E7D32]" />
                               <span>Ambulance Requested</span>
                             </span>
                           )}
 
                           {/* MediVault Docs Badge */}
                           {hasConsent && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-950 text-teal-300 border border-teal-800 flex items-center space-x-1">
-                              <FileText className="w-3 h-3 mr-0.5" />
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-[#2E7D32] border border-[#D5E8D7] flex items-center space-x-1">
+                              <FileText className="w-3 h-3 mr-0.5 text-[#2E7D32]" />
                               <span>MediVault Shared</span>
                             </span>
                           )}
 
                           {isConsentRevoked && (
-                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-300">
                               Consent Revoked
                             </span>
                           )}
                         </div>
 
-                        <div className="flex items-center space-x-2 text-slate-400 text-[11px]">
-                          <Clock className="w-3.5 h-3.5" />
+                        <div className="flex items-center space-x-2 text-[#555555] text-[11px]">
+                          <Clock className="w-3.5 h-3.5 text-[#2E7D32]" />
                           <span>Submitted: {new Date(req.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
@@ -696,30 +681,30 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                         {/* Patient Core Info */}
                         <div className="lg:col-span-4 space-y-1 text-xs">
-                          <h4 className="text-base font-bold text-white">{req.patientName}</h4>
-                          <p className="text-slate-300">
-                            Age: <strong>{req.patientAge ? `${req.patientAge} Years` : 'Not specified'}</strong> • Blood Group:{' '}
-                            <strong className="text-teal-300">{req.patientBloodGroup || 'N/A'}</strong>
+                          <h4 className="text-base font-bold text-[#171717]">{req.patientName}</h4>
+                          <p className="text-[#555555]">
+                            Age: <strong className="text-[#171717]">{req.patientAge ? `${req.patientAge} Years` : 'Not specified'}</strong> • Blood Group:{' '}
+                            <strong className="text-[#2E7D32]">{req.patientBloodGroup || 'N/A'}</strong>
                           </p>
-                          <p className="text-slate-400">Phone: <strong>{req.patientPhone || 'Not provided'}</strong></p>
-                          <p className="text-slate-400 truncate">📍 {req.patientAddress || 'Location coordinates on file'}</p>
+                          <p className="text-[#555555]">Phone: <strong className="text-[#171717]">{req.patientPhone || 'Not provided'}</strong></p>
+                          <p className="text-[#555555] truncate">📍 {req.patientAddress || 'Location coordinates on file'}</p>
                         </div>
 
                         {/* Emergency Complaint */}
                         <div className="lg:col-span-5 space-y-1.5 text-xs">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                          <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">
                             Emergency Complaint / Chief Symptoms:
                           </span>
-                          <p className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-slate-200 leading-relaxed">
+                          <p className="bg-white p-3 rounded-xl border border-[#D5E8D7] text-[#171717] leading-relaxed shadow-xs">
                             {req.symptomsDescription || 'Acute medical emergency assistance requested.'}
                           </p>
                           {req.redirectReason && (
-                            <p className="text-[11px] text-cyan-300 bg-cyan-950/60 p-2 rounded-lg border border-cyan-800">
+                            <p className="text-[11px] text-cyan-800 bg-cyan-50 p-2 rounded-lg border border-cyan-200">
                               Redirect Note: {req.redirectReason} (To: {req.redirectHospitalName || req.redirectHospitalId})
                             </p>
                           )}
                           {req.rejectionReason && (
-                            <p className="text-[11px] text-rose-300 bg-rose-950/60 p-2 rounded-lg border border-rose-800">
+                            <p className="text-[11px] text-rose-800 bg-rose-50 p-2 rounded-lg border border-rose-200">
                               Decline Reason: {req.rejectionReason}
                             </p>
                           )}
@@ -730,17 +715,17 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                           <div className="grid grid-cols-2 gap-2">
                             <button
                               onClick={() => setDetailModalRequest(req)}
-                              className="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all flex items-center justify-center space-x-1"
+                              className="py-2 px-2.5 rounded-xl bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] text-xs font-bold transition-all flex items-center justify-center space-x-1"
                             >
-                              <Eye className="w-3.5 h-3.5" />
+                              <Eye className="w-3.5 h-3.5 text-[#2E7D32]" />
                               <span>Details</span>
                             </button>
 
                             <button
                               onClick={() => handleOpenDocReview(req)}
-                              className="py-2 px-2.5 rounded-xl bg-teal-950/70 hover:bg-teal-900/80 text-teal-300 border border-teal-800 text-xs font-bold transition-all flex items-center justify-center space-x-1"
+                              className="py-2 px-2.5 rounded-xl bg-white hover:bg-[#F1F8F2] text-[#2E7D32] border border-[#D5E8D7] text-xs font-bold transition-all flex items-center justify-center space-x-1"
                             >
-                              <FileText className="w-3.5 h-3.5" />
+                              <FileText className="w-3.5 h-3.5 text-[#2E7D32]" />
                               <span>Vault Docs</span>
                             </button>
                           </div>
@@ -754,9 +739,9 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                     setActionTargetRequest(req);
                                     setShowAcceptModal(true);
                                   }}
-                                  className="py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md flex items-center justify-center space-x-1"
+                                  className="py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center space-x-1"
                                 >
-                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                                   <span>Accept</span>
                                 </button>
 
@@ -765,9 +750,9 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                     setActionTargetRequest(req);
                                     setShowDeclineModal(true);
                                   }}
-                                  className="py-2 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-xl text-xs font-bold flex items-center justify-center space-x-1"
+                                  className="py-2 bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold flex items-center justify-center space-x-1"
                                 >
-                                  <XCircle className="w-3.5 h-3.5" />
+                                  <XCircle className="w-3.5 h-3.5 text-rose-600" />
                                   <span>Decline</span>
                                 </button>
                               </div>
@@ -777,27 +762,27 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                   setActionTargetRequest(req);
                                   setShowRedirectModal(true);
                                 }}
-                                className="w-full py-1.5 bg-slate-800 hover:bg-slate-750 text-cyan-300 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1"
+                                className="w-full py-1.5 bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1"
                               >
-                                <ArrowRight className="w-3.5 h-3.5" />
+                                <ArrowRight className="w-3.5 h-3.5 text-[#2E7D32]" />
                                 <span>Redirect Hospital</span>
                               </button>
 
                               {req.status !== 'UNDER_REVIEW' && (
                                 <button
                                   onClick={() => markRequestUnderReview(req.id)}
-                                  className="w-full text-center text-[11px] text-slate-400 hover:text-amber-300 transition-colors py-0.5"
+                                  className="w-full text-center text-[11px] text-[#555555] hover:text-[#2E7D32] transition-colors py-0.5"
                                 >
                                   Mark Under Review
                                 </button>
                               )}
                             </div>
                           ) : req.status === 'ACCEPTED' ? (
-                            <div className="p-2.5 bg-emerald-950/50 rounded-xl border border-emerald-800/80 text-emerald-300 text-xs font-bold text-center">
+                            <div className="p-2.5 bg-white rounded-xl border border-[#D5E8D7] text-[#2E7D32] text-xs font-bold text-center">
                               ✓ Accepted ({req.allocatedBedType || 'Bed Allocated'})
                             </div>
                           ) : (
-                            <div className="p-2 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 text-xs text-center font-medium">
+                            <div className="p-2 bg-white rounded-xl border border-[#D5E8D7] text-[#555555] text-xs text-center font-medium">
                               Case Concluded ({req.status})
                             </div>
                           )}
@@ -814,21 +799,21 @@ export const HospitalEmergencyDashboard: React.FC = () => {
         {/* ================= SECTION E: HOSPITAL BED AVAILABILITY MANAGEMENT ================= */}
         {activeTab === 'beds' && (
           <div className="space-y-5 animate-in fade-in">
-            <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-[#E8F5E9] rounded-3xl p-6 border border-[#D5E8D7] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="space-y-1.5">
-                <div className="flex items-center space-x-2 text-teal-400 font-bold text-xs">
-                  <ShieldCheck className="w-4 h-4" />
+                <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs">
+                  <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
                   <span>Real-Time Hospital Bed Governance</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-white">
+                <h2 className="text-xl sm:text-2xl font-black text-[#171717]">
                   Bed Availability & Capacity Management
                 </h2>
-                <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+                <p className="text-xs text-[#555555] max-w-2xl leading-relaxed">
                   Duty medical staff must verify and maintain real bed occupancy for Intensive Care Units (ICU), General Wards, and Emergency Departments (ER). Updates persist and automatically sync across the emergency network.
                 </p>
               </div>
 
-              <div className="px-3.5 py-1.5 bg-teal-950 border border-teal-800 text-teal-300 rounded-xl text-xs font-bold shrink-0">
+              <div className="px-3.5 py-1.5 bg-white border border-[#D5E8D7] text-[#2E7D32] rounded-xl text-xs font-bold shrink-0">
                 Hospital: {hospitalDisplayName}
               </div>
             </div>
@@ -845,11 +830,11 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                 return (
                   <div
                     key={record.id}
-                    className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-soft flex flex-col justify-between space-y-4"
+                    className="bg-[#E8F5E9] rounded-2xl p-5 border border-[#D5E8D7] shadow-xs flex flex-col justify-between space-y-4"
                   >
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-black uppercase bg-slate-950 text-teal-300 border border-slate-800">
+                      <div className="flex items-center justify-between pb-3 border-b border-[#D5E8D7]">
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-black uppercase bg-white text-[#2E7D32] border border-[#D5E8D7]">
                           {record.category === 'ICU'
                             ? 'ICU (Intensive Care)'
                             : record.category === 'GENERAL_WARD'
@@ -862,8 +847,8 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
                             isAvailable
-                              ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                              : 'bg-rose-950 text-rose-300 border border-rose-800'
+                              ? 'bg-white text-[#2E7D32] border border-[#D5E8D7]'
+                              : 'bg-white text-rose-700 border border-rose-300'
                           }`}
                         >
                           {isAvailable ? 'AVAILABLE' : 'FULL / OCCUPIED'}
@@ -874,77 +859,77 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                       {!isEditing ? (
                         <div className="space-y-3">
                           <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                              <span className="text-[10px] text-slate-400 block uppercase font-bold">Total</span>
-                              <span className="text-xl font-black text-white">{totalCap}</span>
+                            <div className="p-3 bg-white rounded-xl border border-[#D5E8D7]">
+                              <span className="text-[10px] text-[#555555] block uppercase font-bold">Total</span>
+                              <span className="text-xl font-black text-[#171717]">{totalCap}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                              <span className="text-[10px] text-slate-400 block uppercase font-bold">Occupied</span>
-                              <span className="text-xl font-black text-amber-400">{occupied}</span>
+                            <div className="p-3 bg-white rounded-xl border border-[#D5E8D7]">
+                              <span className="text-[10px] text-[#555555] block uppercase font-bold">Occupied</span>
+                              <span className="text-xl font-black text-amber-700">{occupied}</span>
                             </div>
 
-                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                              <span className="text-[10px] text-slate-400 block uppercase font-bold">Available</span>
-                              <span className="text-xl font-black text-teal-400">{available}</span>
+                            <div className="p-3 bg-white rounded-xl border border-[#D5E8D7]">
+                              <span className="text-[10px] text-[#555555] block uppercase font-bold">Available</span>
+                              <span className="text-xl font-black text-[#2E7D32]">{available}</span>
                             </div>
                           </div>
 
                           {record.notes && (
-                            <p className="text-xs text-slate-400 italic bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+                            <p className="text-xs text-[#555555] italic bg-white p-2.5 rounded-xl border border-[#D5E8D7]">
                               "{record.notes}"
                             </p>
                           )}
 
-                          <div className="text-[11px] text-slate-400 pt-2 border-t border-slate-800 space-y-0.5">
-                            <p>Last verified: <strong>{new Date(record.lastUpdated).toLocaleTimeString()}</strong></p>
-                            <p>Staff: <strong>{record.updatedByStaffName}</strong></p>
-                            <p className="text-teal-400/90 text-[10px]">Source: {record.sourceOfVerification || 'Direct Duty MO Verification'}</p>
+                          <div className="text-[11px] text-[#555555] pt-2 border-t border-[#D5E8D7] space-y-0.5">
+                            <p>Last verified: <strong className="text-[#171717]">{new Date(record.lastUpdated).toLocaleTimeString()}</strong></p>
+                            <p>Staff: <strong className="text-[#171717]">{record.updatedByStaffName}</strong></p>
+                            <p className="text-[#2E7D32] text-[10px]">Source: {record.sourceOfVerification || 'Direct Duty MO Verification'}</p>
                           </div>
                         </div>
                       ) : (
                         /* Editing Form */
-                        <div className="space-y-3 text-xs bg-slate-950 p-4 rounded-xl border border-teal-500/40">
-                          <h4 className="font-bold text-teal-300">Edit Bed Capacity & Occupancy</h4>
+                        <div className="space-y-3 text-xs bg-white p-4 rounded-xl border border-[#D5E8D7]">
+                          <h4 className="font-bold text-[#171717]">Edit Bed Capacity & Occupancy</h4>
 
                           <div>
-                            <label className="block text-slate-300 font-medium mb-1">Total Capacity:</label>
+                            <label className="block text-[#171717] font-medium mb-1">Total Capacity:</label>
                             <input
                               type="number"
                               min={0}
                               value={editTotalCapacity}
                               onChange={e => setEditTotalCapacity(parseInt(e.target.value) || 0)}
-                              className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white font-bold"
+                              className="w-full px-3 py-1.5 bg-white border border-[#D5E8D7] rounded-lg text-[#171717] font-bold"
                             />
                           </div>
 
                           <div>
-                            <label className="block text-slate-300 font-medium mb-1">Occupied Beds:</label>
+                            <label className="block text-[#171717] font-medium mb-1">Occupied Beds:</label>
                             <input
                               type="number"
                               min={0}
                               max={editTotalCapacity}
                               value={editOccupiedCount}
                               onChange={e => setEditOccupiedCount(parseInt(e.target.value) || 0)}
-                              className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white font-bold"
+                              className="w-full px-3 py-1.5 bg-white border border-[#D5E8D7] rounded-lg text-[#171717] font-bold"
                             />
                           </div>
 
-                          <div className="p-2 bg-slate-900 rounded-lg border border-slate-800 flex justify-between items-center text-xs">
-                            <span className="text-slate-400">Calculated Available:</span>
-                            <span className="font-black text-teal-400 text-sm">
+                          <div className="p-2 bg-[#F1F8F2] rounded-lg border border-[#D5E8D7] flex justify-between items-center text-xs">
+                            <span className="text-[#555555]">Calculated Available:</span>
+                            <span className="font-black text-[#2E7D32] text-sm">
                               {Math.max(0, editTotalCapacity - editOccupiedCount)}
                             </span>
                           </div>
 
                           <div>
-                            <label className="block text-slate-300 font-medium mb-1">Operational Notes (Optional):</label>
+                            <label className="block text-[#171717] font-medium mb-1">Operational Notes (Optional):</label>
                             <input
                               type="text"
                               value={editBedNotes}
                               onChange={e => setEditBedNotes(e.target.value)}
                               placeholder="e.g., 2 beds reserved for incoming trauma"
-                              className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs"
+                              className="w-full px-3 py-1.5 bg-white border border-[#D5E8D7] rounded-lg text-[#171717] text-xs"
                             />
                           </div>
                         </div>
@@ -956,7 +941,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                       {!isEditing ? (
                         <button
                           onClick={() => handleStartEditBed(record.id, totalCap, occupied, record.notes)}
-                          className="w-full py-2 bg-slate-800 hover:bg-slate-700 text-teal-300 rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1"
+                          className="w-full py-2 bg-white hover:bg-[#F1F8F2] text-[#2E7D32] border border-[#D5E8D7] rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-1"
                         >
                           <span>Update Bed Capacity</span>
                           <ArrowRight className="w-3.5 h-3.5 ml-1" />
@@ -965,13 +950,13 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             onClick={() => setEditingBedRecordId(null)}
-                            className="py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                            className="py-2 bg-white hover:bg-[#F1F8F2] text-[#555555] border border-[#D5E8D7] rounded-xl text-xs font-bold"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={() => handleSaveBedChanges(record.id)}
-                            className="py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold shadow-md"
+                            className="py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs"
                           >
                             Save Updates
                           </button>
@@ -988,32 +973,32 @@ export const HospitalEmergencyDashboard: React.FC = () => {
         {/* ================= SECTION F: AMBULANCE COORDINATION ================= */}
         {activeTab === 'ambulance' && (
           <div className="space-y-5 animate-in fade-in">
-            <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-[#E8F5E9] rounded-3xl p-6 border border-[#D5E8D7] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="space-y-1.5">
-                <div className="flex items-center space-x-2 text-cyan-400 font-bold text-xs">
-                  <Ambulance className="w-4 h-4" />
+                <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs">
+                  <Ambulance className="w-4 h-4 text-[#2E7D32]" />
                   <span>Ambulance Telemetry & Dispatch Coordination</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-white">
+                <h2 className="text-xl sm:text-2xl font-black text-[#171717]">
                   Hospital Emergency Fleet Coordination
                 </h2>
-                <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+                <p className="text-xs text-[#555555] max-w-2xl leading-relaxed">
                   Coordinate ambulance dispatch, assign paramedical teams, and track operational transport status for incoming emergency patients.
                 </p>
               </div>
 
-              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex items-center space-x-2">
-                <Info className="w-4 h-4 text-cyan-400 shrink-0" />
+              <div className="p-2.5 bg-white rounded-xl border border-[#D5E8D7] text-[11px] text-[#555555] flex items-center space-x-2">
+                <Info className="w-4 h-4 text-[#2E7D32] shrink-0" />
                 <span>Notice: Live GPS tracking is unavailable; telemetry reflects operator-updated dispatch status.</span>
               </div>
             </div>
 
             {/* List of ambulance-requested cases */}
             {hospitalEmergencyRequests.filter(r => r.ambulanceRequested).length === 0 ? (
-              <div className="bg-slate-900/50 rounded-3xl p-12 text-center text-slate-400 border border-slate-800 space-y-2">
-                <Ambulance className="w-10 h-10 text-slate-600 mx-auto" />
-                <h3 className="text-base font-bold text-white">No active ambulance requests</h3>
-                <p className="text-xs text-slate-400 max-w-md mx-auto">
+              <div className="bg-[#E8F5E9] rounded-3xl p-12 text-center text-[#555555] border border-[#D5E8D7] space-y-2">
+                <Ambulance className="w-10 h-10 text-[#2E7D32] mx-auto" />
+                <h3 className="text-base font-bold text-[#171717]">No active ambulance requests</h3>
+                <p className="text-xs text-[#555555] max-w-md mx-auto">
                   Currently, no emergency requests requiring ambulance dispatch have been directed to {hospitalDisplayName}.
                 </p>
               </div>
@@ -1028,23 +1013,23 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                     return (
                       <div
                         key={req.id}
-                        className="bg-slate-900/80 rounded-2xl p-5 border border-slate-800 shadow-soft space-y-4"
+                        className="bg-[#E8F5E9] rounded-2xl p-5 border border-[#D5E8D7] shadow-xs space-y-4"
                       >
-                        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <div className="flex items-center justify-between pb-3 border-b border-[#D5E8D7]">
                           <div>
-                            <span className="font-bold text-white text-sm block">{req.patientName}</span>
-                            <span className="text-[11px] text-slate-400">Request ID: {req.id}</span>
+                            <span className="font-bold text-[#171717] text-sm block">{req.patientName}</span>
+                            <span className="text-[11px] text-[#555555]">Request ID: {req.id}</span>
                           </div>
 
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
                               currentStatus === 'DISPATCHED' || currentStatus === 'EN_ROUTE'
-                                ? 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                                ? 'bg-cyan-100 text-cyan-800 border border-cyan-300'
                                 : currentStatus === 'ARRIVED'
-                                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                                ? 'bg-emerald-100 text-[#2E7D32] border border-emerald-300'
                                 : currentStatus === 'COMPLETED'
-                                ? 'bg-slate-800 text-slate-300 border border-slate-700'
-                                : 'bg-amber-950 text-amber-300 border border-amber-800'
+                                ? 'bg-white text-[#555555] border border-[#D5E8D7]'
+                                : 'bg-amber-100 text-amber-800 border border-amber-300'
                             }`}
                           >
                             {currentStatus}
@@ -1052,7 +1037,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                         </div>
 
                         {/* Location / Patient Destination */}
-                        <div className="text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+                        <div className="text-xs text-[#171717] bg-white p-3 rounded-xl border border-[#D5E8D7] space-y-1">
                           <p>📍 <strong>Pickup Destination:</strong> {req.patientAddress}</p>
                           <p>📞 <strong>Patient Contact:</strong> {req.patientPhone}</p>
                         </div>
@@ -1060,23 +1045,23 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                         {/* Existing Assigned Vehicle Info if any */}
                         {req.ambulanceDetails?.vehicleNumber ? (
                           <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-                              <span className="text-slate-400 text-[10px] block">Vehicle Number:</span>
-                              <strong className="text-white">{req.ambulanceDetails.vehicleNumber}</strong>
+                            <div className="p-2.5 bg-white rounded-xl border border-[#D5E8D7]">
+                              <span className="text-[#555555] text-[10px] block">Vehicle Number:</span>
+                              <strong className="text-[#171717]">{req.ambulanceDetails.vehicleNumber}</strong>
                             </div>
-                            <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
-                              <span className="text-slate-400 text-[10px] block">Assigned Driver:</span>
-                              <strong className="text-white">{req.ambulanceDetails.driverName || 'Operator Staff'}</strong>
-                              <span className="block text-[10px] text-slate-400">{req.ambulanceDetails.driverPhone}</span>
+                            <div className="p-2.5 bg-white rounded-xl border border-[#D5E8D7]">
+                              <span className="text-[#555555] text-[10px] block">Assigned Driver:</span>
+                              <strong className="text-[#171717]">{req.ambulanceDetails.driverName || 'Operator Staff'}</strong>
+                              <span className="block text-[10px] text-[#555555]">{req.ambulanceDetails.driverPhone}</span>
                             </div>
                           </div>
                         ) : (
-                          <p className="text-xs text-slate-400 italic">No specific vehicle number assigned yet.</p>
+                          <p className="text-xs text-[#555555] italic">No specific vehicle number assigned yet.</p>
                         )}
 
                         {/* Status Progression Controls */}
-                        <div className="space-y-2 pt-2 border-t border-slate-800 text-xs">
-                          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                        <div className="space-y-2 pt-2 border-t border-[#D5E8D7] text-xs">
+                          <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">
                             Advance Mission Status:
                           </span>
 
@@ -1096,8 +1081,8 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                 }}
                                 className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition-all ${
                                   currentStatus === st
-                                    ? 'bg-cyan-600 text-white shadow-md'
-                                    : 'bg-slate-950 text-slate-400 hover:bg-slate-800 hover:text-white border border-slate-800'
+                                    ? 'bg-[#2E7D32] text-white shadow-xs'
+                                    : 'bg-white text-[#171717] hover:bg-[#F1F8F2] border border-[#D5E8D7]'
                                 }`}
                               >
                                 {st}
@@ -1114,48 +1099,48 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                 setDispatchDriverPhone(req.ambulanceDetails?.driverPhone || '');
                                 setDispatchVehicleNo(req.ambulanceDetails?.vehicleNumber || '');
                               }}
-                              className="text-[11px] text-cyan-400 hover:underline pt-1 block"
+                              className="text-[11px] text-[#2E7D32] hover:underline pt-1 block font-bold"
                             >
                               + Assign or Edit Driver & Vehicle Details
                             </button>
                           ) : (
-                            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2 pt-2">
+                            <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] space-y-2 pt-2">
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <label className="text-[10px] text-slate-400 block mb-0.5">Driver Name:</label>
+                                  <label className="text-[10px] text-[#555555] block mb-0.5">Driver Name:</label>
                                   <input
                                     type="text"
                                     value={dispatchDriverName}
                                     onChange={e => setDispatchDriverName(e.target.value)}
                                     placeholder="e.g. Subir Das"
-                                    className="w-full px-2 py-1 bg-slate-900 border border-slate-700 rounded text-xs text-white"
+                                    className="w-full px-2 py-1 bg-white border border-[#D5E8D7] rounded text-xs text-[#171717]"
                                   />
                                 </div>
                                 <div>
-                                  <label className="text-[10px] text-slate-400 block mb-0.5">Driver Phone:</label>
+                                  <label className="text-[10px] text-[#555555] block mb-0.5">Driver Phone:</label>
                                   <input
                                     type="text"
                                     value={dispatchDriverPhone}
                                     onChange={e => setDispatchDriverPhone(e.target.value)}
                                     placeholder="e.g. +91 98765 43210"
-                                    className="w-full px-2 py-1 bg-slate-900 border border-slate-700 rounded text-xs text-white"
+                                    className="w-full px-2 py-1 bg-white border border-[#D5E8D7] rounded text-xs text-[#171717]"
                                   />
                                 </div>
                               </div>
                               <div>
-                                <label className="text-[10px] text-slate-400 block mb-0.5">Vehicle Number:</label>
+                                <label className="text-[10px] text-[#555555] block mb-0.5">Vehicle Number:</label>
                                 <input
                                   type="text"
                                   value={dispatchVehicleNo}
                                   onChange={e => setDispatchVehicleNo(e.target.value)}
                                   placeholder="e.g. WB 24 AL 1234"
-                                  className="w-full px-2 py-1 bg-slate-900 border border-slate-700 rounded text-xs text-white"
+                                  className="w-full px-2 py-1 bg-white border border-[#D5E8D7] rounded text-xs text-[#171717]"
                                 />
                               </div>
                               <div className="flex justify-end space-x-2 pt-1">
                                 <button
                                   onClick={() => setAmbulanceFormReqId(null)}
-                                  className="px-2.5 py-1 bg-slate-800 rounded text-slate-300 text-[11px]"
+                                  className="px-2.5 py-1 bg-white border border-[#D5E8D7] rounded text-[#555555] text-[11px]"
                                 >
                                   Close
                                 </button>
@@ -1171,7 +1156,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                     );
                                     setAmbulanceFormReqId(null);
                                   }}
-                                  className="px-3 py-1 bg-cyan-600 rounded text-white text-[11px] font-bold"
+                                  className="px-3 py-1 bg-[#2E7D32] hover:bg-[#256B2A] rounded text-white text-[11px] font-bold"
                                 >
                                   Save & Dispatch
                                 </button>
@@ -1190,26 +1175,26 @@ export const HospitalEmergencyDashboard: React.FC = () => {
         {/* ================= SECTION G: AUDIT TRAIL ================= */}
         {activeTab === 'audit' && (
           <div className="space-y-5 animate-in fade-in">
-            <div className="bg-slate-900/90 rounded-3xl p-6 border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="bg-[#E8F5E9] rounded-3xl p-6 border border-[#D5E8D7] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="space-y-1.5">
-                <div className="flex items-center space-x-2 text-teal-400 font-bold text-xs">
-                  <History className="w-4 h-4" />
+                <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs">
+                  <History className="w-4 h-4 text-[#2E7D32]" />
                   <span>Immutable Audit Log & Data Protection Compliance</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-white">
+                <h2 className="text-xl sm:text-2xl font-black text-[#171717]">
                   Hospital Access & Emergency Decision Trail
                 </h2>
-                <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+                <p className="text-xs text-[#555555] max-w-2xl leading-relaxed">
                   Every request receipt, triage decision, bed update, and MediVault record access is cryptographically recorded with actor identity, timestamp, and purpose. Medical content is sanitized to prevent leakage.
                 </p>
               </div>
 
               {/* Action Filter */}
-              <div className="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs shrink-0">
+              <div className="bg-white px-3 py-1.5 rounded-xl border border-[#D5E8D7] text-xs shrink-0">
                 <select
                   value={auditFilterAction}
                   onChange={e => setAuditFilterAction(e.target.value)}
-                  className="bg-transparent text-white font-bold text-xs focus:outline-none"
+                  className="bg-transparent text-[#171717] font-bold text-xs focus:outline-none"
                 >
                   <option value="ALL">All Recorded Actions ({auditLogs.length})</option>
                   <option value="EMERGENCY_SOS_TRIGGERED">Emergency Requests</option>
@@ -1222,23 +1207,23 @@ export const HospitalEmergencyDashboard: React.FC = () => {
             </div>
 
             {/* Audit Logs Table / List */}
-            <div className="bg-slate-900/80 rounded-2xl border border-slate-800 overflow-hidden shadow-soft">
-              <div className="divide-y divide-slate-800 max-h-[600px] overflow-y-auto">
+            <div className="bg-[#E8F5E9] rounded-2xl border border-[#D5E8D7] overflow-hidden shadow-xs">
+              <div className="divide-y divide-[#D5E8D7] max-h-[600px] overflow-y-auto">
                 {auditLogs
                   .filter(log => auditFilterAction === 'ALL' || log.action === auditFilterAction)
                   .map(log => (
-                    <div key={log.id} className="p-4 hover:bg-slate-850/40 transition-colors text-xs space-y-1">
+                    <div key={log.id} className="p-4 bg-white hover:bg-[#F1F8F2] transition-colors text-xs space-y-1">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="font-mono text-teal-300 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                        <span className="font-mono text-[#2E7D32] font-bold bg-[#E8F5E9] px-2 py-0.5 rounded border border-[#D5E8D7]">
                           {log.action}
                         </span>
-                        <span className="text-[11px] text-slate-500 font-mono">
+                        <span className="text-[11px] text-[#555555] font-mono">
                           {new Date(log.timestamp).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-slate-200">{log.details}</p>
-                      <div className="flex items-center space-x-3 text-[11px] text-slate-400 pt-0.5">
-                        <span>Staff Actor: <strong className="text-slate-300">{log.actorName}</strong> ({log.actorRole})</span>
+                      <p className="text-[#171717]">{log.details}</p>
+                      <div className="flex items-center space-x-3 text-[11px] text-[#555555] pt-0.5">
+                        <span>Staff Actor: <strong className="text-[#171717]">{log.actorName}</strong> ({log.actorRole})</span>
                         {log.ipAddress && <span>• IP: <span className="font-mono">{log.ipAddress}</span></span>}
                       </div>
                     </div>
@@ -1252,66 +1237,66 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
       {/* ================= MODAL: PATIENT REQUEST DETAILS (SECTION D) ================= */}
       {detailModalRequest && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 rounded-3xl max-w-2xl w-full border border-slate-800 shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full border border-[#D5E8D7] shadow-2xl overflow-hidden text-[#171717] flex flex-col max-h-[90vh]">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+            <div className="p-6 border-b border-[#D5E8D7] bg-[#E8F5E9] flex items-center justify-between">
               <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E7D32]">
                   Emergency Request Full Profile
                 </span>
-                <h3 className="text-xl font-black text-white">{detailModalRequest.patientName}</h3>
-                <p className="text-xs text-slate-400">
-                  ID: <span className="font-mono text-teal-300">{detailModalRequest.id}</span> • Status: <strong className="text-white">{detailModalRequest.status}</strong>
+                <h3 className="text-xl font-black text-[#171717]">{detailModalRequest.patientName}</h3>
+                <p className="text-xs text-[#555555]">
+                  ID: <span className="font-mono text-[#2E7D32] font-bold">{detailModalRequest.id}</span> • Status: <strong className="text-[#171717]">{detailModalRequest.status}</strong>
                 </p>
               </div>
               <button
                 onClick={() => setDetailModalRequest(null)}
-                className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                className="p-2 rounded-xl bg-white text-[#555555] hover:text-[#171717] border border-[#D5E8D7]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Content Scrollable */}
-            <div className="p-6 overflow-y-auto space-y-5 text-xs">
+            <div className="p-6 overflow-y-auto space-y-5 text-xs bg-white">
               {/* Patient Core Specs */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 block uppercase">Age</span>
-                  <strong className="text-sm text-white">{detailModalRequest.patientAge ? `${detailModalRequest.patientAge} Years` : 'Not specified'}</strong>
+                <div className="p-3 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7]">
+                  <span className="text-[10px] text-[#555555] block uppercase font-bold">Age</span>
+                  <strong className="text-sm text-[#171717]">{detailModalRequest.patientAge ? `${detailModalRequest.patientAge} Years` : 'Not specified'}</strong>
                 </div>
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 block uppercase">Blood Group</span>
-                  <strong className="text-sm text-teal-300">{detailModalRequest.patientBloodGroup || 'Not reported'}</strong>
+                <div className="p-3 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7]">
+                  <span className="text-[10px] text-[#555555] block uppercase font-bold">Blood Group</span>
+                  <strong className="text-sm text-[#2E7D32]">{detailModalRequest.patientBloodGroup || 'Not reported'}</strong>
                 </div>
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                  <span className="text-[10px] text-slate-400 block uppercase">Contact Phone</span>
-                  <strong className="text-sm text-white">{detailModalRequest.patientPhone || 'N/A'}</strong>
+                <div className="p-3 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7]">
+                  <span className="text-[10px] text-[#555555] block uppercase font-bold">Contact Phone</span>
+                  <strong className="text-sm text-[#171717]">{detailModalRequest.patientPhone || 'N/A'}</strong>
                 </div>
               </div>
 
               {/* Symptoms & Chief Complaint */}
               <div className="space-y-1.5">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider">
                   Emergency Complaint & Symptoms:
                 </span>
-                <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 text-slate-200 leading-relaxed">
+                <div className="p-4 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] text-[#171717] leading-relaxed">
                   {detailModalRequest.symptomsDescription || 'No detailed symptoms description provided with initial SOS.'}
                 </div>
               </div>
 
               {/* Known Clinical Sensitivities & Allergies */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                  <span className="font-bold text-rose-300 text-[11px] block">Reported Drug Allergies:</span>
-                  <p className="text-slate-300">
+                <div className="p-4 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7] space-y-1">
+                  <span className="font-bold text-[#D32F2F] text-[11px] block">Reported Drug Allergies:</span>
+                  <p className="text-[#171717]">
                     {detailModalRequest.knownAllergies.length > 0 ? detailModalRequest.knownAllergies.join(', ') : 'None documented'}
                   </p>
                 </div>
-                <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                  <span className="font-bold text-teal-300 text-[11px] block">Existing Chronic Conditions:</span>
-                  <p className="text-slate-300">
+                <div className="p-4 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7] space-y-1">
+                  <span className="font-bold text-[#2E7D32] text-[11px] block">Existing Chronic Conditions:</span>
+                  <p className="text-[#171717]">
                     {detailModalRequest.existingConditions.length > 0 ? detailModalRequest.existingConditions.join(', ') : 'None documented'}
                   </p>
                 </div>
@@ -1319,45 +1304,45 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
               {/* Current Daily Medications */}
               {detailModalRequest.currentMedicationsSummary && (
-                <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                  <span className="font-bold text-slate-300 text-[11px] block">Current Prescribed Medications:</span>
-                  <p className="text-slate-200">{detailModalRequest.currentMedicationsSummary}</p>
+                <div className="p-4 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7] space-y-1">
+                  <span className="font-bold text-[#171717] text-[11px] block">Current Prescribed Medications:</span>
+                  <p className="text-[#555555]">{detailModalRequest.currentMedicationsSummary}</p>
                 </div>
               )}
 
               {/* Patient Location */}
-              <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                <span className="font-bold text-slate-300 text-[11px] block">Patient Incident Location:</span>
-                <p className="text-slate-200">📍 {detailModalRequest.patientAddress}</p>
+              <div className="p-4 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] space-y-1">
+                <span className="font-bold text-[#171717] text-[11px] block">Patient Incident Location:</span>
+                <p className="text-[#555555]">📍 {detailModalRequest.patientAddress}</p>
               </div>
 
               {/* Consent Information */}
-              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
-                <div className="flex items-center space-x-2 text-teal-300">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <div className="p-3.5 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7] flex items-center justify-between text-xs">
+                <div className="flex items-center space-x-2 text-[#2E7D32]">
+                  <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
                   <span>Consent Status: <strong>{detailModalRequest.accessGrantStatus || 'PENDING'}</strong></span>
                 </div>
-                <span className="text-slate-400 font-mono text-[11px]">Token: {detailModalRequest.accessGrantToken || 'None'}</span>
+                <span className="text-[#555555] font-mono text-[11px]">Token: {detailModalRequest.accessGrantToken || 'None'}</span>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-5 border-t border-slate-800 bg-slate-950 flex justify-between items-center">
+            <div className="p-5 border-t border-[#D5E8D7] bg-[#F1F8F2] flex justify-between items-center">
               <button
                 onClick={() => {
                   const req = detailModalRequest;
                   setDetailModalRequest(null);
                   handleOpenDocReview(req);
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-teal-300 rounded-xl text-xs font-bold flex items-center space-x-1"
+                className="px-4 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold flex items-center space-x-1"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-3.5 h-3.5 text-white" />
                 <span>Review Shared MediVault Records</span>
               </button>
 
               <button
                 onClick={() => setDetailModalRequest(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-white hover:bg-[#E8F5E9] text-[#171717] border border-[#D5E8D7] rounded-xl text-xs font-bold"
               >
                 Close
               </button>
@@ -1368,16 +1353,16 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
       {/* ================= MODAL: MEDIVAULT SHARED DOCUMENTS (SECTION 6) ================= */}
       {docsModalRequest && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 rounded-3xl max-w-2xl w-full border border-slate-800 shadow-2xl overflow-hidden text-white flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-2xl w-full border border-[#D5E8D7] shadow-2xl overflow-hidden text-[#171717] flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-[#D5E8D7] bg-[#E8F5E9] flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E7D32]">
                   Consent-Governed Medical Vault Access
                 </span>
-                <h3 className="text-xl font-black text-white">{docsModalRequest.patientName}</h3>
-                <p className="text-xs text-slate-400">
-                  Emergency Request ID: <span className="font-mono text-teal-300">{docsModalRequest.id}</span>
+                <h3 className="text-xl font-black text-[#171717]">{docsModalRequest.patientName}</h3>
+                <p className="text-xs text-[#555555]">
+                  Emergency Request ID: <span className="font-mono text-[#2E7D32] font-bold">{docsModalRequest.id}</span>
                 </p>
               </div>
               <button
@@ -1385,13 +1370,13 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                   setDocsModalRequest(null);
                   setPreviewingDoc(null);
                 }}
-                className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                className="p-2 rounded-xl bg-white text-[#555555] hover:text-[#171717] border border-[#D5E8D7]"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 overflow-y-auto space-y-4 text-xs">
+            <div className="p-6 overflow-y-auto space-y-4 text-xs bg-white">
               {/* Check Consent Status */}
               {(() => {
                 const grant = accessGrants.find(
@@ -1401,16 +1386,16 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                 if (isRevoked) {
                   return (
-                    <div className="p-6 rounded-2xl bg-rose-950/80 border border-rose-800 text-white space-y-2">
-                      <div className="flex items-center space-x-2 text-rose-400 font-black text-base">
-                        <ShieldAlert className="w-5 h-5 text-rose-500" />
+                    <div className="p-6 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 space-y-2">
+                      <div className="flex items-center space-x-2 text-[#D32F2F] font-black text-base">
+                        <ShieldAlert className="w-5 h-5 text-[#D32F2F]" />
                         <span>ACCESS REVOKED BY PATIENT</span>
                       </div>
-                      <p className="text-xs text-rose-200 leading-relaxed">
+                      <p className="text-xs text-rose-800 leading-relaxed">
                         The patient has revoked authorization for this emergency request. In strict accordance with the Digital Personal Data Protection (DPDP) Act and patient privacy rights, access to medical records is completely blocked.
                       </p>
                       {grant?.revocationReason && (
-                        <p className="text-[11px] text-rose-300">
+                        <p className="text-[11px] text-rose-700">
                           Recorded Reason: {grant.revocationReason}
                         </p>
                       )}
@@ -1424,10 +1409,10 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                 if (authorizedDocs.length === 0) {
                   return (
-                    <div className="p-8 text-center text-slate-400 bg-slate-950 rounded-2xl border border-slate-800 space-y-2">
-                      <FileText className="w-8 h-8 text-slate-600 mx-auto" />
-                      <h4 className="font-bold text-white text-sm">No MediVault documents shared</h4>
-                      <p className="text-xs text-slate-400 max-w-md mx-auto">
+                    <div className="p-8 text-center text-[#555555] bg-[#E8F5E9] rounded-2xl border border-[#D5E8D7] space-y-2">
+                      <FileText className="w-8 h-8 text-[#2E7D32] mx-auto" />
+                      <h4 className="font-bold text-[#171717] text-sm">No MediVault documents shared</h4>
+                      <p className="text-xs text-[#555555] max-w-md mx-auto">
                         The patient submitted this emergency assistance request without attaching explicit MediVault documents, or no documents have been shared for this specific authorization grant.
                       </p>
                     </div>
@@ -1436,12 +1421,12 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                 return (
                   <div className="space-y-3">
-                    <div className="p-3 bg-teal-950/60 rounded-xl border border-teal-800 text-xs text-teal-300 flex items-center justify-between">
-                      <span className="flex items-center space-x-1.5">
-                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <div className="p-3 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7] text-xs text-[#2E7D32] flex items-center justify-between">
+                      <span className="flex items-center space-x-1.5 font-bold">
+                        <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
                         <span>Valid Patient Consent Active. Shared Documents: <strong>{authorizedDocs.length}</strong></span>
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-[#555555]">
                         Expires: {grant?.expiresAt ? new Date(grant.expiresAt).toLocaleTimeString() : 'In 4 hours'}
                       </span>
                     </div>
@@ -1450,14 +1435,14 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                       {authorizedDocs.map(doc => (
                         <div
                           key={doc.id}
-                          className="p-4 bg-slate-950 rounded-xl border border-slate-800 hover:border-teal-500/50 transition-all flex items-center justify-between"
+                          className="p-4 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] hover:border-[#2E7D32] transition-all flex items-center justify-between"
                         >
                           <div className="space-y-1">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-teal-300 border border-slate-700 uppercase">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-[#2E7D32] border border-[#D5E8D7] uppercase">
                               {doc.category.replace('_', ' ')}
                             </span>
-                            <h4 className="font-bold text-sm text-white">{doc.title}</h4>
-                            <p className="text-[11px] text-slate-400">
+                            <h4 className="font-bold text-sm text-[#171717]">{doc.title}</h4>
+                            <p className="text-[11px] text-[#555555]">
                               Issued: {doc.issueDate || 'Recent'} • {doc.doctorName || doc.hospitalName || 'Verified Clinic'}
                             </p>
                           </div>
@@ -1469,9 +1454,9 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                                 recordMedicalAccess(grant.token, docsModalRequest.patientName, `Staff viewed document "${doc.title}"`);
                               }
                             }}
-                            className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold flex items-center space-x-1 shrink-0"
+                            className="px-3 py-1.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold flex items-center space-x-1 shrink-0"
                           >
-                            <Eye className="w-3.5 h-3.5" />
+                            <Eye className="w-3.5 h-3.5 text-white" />
                             <span>Preview</span>
                           </button>
                         </div>
@@ -1480,24 +1465,24 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                     {/* Document Preview Snippet Modal/Section */}
                     {previewingDoc && (
-                      <div className="p-4 bg-slate-950 rounded-2xl border border-teal-500/50 space-y-3 mt-4 animate-in fade-in">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                          <h4 className="font-bold text-white text-sm flex items-center space-x-2">
-                            <FileText className="w-4 h-4 text-teal-400" />
+                      <div className="p-4 bg-[#E8F5E9] rounded-2xl border border-[#D5E8D7] space-y-3 mt-4 animate-in fade-in">
+                        <div className="flex items-center justify-between pb-2 border-b border-[#D5E8D7]">
+                          <h4 className="font-bold text-[#171717] text-sm flex items-center space-x-2">
+                            <FileText className="w-4 h-4 text-[#2E7D32]" />
                             <span>Preview: {previewingDoc.title}</span>
                           </h4>
                           <button
                             onClick={() => setPreviewingDoc(null)}
-                            className="text-xs text-slate-400 hover:text-white"
+                            className="text-xs text-[#555555] hover:text-[#171717]"
                           >
                             Close Preview
                           </button>
                         </div>
-                        <div className="p-3 bg-slate-900 rounded-xl text-xs text-slate-200 space-y-2">
+                        <div className="p-3 bg-white rounded-xl text-xs text-[#171717] space-y-2 border border-[#D5E8D7]">
                           <p><strong>Category:</strong> {previewingDoc.category}</p>
                           <p><strong>Doctor/Facility:</strong> {previewingDoc.doctorName || previewingDoc.hospitalName || 'Clinical Diagnostic'}</p>
                           {previewingDoc.notes && <p><strong>Notes:</strong> {previewingDoc.notes}</p>}
-                          <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 text-[11px] text-teal-300">
+                          <div className="p-2.5 bg-[#E8F5E9] rounded-lg border border-[#D5E8D7] text-[11px] text-[#2E7D32]">
                             ✓ Document verified under patient digital consent. Access timestamp has been recorded in the compliance audit trail.
                           </div>
                         </div>
@@ -1508,13 +1493,13 @@ export const HospitalEmergencyDashboard: React.FC = () => {
               })()}
             </div>
 
-            <div className="p-4 border-t border-slate-800 bg-slate-950 flex justify-end">
+            <div className="p-4 border-t border-[#D5E8D7] bg-[#F1F8F2] flex justify-end">
               <button
                 onClick={() => {
                   setDocsModalRequest(null);
                   setPreviewingDoc(null);
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-white hover:bg-[#E8F5E9] text-[#171717] border border-[#D5E8D7] rounded-xl text-xs font-bold"
               >
                 Close
               </button>
@@ -1525,24 +1510,24 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
       {/* ================= MODAL: ACCEPT CONFIRMATION ================= */}
       {showAcceptModal && actionTargetRequest && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-800 shadow-2xl space-y-5 text-white">
-            <h3 className="text-lg font-black flex items-center space-x-2 text-emerald-400">
-              <CheckCircle2 className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-[#D5E8D7] shadow-2xl space-y-5 text-[#171717]">
+            <h3 className="text-lg font-black flex items-center space-x-2 text-[#2E7D32]">
+              <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
               <span>Confirm Acceptance of Emergency Request</span>
             </h3>
 
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-[#555555]">
               Accepting will allocate hospital bed capacity and notify patient <strong>{actionTargetRequest.patientName}</strong> in real-time.
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Select Bed Category to Allocate:</label>
+                <label className="block text-[#171717] font-bold mb-1">Select Bed Category to Allocate:</label>
                 <select
                   value={allocatedBedType}
                   onChange={e => setAllocatedBedType(e.target.value as BedCategoryType)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold"
+                  className="w-full px-3 py-2 bg-white border border-[#D5E8D7] rounded-xl text-[#171717] font-bold"
                 >
                   <option value="ICU">ICU (Intensive Care Unit Bed)</option>
                   <option value="GENERAL_WARD">General Ward Bed</option>
@@ -1553,24 +1538,24 @@ export const HospitalEmergencyDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Triage Staff Note (Optional):</label>
+                <label className="block text-[#171717] font-bold mb-1">Triage Staff Note (Optional):</label>
                 <input
                   type="text"
                   placeholder="e.g. Ventilator ready, trauma team alerted"
                   value={acceptNote}
                   onChange={e => setAcceptNote(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs"
+                  className="w-full px-3 py-2 bg-white border border-[#D5E8D7] rounded-xl text-[#171717] text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-3 border-t border-slate-800">
+            <div className="flex justify-end space-x-3 pt-3 border-t border-[#D5E8D7]">
               <button
                 onClick={() => {
                   setShowAcceptModal(false);
                   setActionTargetRequest(null);
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-white hover:bg-[#F1F8F2] text-[#555555] border border-[#D5E8D7] rounded-xl text-xs font-bold"
               >
                 Cancel
               </button>
@@ -1580,7 +1565,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                   setShowAcceptModal(false);
                   setActionTargetRequest(null);
                 }}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md"
+                className="px-5 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs"
               >
                 Confirm & Accept Case
               </button>
@@ -1591,37 +1576,37 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
       {/* ================= MODAL: DECLINE CONFIRMATION ================= */}
       {showDeclineModal && actionTargetRequest && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-800 shadow-2xl space-y-5 text-white">
-            <h3 className="text-lg font-black flex items-center space-x-2 text-rose-400">
-              <XCircle className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-[#D5E8D7] shadow-2xl space-y-5 text-[#171717]">
+            <h3 className="text-lg font-black flex items-center space-x-2 text-[#D32F2F]">
+              <XCircle className="w-5 h-5 text-[#D32F2F]" />
               <span>Decline Emergency Request</span>
             </h3>
 
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-[#555555]">
               Please provide a clinical or operational reason. The patient will be notified immediately to re-route to an alternative hospital without delay.
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Reason for Declining *:</label>
+                <label className="block text-[#171717] font-bold mb-1">Reason for Declining *:</label>
                 <input
                   type="text"
                   required
                   value={declineReason}
                   onChange={e => setDeclineReason(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs"
+                  className="w-full px-3 py-2 bg-white border border-[#D5E8D7] rounded-xl text-[#171717] text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-3 border-t border-slate-800">
+            <div className="flex justify-end space-x-3 pt-3 border-t border-[#D5E8D7]">
               <button
                 onClick={() => {
                   setShowDeclineModal(false);
                   setActionTargetRequest(null);
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-white hover:bg-[#F1F8F2] text-[#555555] border border-[#D5E8D7] rounded-xl text-xs font-bold"
               >
                 Cancel
               </button>
@@ -1631,7 +1616,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                   setShowDeclineModal(false);
                   setActionTargetRequest(null);
                 }}
-                className="px-5 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold shadow-md"
+                className="px-5 py-2 bg-[#D32F2F] hover:bg-[#B71C1C] text-white rounded-xl text-xs font-bold shadow-xs"
               >
                 Decline & Notify Patient
               </button>
@@ -1642,24 +1627,24 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
       {/* ================= MODAL: REDIRECT CONFIRMATION ================= */}
       {showRedirectModal && actionTargetRequest && (
-        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 max-w-md w-full border border-slate-800 shadow-2xl space-y-5 text-white">
-            <h3 className="text-lg font-black flex items-center space-x-2 text-cyan-400">
-              <ArrowRight className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-[#D5E8D7] shadow-2xl space-y-5 text-[#171717]">
+            <h3 className="text-lg font-black flex items-center space-x-2 text-[#2E7D32]">
+              <ArrowRight className="w-5 h-5 text-[#2E7D32]" />
               <span>Redirect Emergency Request</span>
             </h3>
 
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-[#555555]">
               Redirect this patient's emergency request to another verified hospital facility with capacity.
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Select Target Hospital *:</label>
+                <label className="block text-[#171717] font-bold mb-1">Select Target Hospital *:</label>
                 <select
                   value={redirectTargetHospId}
                   onChange={e => setRedirectTargetHospId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white font-bold"
+                  className="w-full px-3 py-2 bg-white border border-[#D5E8D7] rounded-xl text-[#171717] font-bold"
                 >
                   <option value="">-- Choose Hospital --</option>
                   {allVerifiedHospitals
@@ -1673,24 +1658,24 @@ export const HospitalEmergencyDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-300 font-bold mb-1">Redirection Reason *:</label>
+                <label className="block text-[#171717] font-bold mb-1">Redirection Reason *:</label>
                 <input
                   type="text"
                   required
                   value={redirectReasonInput}
                   onChange={e => setRedirectReasonInput(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs"
+                  className="w-full px-3 py-2 bg-white border border-[#D5E8D7] rounded-xl text-[#171717] text-xs"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3 pt-3 border-t border-slate-800">
+            <div className="flex justify-end space-x-3 pt-3 border-t border-[#D5E8D7]">
               <button
                 onClick={() => {
                   setShowRedirectModal(false);
                   setActionTargetRequest(null);
                 }}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold"
+                className="px-4 py-2 bg-white hover:bg-[#F1F8F2] text-[#555555] border border-[#D5E8D7] rounded-xl text-xs font-bold"
               >
                 Cancel
               </button>
@@ -1710,7 +1695,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                   setShowRedirectModal(false);
                   setActionTargetRequest(null);
                 }}
-                className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold shadow-md"
+                className="px-5 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs"
               >
                 Confirm Redirection
               </button>

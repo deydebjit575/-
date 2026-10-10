@@ -50,19 +50,19 @@ export const MedicalVault: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
+    <div className="min-h-screen bg-white py-8 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header with Title & Action Button */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-[#E8F5E9] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="flex items-center space-x-2 text-teal-700 font-bold text-xs">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs">
+              <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
               <span>MediVault 256-Bit Encrypted Repository</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-navy-950">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#171717]">
               {language === 'bn' ? 'মেডিকেল রেকর্ডস ভল্ট (MediVault)' : 'MediVault Medical Records'}
             </h1>
-            <p className="text-xs text-slate-600 max-w-2xl">
+            <p className="text-xs text-[#555555] max-w-2xl">
               {language === 'bn'
                 ? 'আপনার ব্যক্তিগত প্রেসক্রিপশন, রক্তের রিপোর্ট, এক্স-রে ও ডিসচার্জ সামারি সম্পূর্ণ নিরাপদে সংরক্ষিত রাখুন।'
                 : 'Centralized, encrypted vault for your real medical documents. Only records saved by you are visible here.'}
@@ -72,7 +72,7 @@ export const MedicalVault: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => navigateTo('upload-document')}
-              className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md transition-all"
+              className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-[#2E7D32] hover:bg-[#256B2A] text-white font-bold text-xs shadow-sm transition-all"
             >
               <PlusCircle className="w-4 h-4" />
               <span>{t('uploadNewDoc')}</span>
@@ -80,9 +80,9 @@ export const MedicalVault: React.FC = () => {
             {medicalDocuments.length > 0 && (
               <button
                 onClick={() => navigateTo('share-records')}
-                className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-all"
+                className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-white border border-[#D5E8D7] hover:bg-[#F1F8F2] text-[#171717] font-bold text-xs shadow-xs transition-all"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="w-4 h-4 text-[#2E7D32]" />
                 <span>{t('shareRecords')}</span>
               </button>
             )}
@@ -91,16 +91,16 @@ export const MedicalVault: React.FC = () => {
 
         {/* If completely empty, show the mandated empty state */}
         {medicalDocuments.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 sm:p-16 text-center border border-slate-200 shadow-soft max-w-3xl mx-auto space-y-6 animate-in fade-in">
-            <div className="w-20 h-20 rounded-3xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mx-auto shadow-inner">
+          <div className="bg-[#E8F5E9] rounded-3xl p-12 sm:p-16 text-center border border-[#D5E8D7] shadow-sm max-w-3xl mx-auto space-y-6 animate-in fade-in">
+            <div className="w-20 h-20 rounded-3xl bg-white border border-[#D5E8D7] text-[#2E7D32] flex items-center justify-center mx-auto shadow-xs">
               <FolderOpen className="w-10 h-10" />
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-navy-950">
+              <h2 className="text-2xl font-black text-[#171717]">
                 {language === 'bn' ? 'আপনার মেডিকেল ভল্ট সম্পূর্ণ খালি' : 'Your Medical Vault is Empty'}
               </h2>
-              <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+              <p className="text-sm text-[#555555] max-w-md mx-auto leading-relaxed">
                 {language === 'bn'
                   ? 'আপনার স্বাস্থ্য রেকর্ড নিরাপদে সাজিয়ে রাখতে আপনার প্রথম মেডিকেল নথি আপলোড করুন।'
                   : 'Upload your first medical document to securely organize your health records.'}
@@ -110,7 +110,7 @@ export const MedicalVault: React.FC = () => {
             <div className="pt-2">
               <button
                 onClick={() => navigateTo('upload-document')}
-                className="px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-black text-sm shadow-md transition-all inline-flex items-center space-x-2"
+                className="px-8 py-3.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl font-black text-sm shadow-sm transition-all inline-flex items-center space-x-2"
               >
                 <Upload className="w-4 h-4" />
                 <span>{language === 'bn' ? 'নথি আপলোড করুন (Upload Documents)' : 'Upload Documents'}</span>
@@ -122,13 +122,13 @@ export const MedicalVault: React.FC = () => {
             {/* Search Bar and Category Tabs */}
             <div className="space-y-4">
               <div className="relative">
-                <Search className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+                <Search className="w-5 h-5 text-[#555555] absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder={language === 'bn' ? 'প্রেসক্রিপশন, ডাক্তারের নাম, হাসপাতাল বা ট্যাগ অনুসন্ধান করুন...' : 'Search records by title, doctor, hospital or tag...'}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl border border-slate-200 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 text-sm font-medium text-slate-800 shadow-xs"
+                  className="w-full pl-12 pr-4 py-3.5 bg-white rounded-2xl border border-[#D5E8D7] focus:border-[#2E7D32] text-sm font-medium text-[#171717] shadow-xs outline-hidden"
                 />
               </div>
 
@@ -140,13 +140,13 @@ export const MedicalVault: React.FC = () => {
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center space-x-2 ${
                       selectedCategory === cat.id
-                        ? 'bg-teal-700 text-white shadow-sm'
-                        : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                        ? 'bg-[#2E7D32] text-white shadow-xs'
+                        : 'bg-[#E8F5E9] text-[#171717] hover:bg-[#F1F8F2] border border-[#D5E8D7]'
                     }`}
                   >
                     <span>{language === 'bn' ? cat.labelBn : cat.labelEn}</span>
                     <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
-                      selectedCategory === cat.id ? 'bg-teal-900 text-teal-200' : 'bg-slate-100 text-slate-600'
+                      selectedCategory === cat.id ? 'bg-[#256B2A] text-white' : 'bg-white text-[#555555] border border-[#D5E8D7]'
                     }`}>
                       {cat.count}
                     </span>
@@ -157,13 +157,13 @@ export const MedicalVault: React.FC = () => {
 
             {/* Filtered Documents Grid */}
             {filteredDocs.length === 0 ? (
-              <div className="bg-white rounded-3xl p-8 text-center border border-slate-200 space-y-3">
-                <p className="text-sm text-slate-600">
+              <div className="bg-[#E8F5E9] rounded-3xl p-8 text-center border border-[#D5E8D7] space-y-3">
+                <p className="text-sm text-[#555555]">
                   {language === 'bn' ? 'এই ফিল্টারে কোনো নথি মেলেনি।' : 'No matching documents found in this filter.'}
                 </p>
                 <button
                   onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
-                  className="text-xs font-bold text-teal-700 hover:underline"
+                  className="text-xs font-bold text-[#2E7D32] hover:underline"
                 >
                   ফিল্টার রিসেট করুন
                 </button>
@@ -173,40 +173,40 @@ export const MedicalVault: React.FC = () => {
                 {filteredDocs.map(doc => (
                   <div
                     key={doc.id}
-                    className="bg-white rounded-2xl border border-slate-200 shadow-soft hover:shadow-elevated transition-all flex flex-col justify-between overflow-hidden group"
+                    className="bg-[#E8F5E9] rounded-2xl border border-[#D5E8D7] shadow-xs hover:border-[#2E7D32] hover:shadow-sm transition-all flex flex-col justify-between overflow-hidden group"
                   >
                     <div className="p-6 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase bg-teal-50 text-teal-800 border border-teal-200">
+                        <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase bg-white text-[#2E7D32] border border-[#D5E8D7]">
                           {doc.category.replace('_', ' ')}
                         </span>
-                        <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center">
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                        <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center">
+                          <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
                           সংরক্ষিত
                         </span>
                       </div>
 
                       <h3
                         onClick={() => navigateTo('document-preview', { id: doc.id })}
-                        className="text-base font-bold text-navy-950 group-hover:text-teal-700 cursor-pointer transition-colors line-clamp-2"
+                        className="text-base font-bold text-[#171717] group-hover:text-[#2E7D32] cursor-pointer transition-colors line-clamp-2"
                       >
                         {doc.title}
                       </h3>
 
-                      <div className="space-y-1 text-xs text-slate-600">
+                      <div className="space-y-1 text-xs text-[#555555]">
                         {doc.doctorName && (
                           <p className="truncate">
-                            <span className="font-semibold text-slate-700">চিকিৎসক:</span> {doc.doctorName}
+                            <span className="font-semibold text-[#171717]">চিকিৎসক:</span> {doc.doctorName}
                           </p>
                         )}
                         {doc.hospitalName && (
                           <p className="truncate">
-                            <span className="font-semibold text-slate-700">হাসপাতাল:</span> {doc.hospitalName}
+                            <span className="font-semibold text-[#171717]">হাসপাতাল:</span> {doc.hospitalName}
                           </p>
                         )}
-                        <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                        <div className="flex items-center justify-between text-[11px] text-[#555555] pt-1">
                           <span className="flex items-center">
-                            <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                            <Calendar className="w-3.5 h-3.5 mr-1 text-[#2E7D32]" />
                             {doc.issueDate || doc.uploadDate}
                           </span>
                           <span>{doc.fileSizeKb} KB • {doc.fileType.toUpperCase()}</span>
@@ -214,16 +214,16 @@ export const MedicalVault: React.FC = () => {
                       </div>
 
                       {doc.notes && (
-                        <p className="text-xs text-slate-500 line-clamp-2 italic bg-slate-50 p-2 rounded-lg">
+                        <p className="text-xs text-[#555555] line-clamp-2 italic bg-white p-2.5 rounded-xl border border-[#D5E8D7]">
                           "{doc.notes}"
                         </p>
                       )}
                     </div>
 
-                    <div className="bg-slate-50 px-6 py-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="bg-[#F1F8F2] px-6 py-3 border-t border-[#D5E8D7] flex items-center justify-between">
                       <button
                         onClick={() => navigateTo('document-preview', { id: doc.id })}
-                        className="flex items-center space-x-1.5 text-xs font-bold text-teal-700 hover:text-teal-900"
+                        className="flex items-center space-x-1.5 text-xs font-bold text-[#2E7D32] hover:text-[#256B2A]"
                       >
                         <Eye className="w-4 h-4" />
                         <span>{language === 'bn' ? 'প্রিভিউ দেখুন' : 'View'}</span>
@@ -232,14 +232,14 @@ export const MedicalVault: React.FC = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => navigateTo('share-records', { docId: doc.id })}
-                          className="p-1.5 text-slate-500 hover:text-purple-600 rounded hover:bg-purple-50 transition-colors"
+                          className="p-1.5 text-[#555555] hover:text-[#2E7D32] rounded hover:bg-white transition-colors"
                           title="Share"
                         >
                           <Share2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => deleteMedicalDocument(doc.id)}
-                          className="p-1.5 text-slate-500 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
+                          className="p-1.5 text-[#555555] hover:text-rose-600 rounded hover:bg-white transition-colors"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />

@@ -38,16 +38,16 @@ export const PatientLogin: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 flex items-center justify-center">
-      <div className="max-w-md w-full bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-elevated space-y-6">
+    <div className="min-h-screen bg-white py-12 px-4 sm:px-6 flex items-center justify-center">
+      <div className="max-w-md w-full bg-[#E8F5E9] rounded-3xl p-6 sm:p-10 border border-[#D5E8D7] shadow-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center mx-auto shadow-md">
+          <div className="w-12 h-12 rounded-2xl bg-[#2E7D32] text-white flex items-center justify-center mx-auto shadow-sm">
             <Heart className="w-6 h-6 fill-white" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-navy-950 font-bengali">
+          <h1 className="text-2xl sm:text-3xl font-black text-[#171717] font-bengali">
             {language === 'bn' ? 'সুস্থায়নে লগইন করুন' : 'Sign in to Susthayan'}
           </h1>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#555555]">
             {language === 'bn'
               ? 'আপনার নিবন্ধিত ফোন নম্বর এবং পাসওয়ার্ড দিয়ে প্রবেশ করুন।'
               : 'Sign in with your registered phone number and password.'}
@@ -63,42 +63,42 @@ export const PatientLogin: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">
+            <label className="block text-xs font-bold text-[#171717] mb-1">
               {language === 'bn' ? 'ফোন নম্বর (Phone Number) *' : 'Phone Number *'}
             </label>
             <div className="relative">
-              <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Phone className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="tel"
                 required
                 placeholder="9830012345"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-mono font-medium"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-mono font-medium outline-hidden"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1">
+            <label className="block text-xs font-bold text-[#171717] mb-1">
               {language === 'bn' ? 'পাসওয়ার্ড (Password) *' : 'Password *'}
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 required
                 placeholder="••••••••"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-200 font-medium"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 font-medium outline-hidden"
               />
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-black text-sm rounded-xl shadow-md transition-all flex items-center justify-center space-x-2"
+            className="w-full py-3.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white font-black text-sm rounded-xl shadow-sm transition-all flex items-center justify-center space-x-2"
           >
             <span>{language === 'bn' ? 'লগইন করুন' : 'Sign In'}</span>
             <ArrowRight className="w-4 h-4" />
@@ -106,35 +106,35 @@ export const PatientLogin: React.FC = () => {
         </form>
 
         {/* Quick Staff/Admin Demo Portals */}
-        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 text-center">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+        <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-2.5 text-center">
+          <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">
             {language === 'bn' ? 'তাত্ক্ষণিক প্রাতিষ্ঠানিক পোর্টাল:' : 'Institutional Portals:'}
           </span>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => switchRole('hospital_staff')}
-              className="py-2 px-3 bg-white border border-cyan-300 hover:bg-cyan-50 text-cyan-900 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1"
+              className="py-2 px-3 bg-[#F1F8F2] border border-[#D5E8D7] hover:bg-[#E8F5E9] text-[#171717] rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1"
             >
-              <Building2 className="w-3.5 h-3.5 text-cyan-600" />
+              <Building2 className="w-3.5 h-3.5 text-[#2E7D32]" />
               <span>হাসপাতাল স্টাফ</span>
             </button>
             <button
               type="button"
               onClick={() => switchRole('admin')}
-              className="py-2 px-3 bg-white border border-purple-300 hover:bg-purple-50 text-purple-900 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1"
+              className="py-2 px-3 bg-[#F1F8F2] border border-[#D5E8D7] hover:bg-[#E8F5E9] text-[#171717] rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+              <ShieldCheck className="w-3.5 h-3.5 text-[#2E7D32]" />
               <span>অ্যাডমিন পোর্টাল</span>
             </button>
           </div>
         </div>
 
-        <div className="text-center text-xs text-slate-600 pt-2 border-t border-slate-100 flex items-center justify-center space-x-1">
+        <div className="text-center text-xs text-[#555555] pt-2 border-t border-[#D5E8D7] flex items-center justify-center space-x-1">
           <span>{language === 'bn' ? 'নতুন রোগী?' : 'New patient?'}</span>
           <button
             onClick={() => navigateTo('register')}
-            className="font-bold text-teal-700 hover:underline"
+            className="font-bold text-[#2E7D32] hover:underline"
           >
             {language === 'bn' ? 'অ্যাকাউন্ট খুলুন (Register)' : 'Register Here'}
           </button>
