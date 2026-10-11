@@ -24,6 +24,16 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
+  html[lang="bn"] body,
+  html[data-lang="bn"] body {
+    font-family: 'Hind Siliguri', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+  }
+
+  html[lang="en"] body,
+  html[data-lang="en"] body {
+    font-family: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     color: #171717;
   }

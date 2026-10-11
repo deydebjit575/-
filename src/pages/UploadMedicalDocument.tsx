@@ -169,7 +169,9 @@ export const UploadMedicalDocument: React.FC = () => {
                       <FileText className="w-6 h-6" />
                     </div>
                     <p className="text-sm font-bold text-[#171717]">{file.name}</p>
-                    <p className="text-xs text-[#555555]">{(file.size / 1024).toFixed(1)} KB • ক্লিক করে পরিবর্তন করুন</p>
+                    <p className="text-xs text-[#555555]">
+                      {(file.size / 1024).toFixed(1)} KB • {language === 'bn' ? 'ক্লিক করে পরিবর্তন করুন' : 'Click to change'}
+                    </p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center space-y-2">
@@ -179,7 +181,9 @@ export const UploadMedicalDocument: React.FC = () => {
                     <p className="text-sm font-bold text-[#171717]">
                       {language === 'bn' ? 'এখানে ফাইল ড্র্যাগ করুন অথবা ক্লিক করে নির্বাচন করুন' : 'Drag file here or click to browse'}
                     </p>
-                    <p className="text-xs text-[#555555]">PDF, JPG, PNG ফাইল সমর্থিত</p>
+                    <p className="text-xs text-[#555555]">
+                      {language === 'bn' ? 'PDF, JPG, PNG ফাইল সমর্থিত' : 'PDF, JPG, PNG formats supported'}
+                    </p>
                   </div>
                 )}
               </div>
@@ -310,7 +314,7 @@ export const UploadMedicalDocument: React.FC = () => {
             {isUploading && (
               <div className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-[#2E7D32]">
-                  <span>এনক্রিপ্ট ও আপলোড হচ্ছে...</span>
+                  <span>{language === 'bn' ? 'এনক্রিপ্ট ও আপলোড হচ্ছে...' : 'Encrypting and uploading...'}</span>
                   <span>{uploadProgress}%</span>
                 </div>
                 <div className="w-full bg-[#D5E8D7] rounded-full h-2">

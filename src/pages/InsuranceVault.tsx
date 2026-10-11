@@ -84,9 +84,13 @@ export const InsuranceVault: React.FC = () => {
         <div className="p-4 rounded-2xl bg-[#F1F8F2] border border-[#D5E8D7] text-xs text-[#171717] flex items-start space-x-3">
           <AlertCircle className="w-5 h-5 text-[#2E7D32] shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold block text-[#171717]">গুরুত্বপূর্ণ নির্দেশিকা (Disclaimer):</span>
+            <span className="font-bold block text-[#171717]">
+              {language === 'bn' ? 'গুরুত্বপূর্ণ নির্দেশিকা (Disclaimer):' : 'Important Disclaimer:'}
+            </span>
             <span className="text-[#555555]">
-              ভল্টে সংরক্ষিত কার্ড স্বয়ংক্রিয়ভাবে হাসপাতালে কভারেজ গ্যারান্টি প্রদান করে না। হাসপাতালে ভর্তির সময় মূল কার্ড ও টিপিএ প্রি-অথোরাইজেশন প্রক্রিয়ার শর্ত প্রযোজ্য।
+              {language === 'bn'
+                ? 'ভল্টে সংরক্ষিত কার্ড স্বয়ংক্রিয়ভাবে হাসপাতালে কভারেজ গ্যারান্টি প্রদান করে না। হাসপাতালে ভর্তির সময় মূল কার্ড ও টিপিএ প্রি-অথোরাইজেশন প্রক্রিয়ার শর্ত প্রযোজ্য।'
+                : 'Stored cards do not automatically guarantee hospital coverage. Hospital admission remains subject to physical card verification and TPA pre-authorization protocol.'}
             </span>
           </div>
         </div>
@@ -115,7 +119,9 @@ export const InsuranceVault: React.FC = () => {
                   <p className="text-xs text-[#555555]">{policy.provider}</p>
 
                   <div className="my-4 p-3 rounded-xl bg-white border border-[#D5E8D7] shadow-2xs">
-                    <span className="text-[10px] uppercase text-[#555555] block font-semibold">পলিসি / কার্ড নম্বর:</span>
+                    <span className="text-[10px] uppercase text-[#555555] block font-semibold">
+                      {language === 'bn' ? 'পলিসি / কার্ড নম্বর:' : 'Policy / Card Number:'}
+                    </span>
                     <span className="font-mono text-base font-bold text-[#171717] tracking-wider block mt-0.5">
                       {policy.policyNumber}
                     </span>
@@ -123,11 +129,15 @@ export const InsuranceVault: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
-                      <span className="text-[10px] text-[#555555] block">কভারেজ সীমা:</span>
+                      <span className="text-[10px] text-[#555555] block">
+                        {language === 'bn' ? 'কভারেজ সীমা:' : 'Sum Insured:'}
+                      </span>
                       <span className="font-bold text-[#2E7D32]">₹{(policy.sumInsured / 100000).toFixed(1)} Lakh</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-[#555555] block">মেয়াদ উত্তীর্ণ:</span>
+                      <span className="text-[10px] text-[#555555] block">
+                        {language === 'bn' ? 'মেয়াদ উত্তীর্ণ:' : 'Valid Till:'}
+                      </span>
                       <span className="font-bold text-[#171717]">{policy.validTill}</span>
                     </div>
                   </div>
@@ -135,7 +145,9 @@ export const InsuranceVault: React.FC = () => {
 
                 <div className="pt-4 border-t border-[#D5E8D7] flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-[10px] text-[#555555] block">ক্যাশলেস হেল্পলাইন:</span>
+                    <span className="text-[10px] text-[#555555] block">
+                      {language === 'bn' ? 'ক্যাশলেস হেল্পলাইন:' : 'Cashless Helpline:'}
+                    </span>
                     <a href={`tel:${policy.cashlessHelpline}`} className="font-bold text-[#2E7D32] hover:underline">
                       📞 {policy.cashlessHelpline}
                     </a>
@@ -163,7 +175,9 @@ export const InsuranceVault: React.FC = () => {
 
               <form onSubmit={handleAddPolicy} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">বীমা প্রদানকারী সংস্থা *</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'বীমা প্রদানকারী সংস্থা *' : 'Insurance Provider *'}
+                  </label>
                   <input
                     type="text"
                     required
@@ -175,7 +189,9 @@ export const InsuranceVault: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">পলিসি / স্কিমের নাম</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'পলিসি / স্কিমের নাম' : 'Policy / Scheme Name'}
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g., Senior Citizen Red Carpet / Swasthya Sathi"
@@ -187,7 +203,9 @@ export const InsuranceVault: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">পলিসি / URN নম্বর *</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'পলিসি / URN নম্বর *' : 'Policy / URN Number *'}
+                    </label>
                     <input
                       type="text"
                       required
@@ -199,7 +217,9 @@ export const InsuranceVault: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">ক্যাটাগরি</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'ক্যাটাগরি' : 'Category'}
+                    </label>
                     <select
                       value={category}
                       onChange={e => setCategory(e.target.value as any)}
@@ -215,7 +235,9 @@ export const InsuranceVault: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">মেয়াদ উত্তীর্ণ তারিখ</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'মেয়াদ উত্তীর্ণ তারিখ' : 'Expiry Date'}
+                    </label>
                     <input
                       type="date"
                       value={validTill}
@@ -224,7 +246,9 @@ export const InsuranceVault: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">কভারেজ (টাকা)</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'কভারেজ (টাকা)' : 'Coverage (₹)'}
+                    </label>
                     <input
                       type="number"
                       value={sumInsured}
@@ -235,7 +259,9 @@ export const InsuranceVault: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">ক্যাশলেস হেল্পলাইন নম্বর</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'ক্যাশলেস হেল্পলাইন নম্বর' : 'Cashless Helpline'}
+                  </label>
                   <input
                     type="text"
                     placeholder="1800 425 2255"

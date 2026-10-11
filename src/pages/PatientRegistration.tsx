@@ -33,28 +33,28 @@ export const PatientRegistration: React.FC = () => {
     setIsAlreadyRegistered(false);
 
     if (!fullName.trim()) {
-      setErrorMsg('অনুগ্রহ করে আপনার সম্পূর্ণ নাম লিখুন (Please enter your full name).');
+      setErrorMsg(language === 'bn' ? 'অনুগ্রহ করে আপনার সম্পূর্ণ নাম লিখুন।' : 'Please enter your full name.');
       return;
     }
 
     if (!age || Number(age) < 1 || Number(age) > 120) {
-      setErrorMsg('অনুগ্রহ করে সঠিক বয়স লিখুন (Please enter a valid age).');
+      setErrorMsg(language === 'bn' ? 'অনুগ্রহ করে সঠিক বয়স লিখুন।' : 'Please enter a valid age.');
       return;
     }
 
     const cleanPhone = normalizePhone(phone);
     if (!cleanPhone || cleanPhone.length < 8) {
-      setErrorMsg('অনুগ্রহ করে সঠিক ফোন নম্বর প্রদান করুন (Please enter a valid phone number).');
+      setErrorMsg(language === 'bn' ? 'অনুগ্রহ করে সঠিক ফোন নম্বর প্রদান করুন।' : 'Please enter a valid phone number.');
       return;
     }
 
     if (password.length < 4) {
-      setErrorMsg('পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের হতে হবে (Password must be at least 4 characters).');
+      setErrorMsg(language === 'bn' ? 'পাসওয়ার্ড কমপক্ষে ৪ অক্ষরের হতে হবে।' : 'Password must be at least 4 characters.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMsg('পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না (Passwords do not match).');
+      setErrorMsg(language === 'bn' ? 'পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না।' : 'Passwords do not match.');
       return;
     }
 
@@ -68,7 +68,11 @@ export const PatientRegistration: React.FC = () => {
 
     if (!success) {
       setIsAlreadyRegistered(true);
-      setErrorMsg('এই ফোন নম্বর দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট খোলা রয়েছে। অনুগ্রহ করে সরাসরি লগইন করুন। (Phone already registered. Please Sign In).');
+      setErrorMsg(
+        language === 'bn'
+          ? 'এই ফোন নম্বর দিয়ে ইতোমধ্যে একটি অ্যাকাউন্ট খোলা রয়েছে। অনুগ্রহ করে সরাসরি লগইন করুন।'
+          : 'This phone number is already registered. Please Sign In directly.'
+      );
     }
   };
 
@@ -112,7 +116,7 @@ export const PatientRegistration: React.FC = () => {
           {/* Full Name */}
           <div>
             <label className="block text-xs font-bold text-[#171717] mb-1">
-              {language === 'bn' ? 'সম্পূর্ণ নাম (Full Name) *' : 'Full Name *'}
+              {language === 'bn' ? 'সম্পূর্ণ নাম *' : 'Full Name *'}
             </label>
             <div className="relative">
               <User className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -131,7 +135,7 @@ export const PatientRegistration: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-[#171717] mb-1">
-                {language === 'bn' ? 'বয়স (Age) *' : 'Age *'}
+                {language === 'bn' ? 'বয়স *' : 'Age *'}
               </label>
               <input
                 type="number"
@@ -147,7 +151,7 @@ export const PatientRegistration: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-[#171717] mb-1">
-                {language === 'bn' ? 'ফোন নম্বর (Phone Number) *' : 'Phone Number *'}
+                {language === 'bn' ? 'ফোন নম্বর *' : 'Phone Number *'}
               </label>
               <div className="relative">
                 <Phone className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -166,7 +170,7 @@ export const PatientRegistration: React.FC = () => {
           {/* Location Dropdown */}
           <div>
             <label className="block text-xs font-bold text-[#171717] mb-1">
-              {language === 'bn' ? 'অবস্থান এলাকা (Location) *' : 'Location Area *'}
+              {language === 'bn' ? 'অবস্থান এলাকা *' : 'Location Area *'}
             </label>
             <div className="relative">
               <MapPin className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -175,8 +179,12 @@ export const PatientRegistration: React.FC = () => {
                 onChange={e => setLocation(e.target.value as LocationArea)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#D5E8D7] text-sm focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 bg-white font-bold text-[#171717] outline-hidden"
               >
-                <option value="Panihati, West Bengal">Panihati, West Bengal (পানিহাটি, পশ্চিমবঙ্গ)</option>
-                <option value="Dum Dum, West Bengal">Dum Dum, West Bengal (দমদম, পশ্চিমবঙ্গ)</option>
+                <option value="Panihati, West Bengal">
+                  {language === 'bn' ? 'পানিহাটি, পশ্চিমবঙ্গ' : 'Panihati, West Bengal'}
+                </option>
+                <option value="Dum Dum, West Bengal">
+                  {language === 'bn' ? 'দমদম, পশ্চিমবঙ্গ' : 'Dum Dum, West Bengal'}
+                </option>
               </select>
             </div>
             <p className="text-[11px] text-[#555555] mt-1">
@@ -190,7 +198,7 @@ export const PatientRegistration: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-[#171717] mb-1">
-                {language === 'bn' ? 'পাসওয়ার্ড (Password) *' : 'Password *'}
+                {language === 'bn' ? 'পাসওয়ার্ড *' : 'Password *'}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -240,7 +248,7 @@ export const PatientRegistration: React.FC = () => {
             onClick={() => navigateTo('login')}
             className="font-bold text-[#2E7D32] hover:underline"
           >
-            {language === 'bn' ? 'লগইন করুন (Sign In)' : 'Sign In'}
+            {language === 'bn' ? 'লগইন করুন' : 'Sign In'}
           </button>
         </div>
       </div>

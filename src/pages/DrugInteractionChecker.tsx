@@ -27,13 +27,19 @@ export const DrugInteractionChecker: React.FC = () => {
     'Spironolactone', 'Metformin', 'Atorvastatin', 'Clarithromycin', 'Paracetamol'
   ];
 
-  const handleCheck = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCheck = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!drug1.trim() || !drug2.trim()) return;
 
-    const res = checkDrugInteractions(drug1.trim(), drug2.trim());
+    const res = checkDrugInteractions(drug1.trim(), drug2.trim(), language);
     setResult(res);
   };
+
+  React.useEffect(() => {
+    if (result && drug1.trim() && drug2.trim()) {
+      setResult(checkDrugInteractions(drug1.trim(), drug2.trim(), language));
+    }
+  }, [language]);
 
   return (
     <div className="min-h-screen bg-white py-8 px-4 sm:px-6">
@@ -65,7 +71,7 @@ export const DrugInteractionChecker: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Aspirin, Clopidogrel, Telmisartan"
+                  placeholder={language === 'bn' ? 'যেমন: Aspirin, Clopidogrel, Telmisartan' : 'e.g. Aspirin, Clopidogrel, Telmisartan'}
                   value={drug1}
                   onChange={e => setDrug1(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] outline-hidden font-medium"
@@ -79,7 +85,7 @@ export const DrugInteractionChecker: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Warfarin, Omeprazole, Spironolactone"
+                  placeholder={language === 'bn' ? 'যেমন: Warfarin, Omeprazole, Spironolactone' : 'e.g. Warfarin, Omeprazole, Spironolactone'}
                   value={drug2}
                   onChange={e => setDrug2(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] outline-hidden font-medium"
@@ -137,12 +143,14 @@ export const DrugInteractionChecker: React.FC = () => {
                   <Pill className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[11px] uppercase font-bold text-[#555555]">মিথস্ক্রিয়ার তীব্রতা:</span>
+                  <span className="text-[11px] uppercase font-bold text-[#555555]">
+                    {language === 'bn' ? 'মিথস্ক্রিয়ার তীব্রতা:' : 'Interaction Severity:'}
+                  </span>
                   <h3 className="text-xl font-black text-[#171717]">
-                    {result.severity === 'High' && '🚨 উচ্চ ঝুঁকি (Severe Risk)'}
-                    {result.severity === 'Moderate' && '⚠️ মাঝারি সতর্কতা (Moderate Risk)'}
-                    {result.severity === 'Minor' && 'ℹ️ মৃদু প্রভাব (Minor Impact)'}
-                    {result.severity === 'None' && '✅ কোনো উল্লেখযোগ্য ক্ষতিকর ইন্টারঅ্যাকশন নেই'}
+                    {result.severity === 'High' && (language === 'bn' ? '🚨 উচ্চ ঝুঁকি (Severe Risk)' : '🚨 High Risk (Severe Interaction)')}
+                    {result.severity === 'Moderate' && (language === 'bn' ? '⚠️ মাঝারি সতর্কতা (Moderate Risk)' : '⚠️ Moderate Caution (Moderate Risk)')}
+                    {result.severity === 'Minor' && (language === 'bn' ? 'ℹ️ মৃদু প্রভাব (Minor Impact)' : 'ℹ️ Minor Impact')}
+                    {result.severity === 'None' && (language === 'bn' ? '✅ কোনো উল্লেখযোগ্য ক্ষতিকর ইন্টারঅ্যাকশন নেই' : '✅ No Significant Harmful Interactions Found')}
                   </h3>
                 </div>
               </div>
@@ -154,24 +162,32 @@ export const DrugInteractionChecker: React.FC = () => {
                   ? 'bg-amber-50 border-amber-200 text-amber-800'
                   : 'bg-white border-[#D5E8D7] text-[#2E7D32]'
               }`}>
-                {result.severity}
+                {result.severity === 'None'
+                  ? (language === 'bn' ? 'নিরাপদ' : 'Safe')
+                  : result.severity}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-2xs">
-                <span className="font-bold text-[#171717] block text-sm">বর্ণনা ও সম্ভাব্য প্রভাব:</span>
+                <span className="font-bold text-[#171717] block text-sm">
+                  {language === 'bn' ? 'বর্ণনা ও সম্ভাব্য প্রভাব:' : 'Description & Impact:'}
+                </span>
                 <p className="text-[#555555] leading-relaxed">{result.description}</p>
               </div>
 
               <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-2xs">
-                <span className="font-bold text-[#171717] block text-sm">মেকানিজম ও প্রক্রিয়া:</span>
+                <span className="font-bold text-[#171717] block text-sm">
+                  {language === 'bn' ? 'মেকানিজম ও প্রক্রিয়া:' : 'Mechanism of Action:'}
+                </span>
                 <p className="text-[#555555] leading-relaxed">{result.mechanism}</p>
               </div>
             </div>
 
             <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] text-xs space-y-1 shadow-2xs">
-              <span className="font-bold text-[#2E7D32] block text-sm">চিকিৎসাগত পরামর্শ ও সতর্কতা:</span>
+              <span className="font-bold text-[#2E7D32] block text-sm">
+                {language === 'bn' ? 'চিকিৎসাগত পরামর্শ ও সতর্কতা:' : 'Clinical Advice & Precautions:'}
+              </span>
               <p className="text-[#171717] leading-relaxed font-medium">{result.clinicalAdvice}</p>
             </div>
           </div>

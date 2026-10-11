@@ -293,15 +293,17 @@ export const PatientDashboard: React.FC = () => {
                       ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]'
                       : 'bg-rose-50 text-rose-700 border border-rose-300'
                   }`}>
-                    {grant.status}
+                    {grant.status === 'ACTIVE'
+                      ? (language === 'bn' ? 'সক্রিয়' : 'ACTIVE')
+                      : (language === 'bn' ? 'প্রত্যাহারকৃত' : 'REVOKED')}
                   </span>
                 </div>
 
                 <div className="text-xs text-[#555555] space-y-1">
-                  <p>টোকেন: <span className="font-mono font-bold text-[#171717]">{grant.token}</span></p>
-                  <p>মেয়াদ: <span className="font-medium text-[#171717]">{grant.expiresAt}</span></p>
-                  <p>সংযুক্ত রেকর্ড: <strong className="text-[#2E7D32]">{grant.docsCount} টি নথি</strong> (প্রেসক্রিপশন ও রক্ত পরীক্ষা)</p>
-                  <p className="text-[11px] text-[#777777]">পরিদর্শন স্থিতি: {grant.lastAccess}</p>
+                  <p>{language === 'bn' ? 'টোকেন:' : 'Token:'} <span className="font-mono font-bold text-[#171717]">{grant.token}</span></p>
+                  <p>{language === 'bn' ? 'মেয়াদ:' : 'Duration:'} <span className="font-medium text-[#171717]">{language === 'bn' ? (grant.id === 'grant-pan-8921' ? '৩ ঘণ্টা ৪৫ মিনিট বাকি' : 'রোগী কর্তৃক প্রত্যাহারকৃত') : grant.expiresAt}</span></p>
+                  <p>{language === 'bn' ? 'সংযুক্ত রেকর্ড:' : 'Attached Records:'} <strong className="text-[#2E7D32]">{language === 'bn' ? `${grant.docsCount} টি নথি` : `${grant.docsCount} Documents`}</strong> {language === 'bn' ? '(প্রেসক্রিপশন ও রক্ত পরীক্ষা)' : '(Prescriptions & Blood Tests)'}</p>
+                  <p className="text-[11px] text-[#777777]">{language === 'bn' ? 'পরিদর্শন স্থিতি:' : 'Access Status:'} {language === 'bn' ? (grant.id === 'grant-pan-8921' ? '৫ মিনিট আগে অন-ডিউটি অফিসার কর্তৃক পরিদর্শিত' : 'ব্লক করা হয়েছে') : grant.lastAccess}</p>
                 </div>
 
                 {grant.status === 'ACTIVE' ? (
@@ -310,12 +312,12 @@ export const PatientDashboard: React.FC = () => {
                       onClick={() => navigateTo('share-records')}
                       className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-300 font-bold text-xs rounded-xl transition-all"
                     >
-                      {language === 'bn' ? 'অনুমতি প্রত্যাহার করুন (Revoke)' : 'Revoke Access Now'}
+                      {language === 'bn' ? 'অনুমতি প্রত্যাহার করুন' : 'Revoke Access'}
                     </button>
                   </div>
                 ) : (
                   <div className="pt-2 border-t border-[#D5E8D7] text-[11px] text-rose-600 font-bold">
-                    ✓ ভবিষ্যৎ এক্সেস সম্পূর্ণ ব্লক করা হয়েছে (Access Blocked)
+                    {language === 'bn' ? '✓ ভবিষ্যৎ এক্সেস সম্পূর্ণ ব্লক করা হয়েছে' : '✓ Future access completely blocked'}
                   </div>
                 )}
               </div>

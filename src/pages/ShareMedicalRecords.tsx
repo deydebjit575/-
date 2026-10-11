@@ -110,20 +110,44 @@ export const ShareMedicalRecords: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3.5 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-xs">
-              <span className="font-bold text-[#2E7D32] block">১. হাসপাতাল নির্বাচন</span>
-              <p className="text-[#555555] text-[11px]">হাসপাতাল A বেছে নিয়ে নির্দিষ্ট কিছু নথি শেয়ারের অনুমতি দিন।</p>
+              <span className="font-bold text-[#2E7D32] block">
+                {language === 'bn' ? '১. হাসপাতাল নির্বাচন' : '1. Select Hospital'}
+              </span>
+              <p className="text-[#555555] text-[11px]">
+                {language === 'bn'
+                  ? 'হাসপাতাল A বেছে নিয়ে নির্দিষ্ট কিছু নথি শেয়ারের অনুমতি দিন।'
+                  : 'Choose Hospital A and grant permission to share selected records.'}
+              </p>
             </div>
             <div className="p-3.5 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-xs">
-              <span className="font-bold text-[#2E7D32] block">২. আইসিইউ ও ট্রায়াজ যাচাই</span>
-              <p className="text-[#555555] text-[11px]">হাসপাতাল A বেড যাচাই করবে। বেড খালি না থাকলে রোগী বার্তা পাবেন।</p>
+              <span className="font-bold text-[#2E7D32] block">
+                {language === 'bn' ? '২. আইসিইউ ও ট্রায়াজ যাচাই' : '2. ICU & Triage Verification'}
+              </span>
+              <p className="text-[#555555] text-[11px]">
+                {language === 'bn'
+                  ? 'হাসপাতাল A বেড যাচাই করবে। বেড খালি না থাকলে রোগী বার্তা পাবেন।'
+                  : 'Hospital A verifies beds. Patient receives notice if no bed is vacant.'}
+              </p>
             </div>
             <div className="p-3.5 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-xs">
-              <span className="font-bold text-[#2E7D32] block">৩. এক ক্লিকে অনুমতি প্রত্যাহার</span>
-              <p className="text-[#555555] text-[11px]">হাসপাতাল A-এর অনুমতি সাথে সাথে প্রত্যাহার করে অ্যাক্সেস ব্লক করুন।</p>
+              <span className="font-bold text-[#2E7D32] block">
+                {language === 'bn' ? '৩. এক ক্লিকে অনুমতি প্রত্যাহার' : '3. One-Click Revoke Access'}
+              </span>
+              <p className="text-[#555555] text-[11px]">
+                {language === 'bn'
+                  ? 'হাসপাতাল A-এর অনুমতি সাথে সাথে প্রত্যাহার করে অ্যাক্সেস ব্লক করুন।'
+                  : 'Instantly revoke Hospital A access and block further record inspection.'}
+              </p>
             </div>
             <div className="p-3.5 bg-white rounded-2xl border border-[#D5E8D7] space-y-1 shadow-xs">
-              <span className="font-bold text-[#2E7D32] block">৪. হাসপাতাল B-তে নতুন গ্রান্ট</span>
-              <p className="text-[#555555] text-[11px]">হাসপাতাল B সম্পূর্ণ নতুন অনুমতি পাবে; পূর্ববর্তী গ্রান্ট কখনো শেয়ার হবে না।</p>
+              <span className="font-bold text-[#2E7D32] block">
+                {language === 'bn' ? '৪. হাসপাতাল B-তে নতুন গ্রান্ট' : '4. New Grant for Hospital B'}
+              </span>
+              <p className="text-[#555555] text-[11px]">
+                {language === 'bn'
+                  ? 'হাসপাতাল B সম্পূর্ণ নতুন অনুমতি পাবে; পূর্ববর্তী গ্রান্ট কখনো শেয়ার হবে না।'
+                  : 'Hospital B receives an entirely new grant; previous access is never shared.'}
+              </p>
             </div>
           </div>
         </div>
@@ -163,9 +187,9 @@ export const ShareMedicalRecords: React.FC = () => {
                 </label>
                 <div className="grid grid-cols-3 gap-2.5">
                   {[
-                    { hours: 2, label: '২ ঘণ্টা (2 Hours)' },
-                    { hours: 4, label: '৪ ঘণ্টা (4 Hours)' },
-                    { hours: 24, label: '২৪ ঘণ্টা (24 Hours)' },
+                    { hours: 2, labelBn: '২ ঘণ্টা (2 Hours)', labelEn: '2 Hours' },
+                    { hours: 4, labelBn: '৪ ঘণ্টা (4 Hours)', labelEn: '4 Hours' },
+                    { hours: 24, labelBn: '২৪ ঘণ্টা (24 Hours)', labelEn: '24 Hours' },
                   ].map(item => (
                     <button
                       type="button"
@@ -177,7 +201,7 @@ export const ShareMedicalRecords: React.FC = () => {
                           : 'bg-white text-[#171717] border-[#D5E8D7] hover:bg-[#F1F8F2]'
                       }`}
                     >
-                      {item.label}
+                      {language === 'bn' ? item.labelBn : item.labelEn}
                     </button>
                   ))}
                 </div>
@@ -190,12 +214,12 @@ export const ShareMedicalRecords: React.FC = () => {
                 </label>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   {[
-                    { id: 'prescriptions', label: 'প্রেসক্রিপশন (Prescriptions)' },
-                    { id: 'blood_reports', label: 'রক্তের রিপোর্ট (Blood Tests)' },
-                    { id: 'hospital_records', label: 'হাসপাতাল রেকর্ড (Hospital Records)' },
-                    { id: 'diagnostic_reports', label: 'ডায়াগনস্টিক রিপোর্ট (Diagnostics)' },
-                    { id: 'discharge_summaries', label: 'ডিসচার্জ সামারি (Discharge Summary)' },
-                    { id: 'insurance', label: 'স্বাস্থ্যকার্ড ও স্বাস্থ্যসাথী (Insurance)' },
+                    { id: 'prescriptions', labelBn: 'প্রেসক্রিপশন', labelEn: 'Prescriptions' },
+                    { id: 'blood_reports', labelBn: 'রক্তের রিপোর্ট', labelEn: 'Blood Tests' },
+                    { id: 'hospital_records', labelBn: 'হাসপাতাল রেকর্ড', labelEn: 'Hospital Records' },
+                    { id: 'diagnostic_reports', labelBn: 'ডায়াগনস্টিক রিপোর্ট', labelEn: 'Diagnostic Reports' },
+                    { id: 'discharge_summaries', labelBn: 'ডিসচার্জ সামারি', labelEn: 'Discharge Summaries' },
+                    { id: 'insurance', labelBn: 'স্বাস্থ্যকার্ড ও স্বাস্থ্যসাথী', labelEn: 'Insurance & Health Card' },
                   ].map(cat => (
                     <div
                       key={cat.id}
@@ -206,7 +230,7 @@ export const ShareMedicalRecords: React.FC = () => {
                           : 'bg-[#F1F8F2] border-[#D5E8D7] text-[#555555]'
                       }`}
                     >
-                      <span className="text-[11px] truncate">{cat.label}</span>
+                      <span className="text-[11px] truncate">{language === 'bn' ? cat.labelBn : cat.labelEn}</span>
                       <input
                         type="checkbox"
                         checked={selectedCategories.includes(cat.id as DocumentCategory)}
@@ -229,7 +253,9 @@ export const ShareMedicalRecords: React.FC = () => {
                     className="w-4 h-4 text-[#2E7D32] rounded focus:ring-[#2E7D32]"
                   />
                   <label htmlFor="inc-summary" className="font-bold text-[#171717] cursor-pointer">
-                    জরুরি স্বাস্থ্য সারসংক্ষেপ (অ্যালার্জি, চলমান ওষুধ, রক্তের গ্রুপ) অন্তর্ভুক্ত করুন
+                    {language === 'bn'
+                      ? 'জরুরি স্বাস্থ্য সারসংক্ষেপ (অ্যালার্জি, চলমান ওষুধ, রক্তের গ্রুপ) অন্তর্ভুক্ত করুন'
+                      : 'Include Emergency Health Summary (Allergies, Medications, Blood Group)'}
                   </label>
                 </div>
               </div>
@@ -247,7 +273,9 @@ export const ShareMedicalRecords: React.FC = () => {
             {newlyCreatedToken && (
               <div className="p-4 rounded-2xl bg-white border border-[#D5E8D7] text-[#171717] space-y-3 animate-in fade-in shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#2E7D32]">সক্রিয় অ্যাক্সেস টোকেন:</span>
+                  <span className="text-xs font-bold text-[#2E7D32]">
+                    {language === 'bn' ? 'সক্রিয় অ্যাক্সেস টোকেন:' : 'Active Access Token:'}
+                  </span>
                   <span className="px-2 py-0.5 rounded bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] text-[10px] font-bold">
                     ACTIVE ({validityHours}h)
                   </span>
@@ -290,40 +318,46 @@ export const ShareMedicalRecords: React.FC = () => {
                           : 'bg-rose-100 text-rose-800 border border-rose-300'
                       }`}
                     >
-                      {grant.status}
+                      {grant.status === 'ACTIVE'
+                        ? (language === 'bn' ? 'সক্রিয়' : 'ACTIVE')
+                        : (language === 'bn' ? 'প্রত্যাহারকৃত' : 'REVOKED')}
                     </span>
                   </div>
 
                   <div className="text-[11px] text-[#555555] space-y-0.5">
-                    <p>টোকেন: <span className="font-mono font-bold text-[#171717]">{grant.token}</span></p>
-                    <p>তৈরির সময়: {new Date(grant.createdAt).toLocaleString()}</p>
-                    <p>মেয়াদ শেষ: {new Date(grant.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(grant.expiresAt).toLocaleDateString()})</p>
-                    <p>অনুমোদিত ক্যাটাগরি: {grant.sharedCategories?.join(', ') || 'Prescriptions, Blood reports'}</p>
+                    <p>{language === 'bn' ? 'টোকেন:' : 'Token:'} <span className="font-mono font-bold text-[#171717]">{grant.token}</span></p>
+                    <p>{language === 'bn' ? 'তৈরির সময়:' : 'Created At:'} {new Date(grant.createdAt).toLocaleString(language === 'bn' ? 'bn-BD' : 'en-US')}</p>
+                    <p>{language === 'bn' ? 'মেয়াদ শেষ:' : 'Expires At:'} {new Date(grant.expiresAt).toLocaleTimeString(language === 'bn' ? 'bn-BD' : 'en-US', { hour: '2-digit', minute: '2-digit' })} ({new Date(grant.expiresAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')})</p>
+                    <p>{language === 'bn' ? 'অনুমোদিত ক্যাটাগরি:' : 'Allowed Categories:'} {grant.sharedCategories?.join(', ') || 'Prescriptions, Blood reports'}</p>
                   </div>
 
                   {grant.accessLogs.length > 0 && (
                     <div className="bg-[#F1F8F2] p-2.5 rounded-xl border border-[#D5E8D7] text-[10px] text-[#555555] space-y-0.5">
-                      <span className="font-bold block text-[#2E7D32]">হাসপাতাল পরিদর্শন লগ (Staff Access Log):</span>
-                      <p>{grant.accessLogs[0].accessedBy} ({grant.accessLogs[0].staffRole || 'Staff'}) at {new Date(grant.accessLogs[0].accessedAt).toLocaleTimeString()}</p>
+                      <span className="font-bold block text-[#2E7D32]">
+                        {language === 'bn' ? 'হাসপাতাল পরিদর্শন লগ (Staff Access Log):' : 'Hospital Access Log:'}
+                      </span>
+                      <p>{grant.accessLogs[0].accessedBy} ({grant.accessLogs[0].staffRole || (language === 'bn' ? 'কর্মী' : 'Staff')}) {language === 'bn' ? 'সময়' : 'at'} {new Date(grant.accessLogs[0].accessedAt).toLocaleTimeString(language === 'bn' ? 'bn-BD' : 'en-US')}</p>
                     </div>
                   )}
 
                   {grant.status === 'ACTIVE' ? (
                     <div className="pt-2 border-t border-[#D5E8D7] flex justify-between items-center">
-                      <span className="text-[10px] text-[#2E7D32] font-bold">● বর্তমানে সক্রিয়</span>
+                      <span className="text-[10px] text-[#2E7D32] font-bold">
+                        ● {language === 'bn' ? 'বর্তমানে সক্রিয়' : 'Currently Active'}
+                      </span>
                       <button
                         onClick={() => revokeAccessGrant(grant.id, 'Patient revoked permission from Share Portal')}
                         className="px-3.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition-colors flex items-center space-x-1"
                       >
                         <XCircle className="w-3.5 h-3.5" />
-                        <span>{language === 'bn' ? 'অনুমতি প্রত্যাহার করুন' : 'Revoke Access Now'}</span>
+                        <span>{language === 'bn' ? 'অনুমতি প্রত্যাহার করুন' : 'Revoke Access'}</span>
                       </button>
                     </div>
                   ) : (
                     <div className="pt-2 border-t border-[#D5E8D7] text-[11px] text-rose-700 font-bold flex items-center justify-between">
-                      <span>✓ অনুমতি প্রত্যাহার করা হয়েছে</span>
+                      <span>✓ {language === 'bn' ? 'অনুমতি প্রত্যাহার করা হয়েছে' : 'Access Revoked'}</span>
                       <span className="text-[10px] text-[#555555] font-normal">
-                        {grant.revokedAt ? new Date(grant.revokedAt).toLocaleTimeString() : ''}
+                        {grant.revokedAt ? new Date(grant.revokedAt).toLocaleTimeString(language === 'bn' ? 'bn-BD' : 'en-US') : ''}
                       </span>
                     </div>
                   )}

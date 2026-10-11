@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Language } from '../types';
-import { translations } from '../i18n/translations';
+import { translations, phraseTranslations } from '../i18n/translations';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: keyof typeof translations['en']) => string;
+  t: (keyOrText: string, fallback?: string) => string;
   speak: (text: string) => void;
   fontSizeMultiplier: number;
   setFontSizeMultiplier: (size: number) => void;
@@ -43,9 +43,42 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('susthayan_high_contrast', val ? 'true' : 'false');
   };
 
-  const t = (key: keyof typeof translations['en']): string => {
-    const langDict = translations[language] || translations['en'];
-    return (langDict as any)[key] || (translations['en'] as any)[key] || key;
+  const t = (keyOrText: string, fallback?: string): string => {
+    if (!keyOrText) return '';
+    const currentLang = language === 'bn' ? 'bn' : 'en';
+    const altLang = currentLang === 'bn' ? 'en' : 'bn';
+
+    const currentDict = (translations[currentLang] || {}) as Record<string, string>;
+    const altDict = (translations[altLang] || {}) as Record<string, string>;
+
+    // 1. Exact key match in current language dictionary
+    if (currentDict[keyOrText] !== undefined) {
+      return currentDict[keyOrText];
+    }
+
+    // 2. Exact match in phrase translations dictionary
+    const phraseMatch = phraseTranslations[keyOrText];
+    if (phraseMatch && phraseMatch[currentLang]) {
+      return phraseMatch[currentLang];
+    }
+
+    // 3. Search if keyOrText is a value in the other language's dictionary
+    for (const [k, val] of Object.entries(altDict)) {
+      if (val === keyOrText && currentDict[k] !== undefined) {
+        return currentDict[k];
+      }
+    }
+
+    // 4. Search reverse in phrase translations
+    for (const entry of Object.values(phraseTranslations)) {
+      if (entry[altLang] === keyOrText && entry[currentLang]) {
+        return entry[currentLang];
+      }
+    }
+
+    // 5. Fallback or return original
+    if (fallback !== undefined) return fallback;
+    return keyOrText;
   };
 
   const speak = (text: string) => {
@@ -57,6 +90,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       window.speechSynthesis.speak(utterance);
     }
   };
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.setAttribute('data-lang', language);
+  }, [language]);
 
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSizeMultiplier * 100}%`;

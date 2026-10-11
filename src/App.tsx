@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ToastContainer } from './components/ToastContainer';
+import { RightSidebar } from './components/RightSidebar';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -35,6 +36,7 @@ import { DrugInteractionChecker } from './pages/DrugInteractionChecker';
 
 export const AppContent: React.FC = () => {
   const { currentPage, isLoggedIn } = useApp();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -99,11 +101,19 @@ export const AppContent: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-[#171717]">
-      <Navbar />
-      <main className="flex-1">
-        {renderCurrentPage()}
-      </main>
-      <Footer />
+      <Navbar onToggleRightSidebar={() => setIsSidebarOpen(prev => !prev)} />
+      <div className="flex-1 flex flex-row relative min-h-0">
+        <main className="flex-1 min-w-0 flex flex-col">
+          <div className="flex-1">
+            {renderCurrentPage()}
+          </div>
+          <Footer />
+        </main>
+        <RightSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+      </div>
       <ToastContainer />
     </div>
   );

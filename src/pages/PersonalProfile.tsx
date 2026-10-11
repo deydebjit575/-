@@ -91,13 +91,13 @@ export const PersonalProfile: React.FC = () => {
           <div className="space-y-1">
             <span className="text-xs font-bold text-[#2E7D32] uppercase tracking-widest flex items-center">
               <ShieldCheck className="w-4 h-4 mr-1 text-[#2E7D32]" />
-              Verified Patient Health Profile
+              {language === 'bn' ? 'যাচাইকৃত রোগীর স্বাস্থ্য প্রোফাইল' : 'Verified Patient Health Profile'}
             </span>
             <h1 className="text-2xl sm:text-3xl font-black text-[#171717]">
-              {patientProfile.fullName || currentUser?.displayName || 'My Profile'}
+              {patientProfile.fullName || currentUser?.displayName || (language === 'bn' ? 'আমার প্রোফাইল' : 'My Profile')}
             </h1>
             <p className="text-xs text-[#555555]">
-              {language === 'bn' ? 'অ্যাকাউন্ট তৈরি:' : 'Account Created:'} {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : 'Active'}
+              {language === 'bn' ? 'অ্যাকাউন্ট তৈরি:' : 'Account Created:'} {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : (language === 'bn' ? 'সক্রিয়' : 'Active')}
             </p>
           </div>
 
@@ -119,7 +119,7 @@ export const PersonalProfile: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">পূর্ণ নাম (Full Name) *</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'পূর্ণ নাম *' : 'Full Name *'}</label>
                 <input
                   type="text"
                   required
@@ -130,7 +130,7 @@ export const PersonalProfile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">বয়স (Age) *</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'বয়স *' : 'Age *'}</label>
                 <input
                   type="number"
                   required
@@ -141,7 +141,7 @@ export const PersonalProfile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">ফোন নম্বর (Phone) *</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'ফোন নম্বর *' : 'Phone Number *'}</label>
                 <input
                   type="tel"
                   required
@@ -152,7 +152,7 @@ export const PersonalProfile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">অবস্থান এলাকা (Location) *</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'অবস্থান এলাকা *' : 'Location Area *'}</label>
                 <select
                   value={location}
                   onChange={e => setLocation(e.target.value)}
@@ -164,13 +164,13 @@ export const PersonalProfile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">রক্তের গ্রুপ (ঐচ্ছিক)</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'রক্তের গ্রুপ (ঐচ্ছিক)' : 'Blood Group (Optional)'}</label>
                 <select
                   value={bloodGroup}
                   onChange={e => setBloodGroup(e.target.value as BloodGroup)}
                   className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] font-semibold outline-hidden focus:border-[#2E7D32]"
                 >
-                  <option value="">নির্বাচন করুন (Select if known)</option>
+                  <option value="">{language === 'bn' ? 'নির্বাচন করুন (যদি জানা থাকে)' : 'Select if known'}</option>
                   <option value="A+">A+</option>
                   <option value="A-">A-</option>
                   <option value="B+">B+</option>
@@ -186,10 +186,10 @@ export const PersonalProfile: React.FC = () => {
             {/* Medical history optional entry */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-[#D5E8D7]">
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">জানা অ্যালার্জি (কমা দিয়ে আলাদা করুন)</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'জানা অ্যালার্জি (কমা দিয়ে আলাদা করুন)' : 'Known Allergies (comma separated)'}</label>
                 <textarea
                   rows={3}
-                  placeholder="যেমন: Penicillin, Dust..."
+                  placeholder={language === 'bn' ? 'যেমন: Penicillin, Dust...' : 'e.g. Penicillin, Dust...'}
                   value={allergiesText}
                   onChange={e => setAllergiesText(e.target.value)}
                   className="w-full px-4 py-2 rounded-xl bg-white border border-[#D5E8D7] text-xs text-[#171717] outline-hidden focus:border-[#2E7D32]"
@@ -197,10 +197,10 @@ export const PersonalProfile: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#171717] mb-1">বিদ্যমান রোগ বা পূর্ববর্তী অপারেশন</label>
+                <label className="block text-xs font-bold text-[#171717] mb-1">{language === 'bn' ? 'বিদ্যমান রোগ বা পূর্ববর্তী অপারেশন' : 'Existing Conditions / Past Surgeries'}</label>
                 <textarea
                   rows={3}
-                  placeholder="যেমন: Hypertension, Diabetes..."
+                  placeholder={language === 'bn' ? 'যেমন: Hypertension, Diabetes...' : 'e.g. Hypertension, Diabetes...'}
                   value={conditionsText}
                   onChange={e => setConditionsText(e.target.value)}
                   className="w-full px-4 py-2 rounded-xl bg-white border border-[#D5E8D7] text-xs text-[#171717] outline-hidden focus:border-[#2E7D32]"
@@ -210,25 +210,25 @@ export const PersonalProfile: React.FC = () => {
 
             {/* Doctor info */}
             <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-3">
-              <span className="text-xs font-bold text-[#2E7D32] block">ব্যক্তিগত চিকিৎসক (ঐচ্ছিক):</span>
+              <span className="text-xs font-bold text-[#2E7D32] block">{language === 'bn' ? 'ব্যক্তিগত চিকিৎসক (ঐচ্ছিক):' : 'Personal Physician (Optional):'}</span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <input
                   type="text"
-                  placeholder="ডাক্তারের নাম"
+                  placeholder={language === 'bn' ? 'ডাক্তারের নাম' : 'Doctor Name'}
                   value={doctorName}
                   onChange={e => setDoctorName(e.target.value)}
                   className="px-3 py-2 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] text-xs text-[#171717] outline-hidden focus:border-[#2E7D32]"
                 />
                 <input
                   type="tel"
-                  placeholder="ডাক্তারের ফোন"
+                  placeholder={language === 'bn' ? 'ডাক্তারের ফোন' : 'Doctor Phone'}
                   value={doctorPhone}
                   onChange={e => setDoctorPhone(e.target.value)}
                   className="px-3 py-2 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] text-xs text-[#171717] outline-hidden focus:border-[#2E7D32]"
                 />
                 <input
                   type="text"
-                  placeholder="হাসপাতাল / চেম্বার"
+                  placeholder={language === 'bn' ? 'হাসপাতাল / চেম্বার' : 'Hospital / Clinic'}
                   value={doctorHospital}
                   onChange={e => setDoctorHospital(e.target.value)}
                   className="px-3 py-2 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] text-xs text-[#171717] outline-hidden focus:border-[#2E7D32]"
@@ -242,14 +242,14 @@ export const PersonalProfile: React.FC = () => {
                 onClick={() => setIsEditing(false)}
                 className="px-5 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-xs font-bold text-[#555555] hover:bg-[#F1F8F2]"
               >
-                বাতিল
+                {language === 'bn' ? 'বাতিল' : 'Cancel'}
               </button>
               <button
                 type="submit"
                 className="px-6 py-2.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-sm flex items-center space-x-2"
               >
                 <Save className="w-4 h-4" />
-                <span>সংরক্ষণ করুন</span>
+                <span>{language === 'bn' ? 'সংরক্ষণ করুন' : 'Save Changes'}</span>
               </button>
             </div>
           </form>
@@ -263,28 +263,28 @@ export const PersonalProfile: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                 <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                  <span className="text-[#555555] block">পূর্ণ নাম:</span>
+                  <span className="text-[#555555] block">{language === 'bn' ? 'পূর্ণ নাম:' : 'Full Name:'}</span>
                   <span className="text-base font-black text-[#171717] block mt-0.5">
                     {patientProfile.fullName || currentUser?.displayName}
                   </span>
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                  <span className="text-[#555555] block">বয়স:</span>
+                  <span className="text-[#555555] block">{language === 'bn' ? 'বয়স:' : 'Age:'}</span>
                   <span className="text-base font-black text-[#171717] block mt-0.5">
-                    {patientProfile.age || currentUser?.age || 65} বছর (Years)
+                    {patientProfile.age || currentUser?.age || 65} {language === 'bn' ? 'বছর' : 'Years'}
                   </span>
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                  <span className="text-[#555555] block">ফোন নম্বর:</span>
+                  <span className="text-[#555555] block">{language === 'bn' ? 'ফোন নম্বর:' : 'Phone Number:'}</span>
                   <span className="text-base font-black text-[#2E7D32] block mt-0.5 font-mono">
                     {patientProfile.phone || currentUser?.phone}
                   </span>
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                  <span className="text-[#555555] block">নিবন্ধিত এলাকা:</span>
+                  <span className="text-[#555555] block">{language === 'bn' ? 'নিবন্ধিত এলাকা:' : 'Registered Location:'}</span>
                   <span className="text-sm font-black text-[#171717] block mt-0.5">
                     {patientProfile.location || currentUser?.location || 'Panihati, West Bengal'}
                   </span>
@@ -297,20 +297,20 @@ export const PersonalProfile: React.FC = () => {
               <h3 className="text-base font-black text-[#171717] pb-3 border-b border-[#D5E8D7] flex items-center justify-between">
                 <span>{language === 'bn' ? 'ব্যক্তিগত চিকিৎসা তথ্য' : 'Medical Details'}</span>
                 {(!patientProfile.knownAllergies?.length && !patientProfile.existingConditions?.length && !patientProfile.bloodGroup) && (
-                  <span className="text-xs text-[#555555] font-normal">রোগী কর্তৃক এখনো কোনো তথ্য যোগ করা হয়নি</span>
+                  <span className="text-xs text-[#555555] font-normal">{language === 'bn' ? 'রোগী কর্তৃক এখনো কোনো তথ্য যোগ করা হয়নি' : 'No medical info recorded yet'}</span>
                 )}
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                 <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                  <span className="text-[#555555] block">রক্তের গ্রুপ:</span>
+                  <span className="text-[#555555] block">{language === 'bn' ? 'রক্তের গ্রুপ:' : 'Blood Group:'}</span>
                   <span className="text-base font-black text-rose-600 block mt-0.5">
-                    {patientProfile.bloodGroup || 'প্রদান করা হয়নি'}
+                    {patientProfile.bloodGroup || (language === 'bn' ? 'প্রদান করা হয়নি' : 'Not Provided')}
                   </span>
                 </div>
 
                 <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7] sm:col-span-2">
-                  <span className="text-[#555555] block">জানা অ্যালার্জি:</span>
+                  <span className="text-[#555555] block">{language === 'bn' ? 'জানা অ্যালার্জি:' : 'Known Allergies:'}</span>
                   {(patientProfile.knownAllergies && patientProfile.knownAllergies.length > 0) ? (
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {patientProfile.knownAllergies.map((a, i) => (
@@ -320,14 +320,14 @@ export const PersonalProfile: React.FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <span className="text-[#555555] italic block mt-0.5">কোনো অ্যালার্জি যুক্ত করা হয়নি</span>
+                    <span className="text-[#555555] italic block mt-0.5">{language === 'bn' ? 'কোনো অ্যালার্জি যুক্ত করা হয়নি' : 'No allergies recorded'}</span>
                   )}
                 </div>
               </div>
 
               {patientProfile.treatingDoctor && (
                 <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] text-xs">
-                  <span className="font-bold text-[#2E7D32] block">পরামর্শক চিকিৎসক:</span>
+                  <span className="font-bold text-[#2E7D32] block">{language === 'bn' ? 'পরামর্শক চিকিৎসক:' : 'Consultant Physician:'}</span>
                   <p className="font-bold text-[#171717] mt-0.5">{patientProfile.treatingDoctor.name}</p>
                   <p className="text-[#555555]">{patientProfile.treatingDoctor.hospital} • {patientProfile.treatingDoctor.phone}</p>
                 </div>

@@ -27,13 +27,13 @@ export const PatientLogin: React.FC = () => {
 
     const cleanPhone = normalizePhone(phone);
     if (!cleanPhone) {
-      setErrorMsg('অনুগ্রহ করে আপনার ফোন নম্বর লিখুন (Please enter your phone number).');
+      setErrorMsg(language === 'bn' ? 'অনুগ্রহ করে আপনার ফোন নম্বর লিখুন।' : 'Please enter your phone number.');
       return;
     }
 
     const success = loginWithPhone(cleanPhone, password);
     if (!success) {
-      setErrorMsg('ফোন নম্বর বা পাসওয়ার্ড সঠিক নয়। নতুন হলে নিবন্ধন করুন। (Invalid phone or password).');
+      setErrorMsg(language === 'bn' ? 'ফোন নম্বর বা পাসওয়ার্ড সঠিক নয়। নতুন হলে নিবন্ধন করুন।' : 'Invalid phone number or password. Please register if you are new.');
     }
   };
 
@@ -64,7 +64,7 @@ export const PatientLogin: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-[#171717] mb-1">
-              {language === 'bn' ? 'ফোন নম্বর (Phone Number) *' : 'Phone Number *'}
+              {language === 'bn' ? 'ফোন নম্বর *' : 'Phone Number *'}
             </label>
             <div className="relative">
               <Phone className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -81,7 +81,7 @@ export const PatientLogin: React.FC = () => {
 
           <div>
             <label className="block text-xs font-bold text-[#171717] mb-1">
-              {language === 'bn' ? 'পাসওয়ার্ড (Password) *' : 'Password *'}
+              {language === 'bn' ? 'পাসওয়ার্ড *' : 'Password *'}
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -117,7 +117,7 @@ export const PatientLogin: React.FC = () => {
               className="py-2 px-3 bg-[#F1F8F2] border border-[#D5E8D7] hover:bg-[#E8F5E9] text-[#171717] rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1"
             >
               <Building2 className="w-3.5 h-3.5 text-[#2E7D32]" />
-              <span>হাসপাতাল স্টাফ</span>
+              <span>{language === 'bn' ? 'হাসপাতাল স্টাফ' : 'Hospital Staff'}</span>
             </button>
             <button
               type="button"
@@ -125,7 +125,7 @@ export const PatientLogin: React.FC = () => {
               className="py-2 px-3 bg-[#F1F8F2] border border-[#D5E8D7] hover:bg-[#E8F5E9] text-[#171717] rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-1"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-[#2E7D32]" />
-              <span>অ্যাডমিন পোর্টাল</span>
+              <span>{language === 'bn' ? 'অ্যাডমিন পোর্টাল' : 'Admin Portal'}</span>
             </button>
           </div>
         </div>
@@ -136,7 +136,7 @@ export const PatientLogin: React.FC = () => {
             onClick={() => navigateTo('register')}
             className="font-bold text-[#2E7D32] hover:underline"
           >
-            {language === 'bn' ? 'অ্যাকাউন্ট খুলুন (Register)' : 'Register Here'}
+            {language === 'bn' ? 'অ্যাকাউন্ট খুলুন' : 'Register Here'}
           </button>
         </div>
       </div>

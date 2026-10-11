@@ -81,7 +81,7 @@ export const EmergencyContacts: React.FC = () => {
           <div className="space-y-2">
             <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs">
               <Users className="w-4 h-4 text-[#2E7D32]" />
-              <span>Trusted Family & Caregiver Network</span>
+              <span>{language === 'bn' ? 'বিশ্বস্ত পরিবার ও অভিভাবক নেটওয়ার্ক' : 'Trusted Family & Caregiver Network'}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#171717]">
               {language === 'bn' ? 'জরুরি পরিচিতজন ও অভিভাবক নেটওয়ার্ক' : 'Emergency Contacts & Guardians'}
@@ -121,14 +121,14 @@ export const EmergencyContacts: React.FC = () => {
                   {contact.isPrimary ? (
                     <span className="flex items-center text-[10px] font-bold text-[#2E7D32] bg-white px-2 py-0.5 rounded-full border border-[#D5E8D7]">
                       <Star className="w-3 h-3 mr-1 fill-[#2E7D32]" />
-                      প্রধান অভিভাবক
+                      {language === 'bn' ? 'প্রধান অভিভাবক' : 'Primary Guardian'}
                     </span>
                   ) : (
                     <button
                       onClick={() => handleSetPrimary(contact.id)}
-                      className="text-[10px] font-bold text-[#555555] hover:text-[#2E7D32]"
+                      className="text-[10px] font-bold text-[#555555] hover:text-[#2E7D32] cursor-pointer"
                     >
-                      প্রধান করুন
+                      {language === 'bn' ? 'প্রধান করুন' : 'Make Primary'}
                     </button>
                   )}
                 </div>
@@ -158,12 +158,12 @@ export const EmergencyContacts: React.FC = () => {
                 <div className="pt-2 border-t border-[#D5E8D7] flex flex-wrap gap-1 text-[10px]">
                   {contact.canReceiveSosSms && (
                     <span className="bg-white text-[#2E7D32] border border-[#D5E8D7] px-2 py-0.5 rounded-md font-semibold">
-                      ✓ SOS SMS সচল
+                      {language === 'bn' ? '✓ SOS SMS সচল' : '✓ SOS SMS Active'}
                     </span>
                   )}
                   {contact.canViewMedicalSummary && (
                     <span className="bg-white text-[#171717] border border-[#D5E8D7] px-2 py-0.5 rounded-md font-semibold">
-                      ✓ রেকর্ড দেখার অনুমতি
+                      {language === 'bn' ? '✓ রেকর্ড দেখার অনুমতি' : '✓ Summary View Access'}
                     </span>
                   )}
                 </div>
@@ -172,7 +172,7 @@ export const EmergencyContacts: React.FC = () => {
               <div className="pt-3 border-t border-[#D5E8D7] flex justify-end">
                 <button
                   onClick={() => handleDeleteContact(contact.id)}
-                  className="p-1.5 text-[#555555] hover:text-rose-600 rounded hover:bg-white transition-colors"
+                  className="p-1.5 text-[#555555] hover:text-rose-600 rounded hover:bg-white transition-colors cursor-pointer"
                   title="Remove contact"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -187,16 +187,18 @@ export const EmergencyContacts: React.FC = () => {
           <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs animate-in fade-in">
             <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-xl border border-[#D5E8D7] space-y-5">
               <h3 className="text-lg font-black text-[#171717]">
-                {language === 'bn' ? 'নতুন জরুরি অভিভাবক / পরিচিত যোগ করুন' : 'Add Emergency Contact'}
+                {language === 'bn' ? 'নতুন জরুরি অভিভাবক / পরিচিত যোগ করুন' : 'Add Emergency Contact & Guardian'}
               </h3>
 
               <form onSubmit={handleAddContact} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">পূর্ণ নাম *</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'পূর্ণ নাম *' : 'Full Name *'}
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. অনির্বাণ চক্রবর্তী (Anirban Chakraborty)"
+                    placeholder={language === 'bn' ? 'যেমন: অনির্বাণ চক্রবর্তী' : 'e.g. Anirban Chakraborty'}
                     value={name}
                     onChange={e => setName(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] outline-hidden"
@@ -205,18 +207,22 @@ export const EmergencyContacts: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">সম্পর্ক *</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'সম্পর্ক *' : 'Relationship *'}
+                    </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. ছেলে (লন্ডন) / প্রতিবেশী"
+                      placeholder={language === 'bn' ? 'যেমন: ছেলে / কন্যা / প্রতিবেশী' : 'e.g. Son / Daughter / Neighbor'}
                       value={relationship}
                       onChange={e => setRelationship(e.target.value)}
                       className="w-full px-3 py-2 rounded-xl bg-white border border-[#D5E8D7] text-xs text-[#171717] focus:border-[#2E7D32] outline-hidden"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">ফোন নম্বর *</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'ফোন নম্বর *' : 'Phone Number *'}
+                    </label>
                     <input
                       type="tel"
                       required
@@ -229,10 +235,12 @@ export const EmergencyContacts: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">অবস্থান / শহর</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'অবস্থান / শহর' : 'Location / City'}
+                  </label>
                   <input
                     type="text"
-                    placeholder="e.g. London / Salt Lake (5 mins away)"
+                    placeholder={language === 'bn' ? 'যেমন: পানিহাটি / সল্টলেক / লন্ডন' : 'e.g. Panihati / Salt Lake / London'}
                     value={city}
                     onChange={e => setCity(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl bg-white border border-[#D5E8D7] text-sm text-[#171717] focus:border-[#2E7D32] outline-hidden"
@@ -249,7 +257,7 @@ export const EmergencyContacts: React.FC = () => {
                       className="text-[#2E7D32] rounded focus:ring-[#2E7D32]"
                     />
                     <label htmlFor="is-prim" className="text-xs font-bold text-[#171717] cursor-pointer">
-                      প্রধান জরুরি অভিভাবক হিসেবে নির্ধারণ করুন
+                      {language === 'bn' ? 'প্রধান জরুরি অভিভাবক হিসেবে নির্ধারণ করুন' : 'Set as Primary Emergency Guardian'}
                     </label>
                   </div>
 
@@ -262,7 +270,7 @@ export const EmergencyContacts: React.FC = () => {
                       className="text-[#2E7D32] rounded focus:ring-[#2E7D32]"
                     />
                     <label htmlFor="can-sms" className="text-xs font-bold text-[#171717] cursor-pointer">
-                      এসওএস বাটনে চাপ দিলে স্বয়ংক্রিয় এসএমএস যাবে
+                      {language === 'bn' ? 'এসওএস বাটনে চাপ দিলে স্বয়ংক্রিয় এসএমএস যাবে' : 'Send automated SMS alert on Emergency SOS'}
                     </label>
                   </div>
                 </div>

@@ -47,12 +47,14 @@ export const EmergencyTracking: React.FC = () => {
   if (!currentRequest) {
     return (
       <div className="min-h-screen bg-white p-8 text-center flex flex-col items-center justify-center space-y-4">
-        <p className="text-[#555555] text-sm">কোনো সক্রিয় জরুরি অনুরোধ পাওয়া যায়নি।</p>
+        <p className="text-[#555555] text-sm">
+          {language === 'bn' ? 'কোনো সক্রিয় জরুরি অনুরোধ পাওয়া যায়নি।' : 'No active emergency request found.'}
+        </p>
         <button
           onClick={() => navigateTo('dashboard')}
           className="px-5 py-2.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
         >
-          ড্যাশবোর্ডে ফিরে যান
+          {language === 'bn' ? 'ড্যাশবোর্ডে ফিরে যান' : 'Back to Dashboard'}
         </button>
       </div>
     );
@@ -142,10 +144,10 @@ export const EmergencyTracking: React.FC = () => {
 
           <div className="pt-2 flex flex-wrap items-center gap-4 text-xs">
             <span className="bg-white text-[#171717] px-3 py-1.5 rounded-xl border border-[#D5E8D7]">
-              বিকল্প যোগাযোগ: <strong>+91 33 2320 3040</strong>
+              {language === 'bn' ? 'বিকল্প যোগাযোগ:' : 'Alternative Contact:'} <strong>+91 33 2320 3040</strong>
             </span>
             <span className="bg-white text-[#171717] px-3 py-1.5 rounded-xl border border-[#D5E8D7]">
-              বরাদ্দকৃত বেড: <strong>{currentRequest.allocatedBedType || 'ICU Cardiac Bed'}</strong>
+              {language === 'bn' ? 'বরাদ্দকৃত বেড:' : 'Allocated Bed:'} <strong>{currentRequest.allocatedBedType || (language === 'bn' ? 'আইসিইউ কার্ডিয়াক বেড' : 'ICU Cardiac Bed')}</strong>
             </span>
           </div>
         </div>
@@ -200,13 +202,13 @@ export const EmergencyTracking: React.FC = () => {
                 </h3>
               </div>
               <span className="px-3 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-full font-bold text-xs">
-                ETA: ~{simulatedEta} মিনিট
+                ETA: ~{simulatedEta} {language === 'bn' ? 'মিনিট' : 'mins'}
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                <span className="text-[#555555] block">গাড়ির নম্বর:</span>
+                <span className="text-[#555555] block">{language === 'bn' ? 'গাড়ির নম্বর:' : 'Vehicle Number:'}</span>
                 <span className="font-black text-[#171717] text-sm mt-0.5 block">
                   {currentRequest.ambulanceDetails.vehicleNumber}
                 </span>
@@ -214,7 +216,7 @@ export const EmergencyTracking: React.FC = () => {
               </div>
 
               <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7]">
-                <span className="text-[#555555] block">চালকের নাম:</span>
+                <span className="text-[#555555] block">{language === 'bn' ? 'চালকের নাম:' : 'Driver Name:'}</span>
                 <span className="font-bold text-[#171717] text-sm mt-0.5 block">
                   {currentRequest.ambulanceDetails.driverName}
                 </span>
@@ -222,7 +224,7 @@ export const EmergencyTracking: React.FC = () => {
               </div>
 
               <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7] flex flex-col justify-between">
-                <span className="text-[#555555] block">সরাসরি ফোন:</span>
+                <span className="text-[#555555] block">{language === 'bn' ? 'সরাসরি ফোন:' : 'Direct Call:'}</span>
                 <a
                   href={`tel:${currentRequest.ambulanceDetails.driverPhone}`}
                   className="px-3 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white font-bold rounded-xl text-center flex items-center justify-center space-x-1 mt-1 shadow-xs"
@@ -240,13 +242,16 @@ export const EmergencyTracking: React.FC = () => {
           <div className="text-center pt-4">
             <button
               onClick={() => {
-                if (window.confirm('আপনি কি নিশ্চিত যে জরুরি অনুরোধটি বাতিল করতে চান?')) {
+                const confirmMsg = language === 'bn'
+                  ? 'আপনি কি নিশ্চিত যে জরুরি অনুরোধটি বাতিল করতে চান?'
+                  : 'Are you sure you want to cancel the emergency request?';
+                if (window.confirm(confirmMsg)) {
                   cancelEmergencyRequest(currentRequest.id);
                 }
               }}
               className="text-xs font-bold text-[#555555] hover:text-rose-600 transition-colors"
             >
-              জরুরি অনুরোধ বাতিল করতে চান? (Cancel SOS)
+              {language === 'bn' ? 'জরুরি অনুরোধ বাতিল করতে চান? (Cancel SOS)' : 'Cancel Emergency Request'}
             </button>
           </div>
         )}

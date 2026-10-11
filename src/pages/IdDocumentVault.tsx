@@ -69,10 +69,14 @@ export const IdDocumentVault: React.FC = () => {
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7] space-y-2 shadow-2xs">
-              <span className="text-xs font-bold text-[#555555] block">ধারকের নাম:</span>
+              <span className="text-xs font-bold text-[#555555] block">
+                {language === 'bn' ? 'ধারকের নাম:' : 'Cardholder Name:'}
+              </span>
               <p className="text-sm font-bold text-[#171717]">{patientProfile.fullName}</p>
 
-              <span className="text-xs font-bold text-[#555555] block pt-2">সুরক্ষিত আধার নম্বর:</span>
+              <span className="text-xs font-bold text-[#555555] block pt-2">
+                {language === 'bn' ? 'সুরক্ষিত আধার নম্বর:' : 'Secure Masked Aadhaar:'}
+              </span>
               <div className="flex items-center justify-between">
                 <span className="font-mono text-base font-black text-[#171717] tracking-wider">
                   {showMaskedAadhaar ? (patientProfile.maskedAadhaar || 'XXXX-XXXX-7842') : '•••• •••• 7842'}
@@ -88,7 +92,9 @@ export const IdDocumentVault: React.FC = () => {
 
             <div className="text-[11px] text-[#555555] flex items-center space-x-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#2E7D32] shrink-0" />
-              <span>প্রথম ৮ ডিজিট গোপন (Masked) রাখা হয়েছে।</span>
+              <span>
+                {language === 'bn' ? 'প্রথম ৮ ডিজিট গোপন (Masked) রাখা হয়েছে।' : 'First 8 digits are securely masked.'}
+              </span>
             </div>
           </div>
 
@@ -107,10 +113,14 @@ export const IdDocumentVault: React.FC = () => {
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-[#D5E8D7] space-y-2 shadow-2xs">
-              <span className="text-xs font-bold text-[#555555] block">করদাতার নাম:</span>
+              <span className="text-xs font-bold text-[#555555] block">
+                {language === 'bn' ? 'করদাতার নাম:' : 'Taxpayer Name:'}
+              </span>
               <p className="text-sm font-bold text-[#171717]">{patientProfile.fullName}</p>
 
-              <span className="text-xs font-bold text-[#555555] block pt-2">সুরক্ষিত প্যান নম্বর:</span>
+              <span className="text-xs font-bold text-[#555555] block pt-2">
+                {language === 'bn' ? 'সুরক্ষিত প্যান নম্বর:' : 'Secure Masked PAN:'}
+              </span>
               <div className="flex items-center justify-between">
                 <span className="font-mono text-base font-black text-[#171717] tracking-wider">
                   {showMaskedPan ? (patientProfile.maskedPan || 'ABCDE****G') : '•••••****G'}
@@ -126,7 +136,9 @@ export const IdDocumentVault: React.FC = () => {
 
             <div className="text-[11px] text-[#555555] flex items-center space-x-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#2E7D32] shrink-0" />
-              <span>বীমা ক্যাশলেস ও হাসপাতালের জন্য প্রযোজ্য।</span>
+              <span>
+                {language === 'bn' ? 'বীমা ক্যাশলেস ও হাসপাতালের জন্য প্রযোজ্য।' : 'Used for cashless insurance and hospital admissions.'}
+              </span>
             </div>
           </div>
         </div>
@@ -135,13 +147,19 @@ export const IdDocumentVault: React.FC = () => {
         <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 border border-[#D5E8D7] text-[#171717] space-y-3 shadow-xs">
           <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs uppercase tracking-wider">
             <KeyRound className="w-4 h-4" />
-            <span>জিরো-ট্রাস্ট ডেটা সুরক্ষা (Zero-Trust Identity Policy)</span>
+            <span>
+              {language === 'bn' ? 'জিরো-ট্রাস্ট ডেটা সুরক্ষা (Zero-Trust Identity Policy)' : 'Zero-Trust Identity Data Governance'}
+            </span>
           </div>
           <h4 className="text-base sm:text-lg font-black text-[#171717]">
-            আপনার তথ্য কোনো বিজ্ঞাপনদাতা বা অননুমোদিত ব্যক্তির সাথে বিনিময় হয় না।
+            {language === 'bn'
+              ? 'আপনার তথ্য কোনো বিজ্ঞাপনদাতা বা অননুমোদিত ব্যক্তির সাথে বিনিময় হয় না।'
+              : 'Your identity data is never shared with advertisers or third parties.'}
           </h4>
           <p className="text-xs text-[#555555] leading-relaxed">
-            শুধুমাত্র জরুরি এসওএস বা আপনার স্পষ্ট টাইম-লিমিটেড অনুমোদনে রেজিস্টার্ড পার্টনার হাসপাতালের ট্রায়াজ ডক্টর সাময়িক সময়ের জন্য এই তথ্য পরিদর্শন করতে পারেন।
+            {language === 'bn'
+              ? 'শুধুমাত্র জরুরি এসওএস বা আপনার স্পষ্ট টাইম-লিমিটেড অনুমোদনে রেজিস্টার্ড পার্টনার হাসপাতালের ট্রায়াজ ডক্টর সাময়িক সময়ের জন্য এই তথ্য পরিদর্শন করতে পারেন।'
+              : 'Only verified triage doctors at partner hospitals can view this data during active SOS or with your explicit time-bound permission.'}
           </p>
         </div>
       </div>

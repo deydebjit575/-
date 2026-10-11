@@ -71,29 +71,45 @@ export const MedicalSummary: React.FC = () => {
         {/* Vital Health Metrics Snapshot Card */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">রক্তের গ্রুপ (Blood Group)</span>
-            <span className="text-2xl font-black text-rose-700 mt-1 block">{patientProfile.bloodGroup}</span>
-            <span className="text-[10px] text-[#555555]">জরুরি ট্রান্সফিউশন প্রস্তুত</span>
-          </div>
-
-          <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">বয়স ও লিঙ্গ</span>
-            <span className="text-2xl font-black text-[#171717] mt-1 block">
-              {patientProfile.age}Y • <span className="capitalize">{patientProfile.gender}</span>
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'রক্তের গ্রুপ' : 'Blood Group'}
             </span>
-            <span className="text-[10px] text-[#555555]">জন্ম: {patientProfile.dateOfBirth}</span>
+            <span className="text-2xl font-black text-rose-700 mt-1 block">{patientProfile.bloodGroup}</span>
+            <span className="text-[10px] text-[#555555]">
+              {language === 'bn' ? 'জরুরি ট্রান্সফিউশন প্রস্তুত' : 'Transfusion Ready'}
+            </span>
           </div>
 
           <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">রক্তচাপ (Recent BP)</span>
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'বয়স ও লিঙ্গ' : 'Age & Gender'}
+            </span>
+            <span className="text-2xl font-black text-[#171717] mt-1 block">
+              {patientProfile.age} {language === 'bn' ? 'বছর' : 'Y'} • <span className="capitalize">{patientProfile.gender}</span>
+            </span>
+            <span className="text-[10px] text-[#555555]">
+              {language === 'bn' ? 'জন্ম: ' : 'DOB: '} {patientProfile.dateOfBirth}
+            </span>
+          </div>
+
+          <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'রক্তচাপ' : 'Recent Blood Pressure'}
+            </span>
             <span className="text-2xl font-black text-[#2E7D32] mt-1 block">124 / 80</span>
-            <span className="text-[10px] text-[#2E7D32] font-semibold">mmHg (স্বাভাবিক)</span>
+            <span className="text-[10px] text-[#2E7D32] font-semibold">
+              mmHg ({language === 'bn' ? 'স্বাভাবিক' : 'Normal'})
+            </span>
           </div>
 
           <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">রক্তে অক্সিজেন (SpO2)</span>
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'রক্তে অক্সিজেন (SpO2)' : 'Oxygen Saturation (SpO2)'}
+            </span>
             <span className="text-2xl font-black text-[#2E7D32] mt-1 block">99%</span>
-            <span className="text-[10px] text-[#2E7D32] font-semibold">স্বাভাবিক পালস</span>
+            <span className="text-[10px] text-[#2E7D32] font-semibold">
+              {language === 'bn' ? 'স্বাভাবিক পালস' : 'Normal Pulse'}
+            </span>
           </div>
         </div>
 
@@ -106,7 +122,9 @@ export const MedicalSummary: React.FC = () => {
                 {language === 'bn' ? 'রক্তচাপ ও গ্লুকোজ ট্রেন্ড হিস্ট্রি' : 'Blood Pressure & Glucose History'}
               </h3>
             </div>
-            <span className="text-xs text-[#555555]">গত ৬ সপ্তাহের রেকর্ড</span>
+            <span className="text-xs text-[#555555]">
+              {language === 'bn' ? 'গত ৬ সপ্তাহের রেকর্ড' : 'Last 6 weeks history'}
+            </span>
           </div>
 
           <div className="bg-white p-4 rounded-xl border border-[#D5E8D7] h-72 w-full pt-4">
@@ -135,7 +153,9 @@ export const MedicalSummary: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#171717] block">জানা অ্যালার্জি:</span>
+              <span className="text-xs font-bold text-[#171717] block">
+                {language === 'bn' ? 'জানা অ্যালার্জি:' : 'Known Allergies:'}
+              </span>
               <div className="flex flex-wrap gap-2">
                 {patientProfile.knownAllergies.map((all, i) => (
                   <span key={i} className="px-3 py-1 bg-white border border-rose-300 text-rose-700 text-xs font-bold rounded-lg shadow-2xs">
@@ -146,7 +166,9 @@ export const MedicalSummary: React.FC = () => {
             </div>
 
             <div className="space-y-2 pt-2">
-              <span className="text-xs font-bold text-[#171717] block">বিদ্যমান রোগ:</span>
+              <span className="text-xs font-bold text-[#171717] block">
+                {language === 'bn' ? 'বিদ্যমান রোগ:' : 'Existing Conditions:'}
+              </span>
               <ul className="space-y-1.5 text-xs text-[#555555] list-disc pl-4">
                 {patientProfile.existingConditions.map((cond, i) => (
                   <li key={i}>{cond}</li>
@@ -155,7 +177,9 @@ export const MedicalSummary: React.FC = () => {
             </div>
 
             <div className="space-y-2 pt-2 border-t border-[#D5E8D7]">
-              <span className="text-xs font-bold text-[#171717] block">অতীতের অপারেশন (Surgeries):</span>
+              <span className="text-xs font-bold text-[#171717] block">
+                {language === 'bn' ? 'অতীতের অপারেশন:' : 'Past Surgeries:'}
+              </span>
               {patientProfile.pastSurgeries.map((surg, i) => (
                 <div key={i} className="bg-white p-2.5 rounded-lg border border-[#D5E8D7] text-xs">
                   <span className="font-bold text-[#171717]">{surg.procedure} ({surg.year})</span>
@@ -178,7 +202,11 @@ export const MedicalSummary: React.FC = () => {
                   <div>
                     <h5 className="font-bold text-[#171717] text-sm">{med.name}</h5>
                     <p className="text-[#555555] text-[11px]">{med.frequency}</p>
-                    {med.prescribedBy && <p className="text-[10px] text-[#2E7D32] mt-0.5">পরামর্শক: {med.prescribedBy}</p>}
+                    {med.prescribedBy && (
+                      <p className="text-[10px] text-[#2E7D32] mt-0.5">
+                        {language === 'bn' ? 'পরামর্শক: ' : 'Prescribed By: '} {med.prescribedBy}
+                      </p>
+                    )}
                   </div>
                   <span className="px-2.5 py-1 bg-[#E8F5E9] border border-[#D5E8D7] text-[#2E7D32] rounded-md font-bold text-xs">
                     {med.dosage}
@@ -190,7 +218,9 @@ export const MedicalSummary: React.FC = () => {
             {/* Treating Doctor */}
             {patientProfile.treatingDoctor && (
               <div className="p-4 bg-white border border-[#D5E8D7] rounded-2xl text-xs space-y-1 mt-4">
-                <span className="font-bold text-[#2E7D32] block">প্রধান পরামর্শক চিকিৎসক:</span>
+                <span className="font-bold text-[#2E7D32] block">
+                  {language === 'bn' ? 'প্রধান পরামর্শক চিকিৎসক:' : 'Primary Consultant Doctor:'}
+                </span>
                 <p className="font-bold text-[#171717]">{patientProfile.treatingDoctor.name}</p>
                 <p className="text-[#555555] text-[11px]">{patientProfile.treatingDoctor.speciality} • {patientProfile.treatingDoctor.hospital}</p>
                 <a href={`tel:${patientProfile.treatingDoctor.phone}`} className="text-[#2E7D32] hover:text-[#256B2A] font-bold block pt-1">

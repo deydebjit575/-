@@ -113,7 +113,7 @@ export const MedicalVault: React.FC = () => {
                 className="px-8 py-3.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl font-black text-sm shadow-sm transition-all inline-flex items-center space-x-2"
               >
                 <Upload className="w-4 h-4" />
-                <span>{language === 'bn' ? 'নথি আপলোড করুন (Upload Documents)' : 'Upload Documents'}</span>
+                <span>{language === 'bn' ? 'নথি আপলোড করুন' : 'Upload Documents'}</span>
               </button>
             </div>
           </div>
@@ -165,7 +165,7 @@ export const MedicalVault: React.FC = () => {
                   onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
                   className="text-xs font-bold text-[#2E7D32] hover:underline"
                 >
-                  ফিল্টার রিসেট করুন
+                  {language === 'bn' ? 'ফিল্টার রিসেট করুন' : 'Reset Filter'}
                 </button>
               </div>
             ) : (
@@ -182,7 +182,7 @@ export const MedicalVault: React.FC = () => {
                         </span>
                         <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center">
                           <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                          সংরক্ষিত
+                          {language === 'bn' ? 'সংরক্ষিত' : 'Saved'}
                         </span>
                       </div>
 
@@ -196,12 +196,16 @@ export const MedicalVault: React.FC = () => {
                       <div className="space-y-1 text-xs text-[#555555]">
                         {doc.doctorName && (
                           <p className="truncate">
-                            <span className="font-semibold text-[#171717]">চিকিৎসক:</span> {doc.doctorName}
+                            <span className="font-semibold text-[#171717]">
+                              {language === 'bn' ? 'চিকিৎসক:' : 'Physician:'}
+                            </span> {doc.doctorName}
                           </p>
                         )}
                         {doc.hospitalName && (
                           <p className="truncate">
-                            <span className="font-semibold text-[#171717]">হাসপাতাল:</span> {doc.hospitalName}
+                            <span className="font-semibold text-[#171717]">
+                              {language === 'bn' ? 'হাসপাতাল:' : 'Hospital:'}
+                            </span> {doc.hospitalName}
                           </p>
                         )}
                         <div className="flex items-center justify-between text-[11px] text-[#555555] pt-1">

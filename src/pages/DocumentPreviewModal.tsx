@@ -30,12 +30,14 @@ export const DocumentPreviewModal: React.FC = () => {
   if (!doc) {
     return (
       <div className="min-h-screen bg-white p-8 text-center flex flex-col items-center justify-center space-y-4">
-        <p className="text-[#555555] text-sm">নথি পাওয়া যায়নি / Document not found</p>
+        <p className="text-[#555555] text-sm">
+          {language === 'bn' ? 'নথি পাওয়া যায়নি' : 'Document not found'}
+        </p>
         <button
           onClick={() => navigateTo('medical-vault')}
           className="px-5 py-2.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs"
         >
-          ভল্টে ফিরে যান
+          {language === 'bn' ? 'ভল্টে ফিরে যান' : 'Back to Vault'}
         </button>
       </div>
     );
@@ -154,7 +156,7 @@ export const DocumentPreviewModal: React.FC = () => {
                 {doc.isLabVerified && (
                   <span className="flex items-center text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                     <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" />
-                    ল্যাব যাচাইকৃত
+                    {language === 'bn' ? 'ল্যাব যাচাইকৃত' : 'Lab Verified'}
                   </span>
                 )}
               </div>
@@ -164,33 +166,33 @@ export const DocumentPreviewModal: React.FC = () => {
               {/* Detail rows */}
               <div className="space-y-3 text-xs text-[#555555]">
                 <div className="flex justify-between py-1.5 border-b border-[#D5E8D7]">
-                  <span className="text-[#555555]">ডকুমেন্ট আইডি:</span>
+                  <span className="text-[#555555]">{language === 'bn' ? 'ডকুমেন্ট আইডি:' : 'Document ID:'}</span>
                   <span className="font-mono font-bold text-[#171717]">{doc.id}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-[#D5E8D7]">
-                  <span className="text-[#555555]">আপলোড তারিখ:</span>
+                  <span className="text-[#555555]">{language === 'bn' ? 'আপলোড তারিখ:' : 'Upload Date:'}</span>
                   <span className="font-bold text-[#171717]">{doc.uploadDate}</span>
                 </div>
                 {doc.issueDate && (
                   <div className="flex justify-between py-1.5 border-b border-[#D5E8D7]">
-                    <span className="text-[#555555]">ইস্যু তারিখ:</span>
+                    <span className="text-[#555555]">{language === 'bn' ? 'ইস্যু তারিখ:' : 'Issue Date:'}</span>
                     <span className="font-bold text-[#171717]">{doc.issueDate}</span>
                   </div>
                 )}
                 {doc.doctorName && (
                   <div className="flex justify-between py-1.5 border-b border-[#D5E8D7]">
-                    <span className="text-[#555555]">চিকিৎসক:</span>
+                    <span className="text-[#555555]">{language === 'bn' ? 'চিকিৎসক:' : 'Physician:'}</span>
                     <span className="font-bold text-[#171717] text-right">{doc.doctorName}</span>
                   </div>
                 )}
                 {doc.hospitalName && (
                   <div className="flex justify-between py-1.5 border-b border-[#D5E8D7]">
-                    <span className="text-[#555555]">হাসপাতাল / ল্যাব:</span>
+                    <span className="text-[#555555]">{language === 'bn' ? 'হাসপাতাল / ল্যাব:' : 'Hospital / Lab:'}</span>
                     <span className="font-bold text-[#171717] text-right">{doc.hospitalName}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-1.5 border-b border-[#D5E8D7]">
-                  <span className="text-[#555555]">ফাইলের আকার:</span>
+                  <span className="text-[#555555]">{language === 'bn' ? 'ফাইলের আকার:' : 'File Size:'}</span>
                   <span className="font-bold text-[#171717]">{doc.fileSizeKb} KB</span>
                 </div>
               </div>
@@ -208,7 +210,9 @@ export const DocumentPreviewModal: React.FC = () => {
               {/* Tags */}
               {doc.tags && doc.tags.length > 0 && (
                 <div>
-                  <span className="text-xs font-bold text-[#171717] block mb-1.5">ট্যাগসমূহ:</span>
+                  <span className="text-xs font-bold text-[#171717] block mb-1.5">
+                    {language === 'bn' ? 'ট্যাগসমূহ:' : 'Tags:'}
+                  </span>
                   <div className="flex flex-wrap gap-1.5">
                     {doc.tags.map((t, idx) => (
                       <span key={idx} className="text-xs bg-white text-[#171717] border border-[#D5E8D7] px-2.5 py-0.5 rounded-md font-medium">

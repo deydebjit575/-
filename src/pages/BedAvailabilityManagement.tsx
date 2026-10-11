@@ -134,20 +134,24 @@ export const BedAvailabilityManagement: React.FC = () => {
                   {isEditing ? (
                     <div className="space-y-3 p-3 bg-white rounded-2xl border border-[#D5E8D7]">
                       <div>
-                        <label className="block text-[11px] font-bold text-[#171717] mb-1">অবস্থা নির্বাচন:</label>
+                        <label className="block text-[11px] font-bold text-[#171717] mb-1">
+                          {language === 'bn' ? 'অবস্থা নির্বাচন:' : 'Select Status:'}
+                        </label>
                         <select
                           value={editStatus}
                           onChange={e => setEditStatus(e.target.value as BedStatus)}
                           className="w-full p-2 bg-white rounded-xl border border-[#D5E8D7] text-xs font-bold text-[#171717] outline-hidden focus:border-[#2E7D32]"
                         >
-                          <option value="AVAILABLE">AVAILABLE (উপলব্ধ)</option>
-                          <option value="UNAVAILABLE">UNAVAILABLE (খালি নেই)</option>
-                          <option value="UNKNOWN">UNKNOWN (অনিশ্চিত)</option>
+                          <option value="AVAILABLE">{language === 'bn' ? 'AVAILABLE (উপলব্ধ)' : 'AVAILABLE'}</option>
+                          <option value="UNAVAILABLE">{language === 'bn' ? 'UNAVAILABLE (খালি নেই)' : 'UNAVAILABLE'}</option>
+                          <option value="UNKNOWN">{language === 'bn' ? 'UNKNOWN (অনিশ্চিত)' : 'UNKNOWN'}</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-[#171717] mb-1">উপলব্ধ বেড সংখ্যা:</label>
+                        <label className="block text-[11px] font-bold text-[#171717] mb-1">
+                          {language === 'bn' ? 'উপলব্ধ বেড সংখ্যা:' : 'Available Bed Count:'}
+                        </label>
                         <input
                           type="number"
                           value={editAvailableCount}
@@ -157,13 +161,15 @@ export const BedAvailabilityManagement: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-[#171717] mb-1">নোট:</label>
+                        <label className="block text-[11px] font-bold text-[#171717] mb-1">
+                          {language === 'bn' ? 'নোট:' : 'Notes:'}
+                        </label>
                         <input
                           type="text"
                           value={editNotes}
                           onChange={e => setEditNotes(e.target.value)}
                           className="w-full p-2 bg-white rounded-xl border border-[#D5E8D7] text-xs text-[#171717] outline-hidden focus:border-[#2E7D32]"
-                          placeholder="Ventilator ready..."
+                          placeholder={language === 'bn' ? 'যেমন: ভেন্টিলেটর প্রস্তুত...' : 'e.g. Ventilator ready...'}
                         />
                       </div>
 
@@ -172,21 +178,23 @@ export const BedAvailabilityManagement: React.FC = () => {
                           onClick={() => setEditingRecordId(null)}
                           className="px-3 py-1 bg-white border border-[#D5E8D7] text-[#555555] rounded-lg text-xs font-bold cursor-pointer"
                         >
-                          বাতিল
+                          {language === 'bn' ? 'বাতিল' : 'Cancel'}
                         </button>
                         <button
                           onClick={() => handleSaveEdit(record.id)}
                           className="px-4 py-1 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-lg text-xs font-bold flex items-center space-x-1 cursor-pointer"
                         >
                           <Save className="w-3.5 h-3.5" />
-                          <span>সংরক্ষণ</span>
+                          <span>{language === 'bn' ? 'সংরক্ষণ' : 'Save'}</span>
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] flex items-center justify-between shadow-2xs">
-                        <span className="text-xs text-[#555555] font-medium">উপলব্ধ / মোট ক্ষমতা:</span>
+                        <span className="text-xs text-[#555555] font-medium">
+                          {language === 'bn' ? 'উপলব্ধ / মোট ক্ষমতা:' : 'Available / Total Capacity:'}
+                        </span>
                         <span className="text-lg font-black text-[#171717]">
                           <span className="text-[#2E7D32]">{record.availableCount}</span> / {record.totalCapacity}
                         </span>
@@ -203,7 +211,7 @@ export const BedAvailabilityManagement: React.FC = () => {
 
                 <div className="pt-3 border-t border-[#D5E8D7] flex items-center justify-between text-xs text-[#555555]">
                   <span className="truncate max-w-[170px]">
-                    স্টাফ: <strong className="text-[#171717]">{record.updatedByStaffName.split('(')[0]}</strong>
+                    {language === 'bn' ? 'স্টাফ:' : 'Staff:'} <strong className="text-[#171717]">{record.updatedByStaffName.split('(')[0]}</strong>
                   </span>
                   {!isEditing && (
                     <button
@@ -211,7 +219,7 @@ export const BedAvailabilityManagement: React.FC = () => {
                       className="px-3 py-1.5 rounded-lg bg-white border border-[#D5E8D7] hover:bg-[#F1F8F2] text-[#171717] font-bold transition-colors flex items-center space-x-1 cursor-pointer"
                     >
                       <Edit className="w-3.5 h-3.5 text-[#2E7D32]" />
-                      <span>হালনাগাদ</span>
+                      <span>{language === 'bn' ? 'হালনাগাদ' : 'Update'}</span>
                     </button>
                   )}
                 </div>
@@ -230,7 +238,9 @@ export const BedAvailabilityManagement: React.FC = () => {
 
               <form onSubmit={handleAddBed} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">ক্যাটাগরি</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'ক্যাটাগরি' : 'Category'}
+                  </label>
                   <select
                     value={newCategory}
                     onChange={e => setNewCategory(e.target.value as BedCategoryType)}
@@ -247,7 +257,9 @@ export const BedAvailabilityManagement: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">মোট ক্ষমতা (Total)</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'মোট ক্ষমতা (Total)' : 'Total Capacity'}
+                    </label>
                     <input
                       type="number"
                       required
@@ -257,7 +269,9 @@ export const BedAvailabilityManagement: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">উপলব্ধ সংখ্যা (Available)</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'উপলব্ধ সংখ্যা (Available)' : 'Available Count'}
+                    </label>
                     <input
                       type="number"
                       required
@@ -269,7 +283,9 @@ export const BedAvailabilityManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">নোট / সুবিধা বিবরণ</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'নোট / সুবিধা বিবরণ' : 'Notes / Facilities'}
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g. Ventilator ready, Cardiac monitor attached"

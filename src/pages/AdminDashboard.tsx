@@ -42,13 +42,18 @@ export const AdminDashboard: React.FC = () => {
               {language === 'bn' ? 'প্রশাসনিক ড্যাশবোর্ড ও অডিট লগ' : 'Susthayan Administrative Command'}
             </h1>
             <p className="text-xs text-[#555555]">
-              Hospital registrations, live ICU telemetry verification, and DISHA audit access logs.
+              {language === 'bn'
+                ? 'হাসপাতাল নিবন্ধন, সরাসরি আইসিইউ টেলিমেট্রি যাচাই এবং DISHA অ্যাক্সেস অডিট লগ।'
+                : 'Hospital registrations, live ICU telemetry verification, and DISHA audit access logs.'}
             </p>
           </div>
 
           <button
             onClick={() => {
-              if (window.confirm('সকল ডেটা প্রারম্ভিক ডেমো অবস্থায় রিসেট করতে চান?')) {
+              const confirmMsg = language === 'bn'
+                ? 'সকল ডেটা প্রারম্ভিক ডেমো অবস্থায় রিসেট করতে চান?'
+                : 'Are you sure you want to reset all data to initial demo state?';
+              if (window.confirm(confirmMsg)) {
                 resetToDefaultData();
               }
             }}
@@ -62,27 +67,43 @@ export const AdminDashboard: React.FC = () => {
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">পার্টনার হাসপাতাল</span>
-            <span className="text-2xl font-black text-[#171717] mt-1 block">{hospitals.length} টি</span>
-            <span className="text-[10px] text-[#2E7D32] font-bold">১০০% ভেরিফাইড</span>
-          </div>
-
-          <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">মোট আইসিইউ বেড</span>
-            <span className="text-2xl font-black text-[#2E7D32] mt-1 block">
-              {hospitals.reduce((acc, h) => acc + h.icuBedsAvailable, 0)} টি খালি
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'পার্টনার হাসপাতাল' : 'Partner Hospitals'}
             </span>
-            <span className="text-[10px] text-[#555555]">লাইভ আপডেট সচল</span>
+            <span className="text-2xl font-black text-[#171717] mt-1 block">
+              {hospitals.length} {language === 'bn' ? 'টি' : ''}
+            </span>
+            <span className="text-[10px] text-[#2E7D32] font-bold">
+              {language === 'bn' ? '১০০% ভেরিফাইড' : '100% Verified'}
+            </span>
           </div>
 
           <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">জরুরি অনুরোধ হ্যান্ডলড</span>
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'মোট আইসিইউ বেড' : 'Total ICU Beds'}
+            </span>
+            <span className="text-2xl font-black text-[#2E7D32] mt-1 block">
+              {hospitals.reduce((acc, h) => acc + h.icuBedsAvailable, 0)} {language === 'bn' ? 'টি খালি' : 'Available'}
+            </span>
+            <span className="text-[10px] text-[#555555]">
+              {language === 'bn' ? 'লাইভ আপডেট সচল' : 'Live updates active'}
+            </span>
+          </div>
+
+          <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'জরুরি অনুরোধ নিষ্পত্তি' : 'Emergency SOS Handled'}
+            </span>
             <span className="text-2xl font-black text-rose-700 mt-1 block">{emergencyRequests.length}</span>
-            <span className="text-[10px] text-[#555555]">গড় সাড়াদান সময়: ~১.৮ মিনিট</span>
+            <span className="text-[10px] text-[#555555]">
+              {language === 'bn' ? 'গড় সাড়াদান সময়: ~১.৮ মিনিট' : 'Avg response: ~1.8 mins'}
+            </span>
           </div>
 
           <div className="bg-[#E8F5E9] p-5 rounded-2xl border border-[#D5E8D7] shadow-xs">
-            <span className="text-xs font-bold text-[#555555] block">অডিট লগ এন্ট্রি</span>
+            <span className="text-xs font-bold text-[#555555] block">
+              {language === 'bn' ? 'অডিট লগ এন্ট্রি' : 'Audit Log Entries'}
+            </span>
             <span className="text-2xl font-black text-[#2E7D32] mt-1 block">{auditLogs.length}</span>
             <span className="text-[10px] text-[#2E7D32] font-bold">Immutable SHA-256</span>
           </div>
@@ -91,9 +112,9 @@ export const AdminDashboard: React.FC = () => {
         {/* Navigation Tabs */}
         <div className="flex items-center space-x-2 border-b border-[#D5E8D7] pb-2 overflow-x-auto">
           {[
-            { id: 'hospitals', label: 'নিবন্ধিত হাসপাতাল তালিকা (Partner Hospitals)' },
-            { id: 'audit', label: 'নিরাপত্তা ও অ্যাক্সেস অডিট লগ (Audit Trail)' },
-            { id: 'config', label: 'প্ল্যাটফর্ম ও DLT কনফিগারেশন (Settings)' }
+            { id: 'hospitals', label: language === 'bn' ? 'নিবন্ধিত হাসপাতাল তালিকা' : 'Registered Hospitals' },
+            { id: 'audit', label: language === 'bn' ? 'নিরাপত্তা ও অ্যাক্সেস অডিট লগ' : 'Security Audit Trail' },
+            { id: 'config', label: language === 'bn' ? 'প্ল্যাটফর্ম ও সিস্টেম কনফিগারেশন' : 'Platform & System Config' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -112,7 +133,9 @@ export const AdminDashboard: React.FC = () => {
         {/* Tab 1: Hospitals */}
         {activeTab === 'hospitals' && (
           <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-4">
-            <h3 className="font-black text-[#171717] text-base">রেজিস্টার্ড হাসপাতাল ও লাইভ স্ট্যাটাস</h3>
+            <h3 className="font-black text-[#171717] text-base">
+              {language === 'bn' ? 'রেজিস্টার্ড হাসপাতাল ও লাইভ স্ট্যাটাস' : 'Registered Hospitals & Live Telemetry'}
+            </h3>
             <div className="space-y-3">
               {hospitals.map(hosp => (
                 <div
@@ -124,8 +147,12 @@ export const AdminDashboard: React.FC = () => {
                     <p className="text-[#555555]">{hosp.address} • 📞 {hosp.phone}</p>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <span className="text-[#2E7D32] font-bold">ICU: {hosp.icuBedsAvailable} Beds</span>
-                    <span className="text-[#171717] font-bold">Ambulance: {hosp.ambulanceCount}</span>
+                    <span className="text-[#2E7D32] font-bold">
+                      ICU: {hosp.icuBedsAvailable} {language === 'bn' ? 'বেড' : 'Beds'}
+                    </span>
+                    <span className="text-[#171717] font-bold">
+                      Ambulance: {hosp.ambulanceCount}
+                    </span>
                     <span className="px-2.5 py-1 bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] rounded-full font-bold text-[10px]">
                       VERIFIED
                     </span>
@@ -139,7 +166,9 @@ export const AdminDashboard: React.FC = () => {
         {/* Tab 2: Security Audit Logs */}
         {activeTab === 'audit' && (
           <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-4">
-            <h3 className="font-black text-[#171717] text-base">প্ল্যাটফর্ম অ্যাক্সেস ও নিরাপত্তা অডিট লগ</h3>
+            <h3 className="font-black text-[#171717] text-base">
+              {language === 'bn' ? 'প্ল্যাটফর্ম অ্যাক্সেস ও নিরাপত্তা অডিট লগ' : 'Platform Access & Security Audit Trail'}
+            </h3>
             <div className="space-y-3">
               {auditLogs.map(log => (
                 <div
@@ -168,7 +197,9 @@ export const AdminDashboard: React.FC = () => {
         {/* Tab 3: Config */}
         {activeTab === 'config' && (
           <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-6 text-xs">
-            <h3 className="font-black text-[#171717] text-base">সিস্টেম ও গেটওয়ে ইন্টিগ্রেশন স্ট্যাটাস</h3>
+            <h3 className="font-black text-[#171717] text-base">
+              {language === 'bn' ? 'সিস্টেম ও গেটওয়ে ইন্টিগ্রেশন স্ট্যাটাস' : 'System & Gateway Integration Telemetry'}
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] shadow-2xs space-y-1">
                 <span className="font-bold text-[#171717] block">Indian DLT SMS Gateway</span>

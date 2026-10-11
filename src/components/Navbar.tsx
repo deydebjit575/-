@@ -21,7 +21,11 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onToggleRightSidebar?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onToggleRightSidebar }) => {
   const {
     currentUser,
     currentPage,
@@ -41,7 +45,6 @@ export const Navbar: React.FC = () => {
     setFontSizeMultiplier
   } = useLanguage();
 
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const isHospitalStaff = currentUser?.role === 'hospital_staff';
@@ -56,37 +59,6 @@ export const Navbar: React.FC = () => {
       speak(`Welcome to Susthayan ${displayName}. Your medical vault and nearby hospital beds are ready.`);
     }
   };
-
-  // Logged-in Patient Links
-  const patientNavLinks = [
-    { page: 'dashboard', label: language === 'bn' ? 'ড্যাশবোর্ড' : 'Dashboard', icon: Layers },
-    { page: 'medical-vault', label: language === 'bn' ? 'মেডিকেল ভল্ট' : 'MediVault', icon: FileText },
-    { page: 'upload-document', label: language === 'bn' ? 'নথি আপলোড' : 'Upload Documents', icon: Upload },
-    { page: 'nearby-hospitals', label: language === 'bn' ? 'নিকটস্থ হাসপাতাল' : 'Nearby Hospitals', icon: MapPin },
-    { page: 'share-records', label: language === 'bn' ? 'শেয়ার ও অনুমতি' : 'Share & Consent', icon: ShieldCheck },
-    { page: 'ai-checkin', label: language === 'bn' ? 'এআই চেক-ইন' : 'AI Check-in', icon: Sparkles },
-    { page: 'drug-checker', label: language === 'bn' ? 'ওষুধ পরীক্ষক' : 'Drug Checker', icon: Pill },
-  ];
-
-  // Hospital Staff Links
-  const hospitalStaffNavLinks = [
-    { page: 'hospital-dashboard', label: language === 'bn' ? 'ইআর ট্রায়াজ ড্যাশবোর্ড' : 'Hospital Portal', icon: Building2 },
-    { page: 'nearby-hospitals', label: language === 'bn' ? 'হাসপাতাল নেটওয়ার্ক' : 'Hospitals Directory', icon: MapPin },
-    { page: 'emergency-sos', label: language === 'bn' ? 'জরুরি SOS ভিউ' : 'Emergency SOS', icon: AlertOctagon },
-  ];
-
-  // Public Nav Links
-  const publicNavLinks = [
-    { page: 'landing', label: language === 'bn' ? 'মূল পাতা' : 'Home', icon: Layers },
-    { page: 'nearby-hospitals', label: language === 'bn' ? 'নিকটস্থ হাসপাতাল' : 'Nearby Hospitals', icon: MapPin },
-    { page: 'help', label: language === 'bn' ? 'জরুরি হেল্পলাইন' : 'Help & 112', icon: PhoneCall },
-  ];
-
-  const visibleLinks = isHospitalStaff
-    ? hospitalStaffNavLinks
-    : isLoggedIn
-    ? patientNavLinks
-    : publicNavLinks;
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#D5E8D7] shadow-sm">
@@ -116,7 +88,7 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center space-x-3 text-xs">
             <button
               onClick={handleVoiceWelcome}
-              className="flex items-center space-x-1 px-2 py-0.5 rounded bg-[#2d6a4f] hover:bg-[#256B2A] text-white transition-colors"
+              className="flex items-center space-x-1 px-2 py-0.5 rounded bg-[#2d6a4f] hover:bg-[#256B2A] text-white transition-colors cursor-pointer"
               title="Voice Narration"
             >
               <Volume2 className="w-3.5 h-3.5" />
@@ -125,7 +97,9 @@ export const Navbar: React.FC = () => {
 
             {/* Font Magnifier */}
             <div className="flex items-center bg-[#2d6a4f] rounded px-1.5 py-0.5 space-x-1">
-              <span className="text-emerald-200 text-[10px] uppercase font-bold mr-0.5">ফন্ট:</span>
+              <span className="text-emerald-200 text-[10px] uppercase font-bold mr-0.5">
+                {language === 'bn' ? 'ফন্ট:' : 'Font:'}
+              </span>
               <button
                 onClick={() => setFontSizeMultiplier(1.0)}
                 className={`px-1.5 rounded text-xs ${fontSizeMultiplier === 1.0 ? 'bg-white text-[#1b4332] font-black' : 'text-emerald-100 hover:text-white'}`}
@@ -146,19 +120,38 @@ export const Navbar: React.FC = () => {
               </button>
             </div>
 
-            {/* Language Switcher */}
-            <button
-              onClick={() => setLanguage(language === 'bn' ? 'en' : 'bn')}
-              className="flex items-center space-x-1 px-2.5 py-0.5 rounded bg-[#2E7D32] hover:bg-[#256B2A] text-white font-medium transition-colors"
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>{language === 'bn' ? 'English' : 'বাংলা'}</span>
-            </button>
+            {/* Language Switcher Segmented Control */}
+            <div className="flex items-center bg-[#2d6a4f] rounded-lg p-0.5 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setLanguage('bn')}
+                className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                  language === 'bn'
+                    ? 'bg-white text-[#1b4332] font-black shadow-xs'
+                    : 'text-emerald-100 hover:text-white'
+                }`}
+                title="বাংলা নির্বাচন করুন"
+              >
+                বাংলা
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                className={`px-2 py-0.5 rounded transition-all cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-white text-[#1b4332] font-black shadow-xs'
+                    : 'text-emerald-100 hover:text-white'
+                }`}
+                title="Select English"
+              >
+                English
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main Navigation Bar */}
+      {/* Main Header Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-18 py-2.5">
           {/* Susthayan Logo & Brand */}
@@ -175,12 +168,20 @@ export const Navbar: React.FC = () => {
             </div>
             <div>
               <div className="flex items-baseline space-x-1.5">
-                <span className="text-2xl font-black tracking-tight text-[#171717] font-bengali">
-                  সুস্থায়ন
-                </span>
-                <span className="text-sm font-bold text-[#2E7D32] uppercase tracking-wider font-sans">
-                  Susthayan
-                </span>
+                {language === 'bn' ? (
+                  <>
+                    <span className="text-2xl font-black tracking-tight text-[#171717] font-bengali">
+                      সুস্থায়ন
+                    </span>
+                    <span className="text-sm font-bold text-[#2E7D32] uppercase tracking-wider font-sans">
+                      Susthayan
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-2xl font-black tracking-tight text-[#171717] font-sans">
+                    Susthayan
+                  </span>
+                )}
                 {isHospitalStaff && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]">
                     HOSPITAL PORTAL
@@ -194,28 +195,6 @@ export const Navbar: React.FC = () => {
               </p>
             </div>
           </div>
-
-          {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {visibleLinks.map(link => {
-              const Icon = link.icon;
-              const isActive = currentPage === link.page;
-              return (
-                <button
-                  key={link.page}
-                  onClick={() => navigateTo(link.page)}
-                  className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                    isActive
-                      ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] shadow-xs font-bold'
-                      : 'text-[#555555] hover:text-[#171717] hover:bg-[#F1F8F2]'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#2E7D32]' : 'text-[#555555]'}`} />
-                  <span>{link.label}</span>
-                </button>
-              );
-            })}
-          </nav>
 
           {/* Right Action Buttons */}
           <div className="flex items-center space-x-2.5">
@@ -347,67 +326,19 @@ export const Navbar: React.FC = () => {
               </div>
             )}
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile / Tablet Right Sidebar Toggle Button */}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-[#171717] lg:hidden hover:bg-[#F1F8F2]"
+              type="button"
+              onClick={onToggleRightSidebar}
+              className="p-2 rounded-xl text-[#171717] lg:hidden hover:bg-[#F1F8F2] cursor-pointer border border-[#D5E8D7]"
+              aria-label="Toggle Navigation Menu"
+              title="Navigation Menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6 text-[#2E7D32]" /> : <Menu className="w-6 h-6 text-[#2E7D32]" />}
+              <Menu className="w-5 h-5 text-[#2E7D32]" />
             </button>
           </div>
         </div>
       </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#D5E8D7] bg-white px-4 pt-2 pb-6 space-y-1.5 animate-in slide-in-from-top-2">
-          {/* Quick Portal Switcher for Mobile */}
-          <div className="grid grid-cols-2 gap-2 pb-2 mb-2 border-b border-[#D5E8D7]">
-            <button
-              onClick={() => {
-                navigateTo('dashboard');
-                setMobileMenuOpen(false);
-              }}
-              className="py-2 px-3 rounded-xl bg-[#E8F5E9] text-[#2E7D32] font-bold text-xs flex items-center justify-center space-x-1 border border-[#D5E8D7]"
-            >
-              <Heart className="w-3.5 h-3.5 text-[#2E7D32]" />
-              <span>Patient Portal</span>
-            </button>
-            <button
-              onClick={() => {
-                navigateTo('hospital-dashboard');
-                setMobileMenuOpen(false);
-              }}
-              className="py-2 px-3 rounded-xl bg-[#F1F8F2] text-[#2E7D32] font-bold text-xs flex items-center justify-center space-x-1 border border-[#D5E8D7]"
-            >
-              <Building2 className="w-3.5 h-3.5 text-[#2E7D32]" />
-              <span>Hospital Portal</span>
-            </button>
-          </div>
-
-          {visibleLinks.map(link => {
-            const Icon = link.icon;
-            const isActive = currentPage === link.page;
-            return (
-              <button
-                key={link.page}
-                onClick={() => {
-                  navigateTo(link.page);
-                  setMobileMenuOpen(false);
-                }}
-                className={`w-full flex items-center space-x-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold ${
-                  isActive
-                    ? 'bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] font-bold'
-                    : 'text-[#171717] hover:bg-[#F1F8F2]'
-                }`}
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#2E7D32]' : 'text-[#555555]'}`} />
-                <span>{link.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
     </header>
   );
 };

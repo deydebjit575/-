@@ -18,8 +18,14 @@ export const Footer: React.FC = () => {
                 <Heart className="w-5 h-5 fill-white" />
               </div>
               <div className="flex items-baseline space-x-1.5">
-                <span className="text-xl font-bold text-[#171717] font-bengali">সুস্থায়ন</span>
-                <span className="text-xs font-semibold text-[#2E7D32] uppercase">Susthayan</span>
+                {language === 'bn' ? (
+                  <>
+                    <span className="text-xl font-bold text-[#171717] font-bengali">সুস্থায়ন</span>
+                    <span className="text-xs font-semibold text-[#2E7D32] uppercase">Susthayan</span>
+                  </>
+                ) : (
+                  <span className="text-xl font-bold text-[#171717] font-sans">Susthayan</span>
+                )}
               </div>
             </div>
             <p className="text-xs text-[#555555] leading-relaxed">
@@ -29,7 +35,7 @@ export const Footer: React.FC = () => {
             </p>
             <div className="flex items-center space-x-2 text-xs text-[#2E7D32] bg-[#E8F5E9] border border-[#D5E8D7] px-3 py-1.5 rounded-xl w-fit font-semibold">
               <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
-              <span>DISHA & ABHA Data Protection Ready</span>
+              <span>{language === 'bn' ? 'দিশা ও আভা ডেটা সুরক্ষা সমর্থিত' : 'DISHA & ABHA Data Protection Ready'}</span>
             </div>
           </div>
 
@@ -41,32 +47,32 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs">
               <li>
                 <button onClick={() => navigateTo('medical-vault')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('medicalVault')} (MediVault)
+                  {language === 'bn' ? 'মেডিকেল ভল্ট (MediVault)' : 'Medical Vault (MediVault)'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('nearby-hospitals')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('nearbyHospitals')} & Bed Map
+                  {language === 'bn' ? 'নিকটস্থ হাসপাতাল ও বেড ম্যাপ' : 'Nearby Hospitals & Bed Map'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('timeline')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('timeline')}
+                  {language === 'bn' ? 'চিকিৎসা ইতিহাস' : 'Medical Timeline'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('medical-summary')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('summary')}
+                  {language === 'bn' ? 'স্বাস্থ্য সারসংক্ষেপ' : 'Health Summary'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('insurance-vault')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('insuranceVault')} (Swasthya Sathi)
+                  {language === 'bn' ? 'বীমা ও স্বাস্থ্য প্রকল্প (স্বাস্থ্য সাথী)' : 'Insurance & Schemes'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('share-records')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('shareRecords')} (Time-Limited Tokens)
+                  {language === 'bn' ? 'রেকর্ড শেয়ার করুন (টোকেন)' : 'Share Records (Time-Limited Tokens)'}
                 </button>
               </li>
             </ul>
@@ -80,27 +86,27 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs">
               <li>
                 <button onClick={() => navigateTo('emergency-sos')} className="text-[#D32F2F] hover:text-[#B71C1C] font-bold transition-colors">
-                  🚨 {t('emergencySos')}
+                  🚨 {language === 'bn' ? 'জরুরি এসওএস (SOS)' : 'Emergency SOS'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('hospital-dashboard')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  {t('hospitalPortal')}
+                  {language === 'bn' ? 'হাসপাতাল পোর্টাল' : 'Hospital Portal'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('bed-management')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  Live ICU & Ward Bed System
+                  {language === 'bn' ? 'লাইভ আইসিইউ ও জেনারেল বেড' : 'Live ICU & Ward Bed System'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('ambulance-coordination')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  Ambulance Dispatch Tracker
+                  {language === 'bn' ? 'অ্যাম্বুলেন্স সমন্বয় ও ট্র্যাকার' : 'Ambulance Dispatch Tracker'}
                 </button>
               </li>
               <li>
                 <button onClick={() => navigateTo('help')} className="text-[#555555] hover:text-[#2E7D32] transition-colors font-medium">
-                  First Aid Emergency Guide
+                  {language === 'bn' ? 'প্রাথমিক চিকিৎসা গাইড' : 'First Aid Emergency Guide'}
                 </button>
               </li>
             </ul>
@@ -114,19 +120,19 @@ export const Footer: React.FC = () => {
             </div>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between items-center py-1 border-b border-[#D5E8D7]">
-                <span className="text-[#555555]">জাতীয় জরুরি সেবা (All-in-One):</span>
+                <span className="text-[#555555]">{language === 'bn' ? 'জাতীয় জরুরি সেবা (All-in-One):' : 'National Emergency (All-in-One):'}</span>
                 <a href="tel:112" className="text-[#D32F2F] font-bold hover:underline">112</a>
               </div>
               <div className="flex justify-between items-center py-1 border-b border-[#D5E8D7]">
-                <span className="text-[#555555]">অ্যাম্বুলেন্স সাড়া (Ambulance):</span>
+                <span className="text-[#555555]">{language === 'bn' ? 'অ্যাম্বুলেন্স সাড়া (Ambulance):' : 'Ambulance Response:'}</span>
                 <a href="tel:108" className="text-[#2E7D32] font-bold hover:underline">108 / 102</a>
               </div>
               <div className="flex justify-between items-center py-1 border-b border-[#D5E8D7]">
-                <span className="text-[#555555]">প্রবীণ নাগরিক সুরক্ষা (Elder Line):</span>
+                <span className="text-[#555555]">{language === 'bn' ? 'প্রবীণ নাগরিক সুরক্ষা (Elder Line):' : 'Elder Line Helpline:'}</span>
                 <a href="tel:14567" className="text-[#2E7D32] font-bold hover:underline">14567</a>
               </div>
               <div className="flex justify-between items-center py-1">
-                <span className="text-[#555555]">পুলিশ কন্ট্রোল রুম:</span>
+                <span className="text-[#555555]">{language === 'bn' ? 'পুলিশ কন্ট্রোল রুম:' : 'Police Control Room:'}</span>
                 <a href="tel:100" className="text-[#1565C0] font-bold hover:underline">100</a>
               </div>
             </div>
@@ -135,7 +141,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom copyright & legal */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#555555] gap-3">
-          <p>© {new Date().getFullYear()} সুস্থায়ন (Susthayan) Healthcare Initiative. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {language === 'bn' ? 'সুস্থায়ন স্বাস্থ্য উদ্যোগ। সর্বস্বত্ব সংরক্ষিত।' : 'Susthayan Healthcare Initiative. All rights reserved.'}</p>
           <div className="flex items-center space-x-4">
             <button onClick={() => navigateTo('settings')} className="text-[#555555] hover:text-[#2E7D32] transition-colors">
               {language === 'bn' ? 'গোপনীয়তা নীতি' : 'Privacy Policy'}
@@ -146,7 +152,7 @@ export const Footer: React.FC = () => {
             </button>
             <span>•</span>
             <span className="text-[#777777] flex items-center">
-              <Lock className="w-3 h-3 mr-1 text-[#2E7D32]" /> 256-Bit Encrypted Vault
+              <Lock className="w-3 h-3 mr-1 text-[#2E7D32]" /> {language === 'bn' ? '২৫৬-বিট এনক্রিপ্ট করা ভল্ট' : '256-Bit Encrypted Vault'}
             </span>
           </div>
         </div>

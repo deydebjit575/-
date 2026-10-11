@@ -127,15 +127,15 @@ export const LandingPage: React.FC = () => {
             <div className="pt-4 flex flex-wrap items-center gap-6 text-xs text-[#555555] border-t border-[#D5E8D7]">
               <div className="flex items-center space-x-2">
                 <CheckCircle2 className="w-4 h-4 text-[#2E7D32]" />
-                <span>Verified Hospital Partner Network</span>
+                <span>{language === 'bn' ? 'যাচাইকৃত হাসপাতাল পার্টনার নেটওয়ার্ক' : 'Verified Hospital Partner Network'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <ShieldCheck className="w-4 h-4 text-[#2E7D32]" />
-                <span>Patient-Controlled DPDP Consent</span>
+                <span>{language === 'bn' ? 'রোগী-নিয়ন্ত্রিত ডিপিডিপি সম্মতি' : 'Patient-Controlled DPDP Consent'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Lock className="w-4 h-4 text-[#2E7D32]" />
-                <span>256-Bit Encrypted MediVault</span>
+                <span>{language === 'bn' ? '২৫৬-বিট এনক্রিপ্ট করা মেডিভল্ট' : '256-Bit Encrypted MediVault'}</span>
               </div>
             </div>
           </div>
@@ -152,10 +152,12 @@ export const LandingPage: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
                   <div className="text-white space-y-1">
                     <span className="px-2.5 py-0.5 rounded-md bg-[#2E7D32] text-white text-[10px] font-bold uppercase tracking-wider">
-                      Verified Healthcare
+                      {language === 'bn' ? 'যাচাইকৃত স্বাস্থ্যসেবা' : 'Verified Healthcare'}
                     </span>
                     <p className="text-xs sm:text-sm font-bold">
-                      Compassionate geriatric consultation & rapid emergency assistance
+                      {language === 'bn'
+                        ? 'সহমর্মিতাপূর্ণ প্রবীণ স্বাস্থ্য পরামর্শ ও তাৎক্ষণিক জরুরি সাহায্য'
+                        : 'Compassionate geriatric consultation & rapid emergency assistance'}
                     </p>
                   </div>
                 </div>
@@ -243,7 +245,7 @@ export const LandingPage: React.FC = () => {
             <div>
               <span className="text-xs font-bold uppercase tracking-widest text-[#2E7D32] flex items-center space-x-1.5">
                 <Navigation className="w-3.5 h-3.5 text-[#2E7D32]" />
-                <span>Verified Regional Healthcare Network</span>
+                <span>{language === 'bn' ? 'যাচাইকৃত আঞ্চলিক স্বাস্থ্য নেটওয়ার্ক' : 'Verified Regional Healthcare Network'}</span>
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-[#171717] mt-1">
                 {language === 'bn' ? 'নিকটস্থ যাচাইকৃত হাসপাতাল ও জরুরি বেড' : 'Nearby Verified Hospitals & Emergency Beds'}
@@ -266,7 +268,7 @@ export const LandingPage: React.FC = () => {
                     : 'text-[#555555] hover:text-[#171717]'
                 }`}
               >
-                Panihati (পানিহাটি)
+                {language === 'bn' ? 'পানিহাটি' : 'Panihati'}
               </button>
               <button
                 type="button"
@@ -277,7 +279,7 @@ export const LandingPage: React.FC = () => {
                     : 'text-[#555555] hover:text-[#171717]'
                 }`}
               >
-                Dum Dum (দমদম)
+                {language === 'bn' ? 'দমদম' : 'Dum Dum'}
               </button>
             </div>
           </div>
@@ -300,21 +302,25 @@ export const LandingPage: React.FC = () => {
                   </div>
 
                   <h4 className="text-base font-black text-[#171717] line-clamp-1">{hosp.name}</h4>
-                  <p className="text-xs text-[#2E7D32] font-bold font-bengali">{hosp.nameBn}</p>
+                  {language === 'bn' && (
+                    <p className="text-xs text-[#2E7D32] font-bold font-bengali">{hosp.nameBn}</p>
+                  )}
                   <p className="text-xs text-[#555555] line-clamp-2">{hosp.address}</p>
 
                   {/* Bed status */}
                   <div className="pt-2">
                     {hosp.isBedVerified ? (
                       <div className="p-2.5 bg-[#E8F5E9] border border-[#D5E8D7] rounded-xl text-xs font-bold text-[#171717] flex items-center justify-between">
-                        <span className="text-[#555555]">জরুরি বেড খালি:</span>
+                        <span className="text-[#555555]">
+                          {language === 'bn' ? 'জরুরি বেড খালি:' : 'Emergency Beds Available:'}
+                        </span>
                         <span className="px-2 py-0.5 bg-[#2E7D32] text-white rounded text-xs font-black">
-                          {hosp.availableBeds} টি
+                          {hosp.availableBeds} {language === 'bn' ? 'টি' : 'Beds'}
                         </span>
                       </div>
                     ) : (
                       <div className="p-2.5 bg-[#F1F8F2] border border-[#D5E8D7] rounded-xl text-[11px] font-semibold text-[#555555]">
-                        Availability not verified — contact hospital
+                        {language === 'bn' ? 'যাচাইকৃত নয় — হাসপাতালে যোগাযোগ করুন' : 'Availability not verified — contact hospital'}
                       </div>
                     )}
                   </div>
@@ -327,7 +333,7 @@ export const LandingPage: React.FC = () => {
                     className="flex-1 text-center py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl font-bold flex items-center justify-center space-x-1 transition-colors"
                   >
                     <Phone className="w-3.5 h-3.5 text-white" />
-                    <span>কল করুন</span>
+                    <span>{language === 'bn' ? 'কল করুন' : 'Call'}</span>
                   </a>
                   <a
                     href={hosp.mapsUrl}
@@ -381,9 +387,13 @@ export const LandingPage: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-white border border-[#D5E8D7] flex items-center justify-center text-[#D32F2F]">
               <AlertOctagon className="w-6 h-6 text-[#D32F2F]" />
             </div>
-            <h4 className="text-lg font-bold text-[#171717]">জরুরি ৩ সেকেন্ড এসওএস</h4>
+            <h4 className="text-lg font-bold text-[#171717]">
+              {language === 'bn' ? 'জরুরি ৩ সেকেন্ড এসওএস' : 'Instant 3s Emergency SOS'}
+            </h4>
             <p className="text-xs text-[#555555] leading-relaxed">
-              জরুরি মুহূর্তে একা থাকলে ১ ক্লিকে নিকটস্থ হাসপাতাল এবং অভিভাবকের ফোনে জিপিএস অবস্থান ও অ্যালার্জি তথ্য স্বয়ংক্রিয়ভাবে পৌঁছায়।
+              {language === 'bn'
+                ? 'জরুরি মুহূর্তে একা থাকলে ১ ক্লিকে নিকটস্থ হাসপাতাল এবং অভিভাবকের ফোনে জিপিএস অবস্থান ও অ্যালার্জি তথ্য স্বয়ংক্রিয়ভাবে পৌঁছায়।'
+                : 'When alone in a crisis, 1 tap dispatches GPS coordinates, blood type, and allergy alerts to verified hospital triage & guardians.'}
             </p>
           </div>
 
@@ -392,9 +402,13 @@ export const LandingPage: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-white border border-[#D5E8D7] flex items-center justify-center text-[#2E7D32]">
               <FileText className="w-6 h-6 text-[#2E7D32]" />
             </div>
-            <h4 className="text-lg font-bold text-[#171717]">ব্যক্তিগত MediVault ভল্ট</h4>
+            <h4 className="text-lg font-bold text-[#171717]">
+              {language === 'bn' ? 'ব্যক্তিগত MediVault ভল্ট' : 'Personal MediVault Locker'}
+            </h4>
             <p className="text-xs text-[#555555] leading-relaxed">
-              কাগজের প্রেসক্রিপশন হারানোর ভয় নেই। সমস্ত প্রেসক্রিপশন, রক্তের রিপোর্ট ও টেস্ট ইতিহাস রোগীর ব্যক্তিগত ভল্টে সুরক্ষিত থাকে।
+              {language === 'bn'
+                ? 'কাগজের প্রেসক্রিপশন হারানোর ভয় নেই। সমস্ত প্রেসক্রিপশন, রক্তের রিপোর্ট ও টেস্ট ইতিহাস রোগীর ব্যক্তিগত ভল্টে সুরক্ষিত থাকে।'
+                : 'No more lost paper prescriptions. All diagnostics, discharge summaries, and ongoing medications stay organized and securely encrypted.'}
             </p>
           </div>
 
@@ -403,9 +417,13 @@ export const LandingPage: React.FC = () => {
             <div className="w-12 h-12 rounded-xl bg-white border border-[#D5E8D7] flex items-center justify-center text-[#2E7D32]">
               <Bed className="w-6 h-6 text-[#2E7D32]" />
             </div>
-            <h4 className="text-lg font-bold text-[#171717]">লাইভ আইসিইউ বেড অনুসন্ধান</h4>
+            <h4 className="text-lg font-bold text-[#171717]">
+              {language === 'bn' ? 'লাইভ আইসিইউ বেড অনুসন্ধান' : 'Live ICU Bed Discovery'}
+            </h4>
             <p className="text-xs text-[#555555] leading-relaxed">
-              হাসপাতালে হাসপাতালে ঘুরে সময় নষ্ট নয়; পানিহাটি ও দমদম অঞ্চলের যাচাইকৃত জরুরি বেড ও আইসিইউ স্থিতি সরাসরি জানুন।
+              {language === 'bn'
+                ? 'হাসপাতালে হাসপাতালে ঘুরে সময় নষ্ট নয়; পানিহাটি ও দমদম অঞ্চলের যাচাইকৃত জরুরি বেড ও আইসিইউ স্থিতি সরাসরি জানুন।'
+                : 'Stop racing helplessly between hospitals; verify staff-confirmed ICU and emergency bed availability with live driving estimates.'}
             </p>
           </div>
         </div>

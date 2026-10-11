@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { VerifiedHospital } from '../types';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HospitalMapProps {
   hospitals: VerifiedHospital[];
@@ -19,6 +20,7 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({
   centerCoordinates,
   zoomLevel = 13
 }) => {
+  const { language } = useLanguage();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
@@ -91,7 +93,7 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({
       const userMarker = L.marker(userLatLng, { icon: userIcon, zIndexOffset: 1000 });
       userMarker.bindPopup(`
         <div style="font-family: sans-serif; font-size: 12px; padding: 4px;">
-          <strong style="color: #0369a1; display: block; font-size: 13px;">📍 আপনার অবস্থান (Your GPS Location)</strong>
+          <strong style="color: #0369a1; display: block; font-size: 13px;">${language === 'bn' ? '📍 আপনার অবস্থান' : '📍 Your GPS Location'}</strong>
           <span style="color: #64748b; font-size: 11px;">Lat: ${userLocation.lat.toFixed(4)}, Lng: ${userLocation.lng.toFixed(4)}</span>
         </div>
       `);
@@ -130,22 +132,29 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({
         onSelectHospital(hosp);
       });
 
+      const distLabel = language === 'bn' ? `দূরত্ব: <strong>${hosp.distanceKm} কিমি</strong>` : `Distance: <strong>${hosp.distanceKm} km</strong>`;
+      const bedLabel = hosp.isBedVerified
+        ? (language === 'bn' ? `বেড: ${hosp.availableBeds} টি খালি` : `Beds: ${hosp.availableBeds} Available`)
+        : (language === 'bn' ? 'বেড: অপ্রমাণিত' : 'Beds: Unverified');
+      const callText = language === 'bn' ? '📞 কল করুন' : '📞 Call';
+      const dirText = language === 'bn' ? '🗺️ ডিরেকশন' : '🗺️ Directions';
+
       marker.bindPopup(`
         <div style="font-family: sans-serif; font-size: 12px; min-width: 200px; padding: 4px;">
           <h4 style="margin: 0 0 4px 0; font-weight: bold; color: #0f172a; font-size: 13px;">${hosp.name}</h4>
           <p style="margin: 0 0 6px 0; color: #475569; font-size: 11px;">${hosp.address}</p>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 4px 6px; background: #f1f5f9; border-radius: 6px;">
-            <span style="font-size: 11px; color: #334155;">দূরত্ব (Distance): <strong>${hosp.distanceKm} km</strong></span>
+            <span style="font-size: 11px; color: #334155;">${distLabel}</span>
             <span style="font-size: 11px; font-weight: bold; color: ${hosp.isBedVerified ? '#0d9488' : '#64748b'};">
-              ${hosp.isBedVerified ? `বেড: ${hosp.availableBeds} টি খালি` : 'বেড: অপ্রমাণিত'}
+              ${bedLabel}
             </span>
           </div>
           <div style="display: flex; gap: 6px;">
             <a href="tel:${hosp.phone.replace(/[^0-9+]/g, '')}" style="flex: 1; text-align: center; background: #0d9488; color: #ffffff; padding: 5px 8px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 11px;">
-              📞 Call
+              ${callText}
             </a>
             <a href="${hosp.mapsUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; text-align: center; background: #0284c7; color: #ffffff; padding: 5px 8px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 11px;">
-              🗺️ Directions
+              ${dirText}
             </a>
           </div>
         </div>
@@ -169,7 +178,7 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({
     setTimeout(() => {
       map.invalidateSize();
     }, 100);
-  }, [hospitals, userLocation, selectedHospital]);
+  }, [hospitals, userLocation, selectedHospital, language]);
 
   return (
     <div className="relative w-full h-full min-h-[350px] rounded-2xl overflow-hidden border border-slate-200 shadow-inner z-0">

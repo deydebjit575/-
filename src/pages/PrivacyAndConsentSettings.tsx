@@ -26,9 +26,12 @@ export const PrivacyAndConsentSettings: React.FC = () => {
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm('আপনি কি নিশ্চিত যে আপনার সুস্থায়ন অ্যাকাউন্ট ও সংরক্ষিত সমস্ত মেডিকেল রেকর্ড স্থায়ীভাবে মুছে ফেলতে চান? এই পদক্ষেপটি অপরিবর্তনীয়।')) {
+    const confirmPrompt = language === 'bn'
+      ? 'আপনি কি নিশ্চিত যে আপনার সুস্থায়ন অ্যাকাউন্ট ও সংরক্ষিত সমস্ত মেডিকেল রেকর্ড স্থায়ীভাবে মুছে ফেলতে চান? এই পদক্ষেপটি অপরিবর্তনীয়।'
+      : 'Are you sure you want to permanently delete your Susthayan account and all stored medical records? This action is irreversible.';
+    if (window.confirm(confirmPrompt)) {
       addAuditLog('ACCOUNT_DELETION_REQUEST', 'User requested full deletion of profile and records');
-      showToast('info', 'Account and associated records deleted');
+      showToast('info', language === 'bn' ? 'অ্যাকাউন্ট ও রেকর্ড মুছে ফেলা হয়েছে' : 'Account and associated records deleted');
       logout();
     }
   };
@@ -62,10 +65,12 @@ export const PrivacyAndConsentSettings: React.FC = () => {
             <div className="flex items-start justify-between p-4 rounded-2xl bg-white border border-[#D5E8D7] shadow-2xs">
               <div className="space-y-0.5">
                 <span className="font-bold text-[#171717] block text-sm">
-                  জরুরি মুহূর্তে লাইভ জিপিএস অবস্থান শেয়ার
+                  {language === 'bn' ? 'জরুরি মুহূর্তে লাইভ জিপিএস অবস্থান শেয়ার' : 'Share Live GPS Location in Emergencies'}
                 </span>
                 <p className="text-[#555555]">
-                  এসওএস চাপলে নিকটস্থ হাসপাতালের জরুরি অ্যাম্বুলেন্সকে আপনার বর্তমান অবস্থান প্রেরণ করা হবে।
+                  {language === 'bn'
+                    ? 'এসওএস চাপলে নিকটস্থ হাসপাতালের জরুরি অ্যাম্বুলেন্সকে আপনার বর্তমান অবস্থান প্রেরণ করা হবে।'
+                    : 'When SOS is triggered, your real-time coordinates are transmitted directly to the nearest hospital ambulance dispatch.'}
                 </p>
               </div>
               <input
@@ -79,10 +84,12 @@ export const PrivacyAndConsentSettings: React.FC = () => {
             <div className="flex items-start justify-between p-4 rounded-2xl bg-white border border-[#D5E8D7] shadow-2xs">
               <div className="space-y-0.5">
                 <span className="font-bold text-[#171717] block text-sm">
-                  অ্যালার্জি ও চলমান ওষুধের বিবরণ শেয়ার
+                  {language === 'bn' ? 'অ্যালার্জি ও চলমান ওষুধের বিবরণ শেয়ার' : 'Share Allergy & Critical Medication Profile'}
                 </span>
                 <p className="text-[#555555]">
-                  হাসপাতালে ভুল ওষুধের পার্শ্বপ্রতিক্রিয়া প্রতিরোধে চিকিৎসককে প্রাথমিক রিপোর্ট দেখানো।
+                  {language === 'bn'
+                    ? 'হাসপাতালে ভুল ওষুধের পার্শ্বপ্রতিক্রিয়া প্রতিরোধে চিকিৎসককে প্রাথমিক রিপোর্ট দেখানো।'
+                    : 'Permit emergency responders to see medication contraindications and drug allergies immediately.'}
                 </p>
               </div>
               <input
@@ -96,10 +103,12 @@ export const PrivacyAndConsentSettings: React.FC = () => {
             <div className="flex items-start justify-between p-4 rounded-2xl bg-white border border-[#D5E8D7] shadow-2xs">
               <div className="space-y-0.5">
                 <span className="font-bold text-[#171717] block text-sm">
-                  পরিবার ও অভিভাবকদের স্বয়ংক্রিয় এসএমএস অ্যালার্ট
+                  {language === 'bn' ? 'পরিবার ও অভিভাবকদের স্বয়ংক্রিয় এসএমএস অ্যালার্ট' : 'Automated Emergency Family SMS Alerts'}
                 </span>
                 <p className="text-[#555555]">
-                  জরুরি পরিস্থিতিতে নিবন্ধিত সন্তানদের ফোনে তাৎক্ষণিক ভারতীয় DLT এসএমএস নোটিফিকেশন যাবে।
+                  {language === 'bn'
+                    ? 'জরুরি পরিস্থিতিতে নিবন্ধিত সন্তানদের ফোনে তাৎক্ষণিক ভারতীয় DLT এসএমএস নোটিফিকেশন যাবে।'
+                    : 'Broadcast emergency SOS triggers to verified family guardians instantly via SMS.'}
                 </p>
               </div>
               <input
@@ -120,9 +129,13 @@ export const PrivacyAndConsentSettings: React.FC = () => {
               <div className="w-10 h-10 rounded-xl bg-white text-[#2E7D32] border border-[#D5E8D7] flex items-center justify-center mb-3">
                 <HardDriveDownload className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-[#171717] text-base">স্বাস্থ্য আর্কাইভ ডাউনলোড করুন</h4>
+              <h4 className="font-bold text-[#171717] text-base">
+                {language === 'bn' ? 'স্বাস্থ্য আর্কাইভ ডাউনলোড করুন' : 'Export Health Archive'}
+              </h4>
               <p className="text-xs text-[#555555] mt-1">
-                আপনার সমস্ত প্রেসক্রিপশন, রক্তের রিপোর্ট, এক্স-রে এবং টাইমলাইনের একটি সম্পূর্ণ জিপ (ZIP) ব্যাকআপ ফাইল নামিয়ে নিন।
+                {language === 'bn'
+                  ? 'আপনার সমস্ত প্রেসক্রিপশন, রক্তের রিপোর্ট, এক্স-রে এবং টাইমলাইনের একটি সম্পূর্ণ জিপ (ZIP) ব্যাকআপ ফাইল নামিয়ে নিন।'
+                  : 'Download an encrypted ZIP archive containing all your stored prescriptions, diagnostic reports, and medical history.'}
               </p>
             </div>
             <button
@@ -130,7 +143,7 @@ export const PrivacyAndConsentSettings: React.FC = () => {
               className="w-full py-2.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center justify-center space-x-2 cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>এনক্রিপ্টেড ব্যাকআপ ডাউনলোড</span>
+              <span>{language === 'bn' ? 'এনক্রিপ্টেড ব্যাকআপ ডাউনলোড' : 'Download Encrypted Backup'}</span>
             </button>
           </div>
 
@@ -140,9 +153,13 @@ export const PrivacyAndConsentSettings: React.FC = () => {
               <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 flex items-center justify-center mb-3">
                 <Trash2 className="w-5 h-5" />
               </div>
-              <h4 className="font-bold text-[#171717] text-base">অ্যাকাউন্ট ও ডেটা স্থায়ীভাবে মুছুন</h4>
+              <h4 className="font-bold text-[#171717] text-base">
+                {language === 'bn' ? 'অ্যাকাউন্ট ও ডেটা স্থায়ীভাবে মুছুন' : 'Delete Account & Medical Data'}
+              </h4>
               <p className="text-xs text-[#555555] mt-1">
-                স্থায়ীভাবে আপনার সুস্থায়ন অ্যাকাউন্ট, সমস্ত প্রেসক্রিপশন এবং আপলোডকৃত ফাইল সার্ভার থেকে মুছে ফেলা হবে।
+                {language === 'bn'
+                  ? 'স্থায়ীভাবে আপনার সুস্থায়ন অ্যাকাউন্ট, সমস্ত প্রেসক্রিপশন এবং আপলোডকৃত ফাইল সার্ভার থেকে মুছে ফেলা হবে।'
+                  : 'Permanently purge your profile, medical records, and cloud documents in compliance with DPDP guidelines.'}
               </p>
             </div>
             <button
@@ -150,7 +167,7 @@ export const PrivacyAndConsentSettings: React.FC = () => {
               className="w-full py-2.5 bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold transition-colors flex items-center justify-center space-x-2 cursor-pointer"
             >
               <AlertTriangle className="w-4 h-4" />
-              <span>স্থায়ী ডেটা মুছে ফেলার অনুরোধ</span>
+              <span>{language === 'bn' ? 'স্থায়ী ডেটা মুছে ফেলার অনুরোধ' : 'Request Permanent Deletion'}</span>
             </button>
           </div>
         </div>

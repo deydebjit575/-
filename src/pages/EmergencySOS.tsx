@@ -181,8 +181,10 @@ export const EmergencySOS: React.FC = () => {
                   <span className="text-xs font-bold text-[#2E7D32]">{hosp.distanceKm} km</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-[#555555] mt-2">
-                  <span>উপলব্ধ আইসিইউ: <strong className="text-[#2E7D32]">{hosp.icuBedsAvailable} বেড</strong></span>
-                  <span>~{hosp.estimatedTravelMins} মিনিট সময়</span>
+                  <span>
+                    {language === 'bn' ? 'উপলব্ধ আইসিইউ:' : 'Available ICU:'} <strong className="text-[#2E7D32]">{hosp.icuBedsAvailable} {language === 'bn' ? 'বেড' : 'Beds'}</strong>
+                  </span>
+                  <span>~{hosp.estimatedTravelMins} {language === 'bn' ? 'মিনিট সময়' : 'mins ETA'}</span>
                 </div>
               </div>
             ))}
@@ -205,19 +207,19 @@ export const EmergencySOS: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] flex items-center space-x-2">
               <MapPin className="w-4 h-4 text-[#2E7D32]" />
-              <span className="text-[#171717]"><strong>লাইভ অবস্থান:</strong> {patientProfile.address}</span>
+              <span className="text-[#171717]"><strong>{language === 'bn' ? 'লাইভ অবস্থান:' : 'Live Location:'}</strong> {patientProfile.address}</span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] flex items-center space-x-2">
               <Heart className="w-4 h-4 text-[#2E7D32]" />
-              <span className="text-[#171717]"><strong>রক্তের গ্রুপ ও বয়স:</strong> {patientProfile.bloodGroup} • {patientProfile.age} বছর</span>
+              <span className="text-[#171717]"><strong>{language === 'bn' ? 'রক্তের গ্রুপ ও বয়স:' : 'Blood Group & Age:'}</strong> {patientProfile.bloodGroup} • {patientProfile.age} {language === 'bn' ? 'বছর' : 'Years'}</span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] flex items-center space-x-2">
               <Pill className="w-4 h-4 text-[#2E7D32]" />
-              <span className="text-[#171717]"><strong>অ্যালার্জি ও ওষুধ:</strong> {patientProfile.knownAllergies.join(', ')}</span>
+              <span className="text-[#171717]"><strong>{language === 'bn' ? 'অ্যালার্জি ও ওষুধ:' : 'Allergies & Meds:'}</strong> {patientProfile.knownAllergies.join(', ')}</span>
             </div>
             <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] flex items-center space-x-2">
               <Users className="w-4 h-4 text-[#2E7D32]" />
-              <span className="text-[#171717]"><strong>এসএমএস অ্যালার্ট:</strong> {patientProfile.emergencyContacts.length} জন অভিভাবক</span>
+              <span className="text-[#171717]"><strong>{language === 'bn' ? 'এসএমএস অ্যালার্ট:' : 'SMS Alert:'}</strong> {patientProfile.emergencyContacts.length} {language === 'bn' ? 'জন অভিভাবক' : 'Guardians'}</span>
             </div>
           </div>
 

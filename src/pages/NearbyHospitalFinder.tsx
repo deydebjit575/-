@@ -67,7 +67,7 @@ export const NearbyHospitalFinder: React.FC = () => {
   const handleDetectGps = () => {
     if (!navigator.geolocation) {
       setGpsStatus('unavailable');
-      setGpsErrorMsg('আপনার ব্রাউজারে জিপিএস সমর্থন উপলব্ধ নেই (Geolocation is not supported by your browser).');
+      setGpsErrorMsg(language === 'bn' ? 'আপনার ব্রাউজারে জিপিএস সমর্থন উপলব্ধ নেই।' : 'Geolocation is not supported by your browser.');
       return;
     }
 
@@ -87,10 +87,10 @@ export const NearbyHospitalFinder: React.FC = () => {
       error => {
         if (error.code === error.PERMISSION_DENIED) {
           setGpsStatus('denied');
-          setGpsErrorMsg('জিপিএস অ্যাক্সেসের অনুমতি দেওয়া হয়নি। অনুগ্রহ করে ম্যানুয়াল এলাকা অনুসন্ধান ব্যবহার করুন (Location permission was denied. Please select or type an area).');
+          setGpsErrorMsg(language === 'bn' ? 'জিপিএস অ্যাক্সেসের অনুমতি দেওয়া হয়নি। অনুগ্রহ করে ম্যানুয়াল এলাকা অনুসন্ধান ব্যবহার করুন।' : 'Location permission was denied. Please search or select an area manually.');
         } else {
           setGpsStatus('unavailable');
-          setGpsErrorMsg('বর্তমান অবস্থান সনাক্ত করা সম্ভব হয়নি। ম্যানুয়াল অনুসন্ধান করুন (Unable to retrieve GPS coordinates).');
+          setGpsErrorMsg(language === 'bn' ? 'বর্তমান অবস্থান সনাক্ত করা সম্ভব হয়নি। ম্যানুয়াল অনুসন্ধান করুন।' : 'Unable to retrieve GPS coordinates. Please search manually.');
         }
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
@@ -159,7 +159,11 @@ export const NearbyHospitalFinder: React.FC = () => {
               className="flex items-center space-x-2 px-4 py-3 rounded-xl bg-white border border-[#D5E8D7] hover:bg-[#F1F8F2] text-[#171717] font-bold text-xs transition-all shadow-xs"
             >
               <Navigation className={`w-4 h-4 text-[#2E7D32] ${gpsStatus === 'locating' ? 'animate-spin' : ''}`} />
-              <span>{gpsStatus === 'locating' ? 'জিপিএস ট্র্যাকিং...' : 'আমার জিপিএস অবস্থান ব্যবহার করুন'}</span>
+              <span>
+                {gpsStatus === 'locating'
+                  ? (language === 'bn' ? 'জিপিএস ট্র্যাকিং...' : 'Detecting GPS...')
+                  : (language === 'bn' ? 'আমার জিপিএস অবস্থান ব্যবহার করুন' : 'Use My GPS Location')}
+              </span>
             </button>
 
             <button
@@ -167,7 +171,7 @@ export const NearbyHospitalFinder: React.FC = () => {
               className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-black text-xs shadow-sm transition-all"
             >
               <AlertOctagon className="w-4 h-4 animate-pulse" />
-              <span>{t('openEmergencySos')}</span>
+              <span>{language === 'bn' ? 'জরুরি এসওএস পাঠান' : 'Initiate Emergency SOS'}</span>
             </button>
           </div>
         </div>
@@ -178,15 +182,18 @@ export const NearbyHospitalFinder: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Radio className="w-4 h-4 text-[#2E7D32] animate-pulse shrink-0" />
               <span>
-                <strong>লাইভ জিপিএস সক্রিয়:</strong> আপনার অবস্থান অক্ষাংশ {userCoordinates.lat.toFixed(4)}, দ্রাঘিমাংশ {userCoordinates.lng.toFixed(4)} অনুযায়ী নিকটস্থ প্রতিষ্ঠানগুলো সাজানো হয়েছে।
+                <strong>{language === 'bn' ? 'লাইভ জিপিএস সক্রিয়:' : 'Live GPS Active:'}</strong>{' '}
+                {language === 'bn'
+                  ? `আপনার অবস্থান অক্ষাংশ ${userCoordinates.lat.toFixed(4)}, দ্রাঘিমাংশ ${userCoordinates.lng.toFixed(4)} অনুযায়ী নিকটস্থ প্রতিষ্ঠানগুলো সাজানো হয়েছে।`
+                  : `Sorting nearby medical facilities based on your coordinates (${userCoordinates.lat.toFixed(4)}, ${userCoordinates.lng.toFixed(4)}).`}
               </span>
             </div>
             <button
               onClick={handleDetectGps}
-              className="flex items-center space-x-1 px-3 py-1 bg-white border border-[#D5E8D7] rounded-lg text-[#2E7D32] font-bold text-xs hover:bg-[#F1F8F2]"
+              className="flex items-center space-x-1 px-3 py-1 bg-white border border-[#D5E8D7] rounded-lg text-[#2E7D32] font-bold text-xs hover:bg-[#F1F8F2] cursor-pointer"
             >
               <RefreshCw className="w-3.5 h-3.5" />
-              <span>রিফ্রেশ করুন</span>
+              <span>{language === 'bn' ? 'রিফ্রেশ করুন' : 'Refresh'}</span>
             </button>
           </div>
         )}
@@ -204,7 +211,7 @@ export const NearbyHospitalFinder: React.FC = () => {
             {/* Location Input */}
             <div className="md:col-span-5 space-y-1">
               <label className="block text-xs font-bold text-[#171717]">
-                {language === 'bn' ? 'এলাকা বা শহর অনুসন্ধান (Type Location or Select Suggestion):' : 'Location Area Search:'}
+                {language === 'bn' ? 'এলাকা বা শহর অনুসন্ধান:' : 'Location Area Search:'}
               </label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-[#2E7D32] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -212,14 +219,14 @@ export const NearbyHospitalFinder: React.FC = () => {
                   type="text"
                   value={searchLocationInput}
                   onChange={e => setSearchLocationInput(e.target.value)}
-                  placeholder="e.g. Panihati, Dum Dum, Sodepur, Belgharia..."
+                  placeholder={language === 'bn' ? 'যেমন: পানিহাটি, দমদম, সোদপুর...' : 'e.g. Panihati, Dum Dum, Sodepur...'}
                   className="w-full pl-10 pr-24 py-2.5 bg-white border border-[#D5E8D7] rounded-xl text-xs font-bold text-[#171717] outline-hidden focus:border-[#2E7D32]"
                 />
                 <button
                   type="submit"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-lg text-xs font-bold transition-colors"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                 >
-                  Search
+                  {language === 'bn' ? 'খুঁজুন' : 'Search'}
                 </button>
               </div>
             </div>
@@ -244,17 +251,17 @@ export const NearbyHospitalFinder: React.FC = () => {
             {/* Facility Type Filter */}
             <div className="md:col-span-3 space-y-1">
               <label className="block text-xs font-bold text-[#171717]">
-                {language === 'bn' ? 'ধরণ (Facility Type):' : 'Facility Type:'}
+                {language === 'bn' ? 'প্রতিষ্ঠানের ধরণ:' : 'Facility Type:'}
               </label>
               <select
                 value={facilityTypeFilter}
                 onChange={e => setFacilityTypeFilter(e.target.value as any)}
                 className="w-full px-3 py-2.5 bg-white border border-[#D5E8D7] rounded-xl text-xs font-bold text-[#171717] outline-hidden focus:border-[#2E7D32]"
               >
-                <option value="All">সকল প্রতিষ্ঠান (All Facilities)</option>
-                <option value="Hospital">হাসপাতাল (Hospitals)</option>
-                <option value="Nursing Home">নার্সিং হোম (Nursing Homes)</option>
-                <option value="Diagnostic & Clinic">ডায়াগনস্টিক ও ক্লিনিক (Clinics)</option>
+                <option value="All">{language === 'bn' ? 'সকল প্রতিষ্ঠান' : 'All Facilities'}</option>
+                <option value="Hospital">{language === 'bn' ? 'হাসপাতাল' : 'Hospitals'}</option>
+                <option value="Nursing Home">{language === 'bn' ? 'নার্সিং হোম' : 'Nursing Homes'}</option>
+                <option value="Diagnostic & Clinic">{language === 'bn' ? 'ডায়াগনস্টিক ও ক্লিনিক' : 'Clinics & Diagnostics'}</option>
               </select>
             </div>
           </form>
@@ -306,9 +313,13 @@ export const NearbyHospitalFinder: React.FC = () => {
             {filteredHospitals.length === 0 ? (
               <div className="bg-[#E8F5E9] rounded-3xl p-12 text-center border border-[#D5E8D7] space-y-3">
                 <Building className="w-12 h-12 text-[#2E7D32]/40 mx-auto" />
-                <h3 className="text-base font-bold text-[#171717]">কোনো স্বাস্থ্য প্রতিষ্ঠান খুঁজে পাওয়া যায়নি</h3>
+                <h3 className="text-base font-bold text-[#171717]">
+                  {language === 'bn' ? 'কোনো স্বাস্থ্য প্রতিষ্ঠান খুঁজে পাওয়া যায়নি' : 'No Healthcare Facilities Found'}
+                </h3>
                 <p className="text-xs text-[#555555] max-w-sm mx-auto">
-                  আপনার অনুসন্ধান ফিল্টারের সাথে মিলে এমন কোনো হাসপাতাল এই এলাকায় পাওয়া যায়নি। ফিল্টার পরিবর্তন করে পুনরায় চেষ্টা করুন।
+                  {language === 'bn'
+                    ? 'আপনার অনুসন্ধান ফিল্টারের সাথে মিলে এমন কোনো হাসপাতাল এই এলাকায় পাওয়া যায়নি। ফিল্টার পরিবর্তন করে পুনরায় চেষ্টা করুন।'
+                    : 'No medical facilities match your search criteria in this area. Please change the filters and try again.'}
                 </p>
                 <button
                   onClick={() => {
@@ -318,7 +329,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                   }}
                   className="px-4 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-sm"
                 >
-                  ডিফল্ট তালিকা দেখুন
+                  {language === 'bn' ? 'ডিফল্ট তালিকা দেখুন' : 'Reset to Default'}
                 </button>
               </div>
             ) : (
@@ -357,7 +368,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                           <h3 className="text-base font-black text-[#171717] hover:text-[#2E7D32] transition-colors">
                             {hosp.name}
                           </h3>
-                          <p className="text-xs text-[#2E7D32] font-bengali font-bold">{hosp.nameBn}</p>
+                          {language === 'bn' && <p className="text-xs text-[#2E7D32] font-bengali font-bold">{hosp.nameBn}</p>}
                           <p className="text-xs text-[#555555]">{hosp.address}</p>
                         </div>
 
@@ -367,7 +378,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                             {hosp.distanceKm} km
                           </span>
                           <span className="text-[10px] text-[#555555] font-semibold block">
-                            ~{hosp.travelTimeMins} মিনিট (Mins)
+                            ~{hosp.travelTimeMins} {language === 'bn' ? 'মিনিট' : 'mins'}
                           </span>
                         </div>
                       </div>
@@ -376,7 +387,9 @@ export const NearbyHospitalFinder: React.FC = () => {
                       <div className="my-3 p-3 rounded-xl border border-[#D5E8D7] bg-white flex flex-wrap items-center justify-between gap-2 text-xs">
                         <div className="flex items-center space-x-2">
                           <Bed className="w-4 h-4 text-[#2E7D32] shrink-0" />
-                          <span className="font-bold text-[#171717]">জরুরি বেড স্ট্যাটাস:</span>
+                          <span className="font-bold text-[#171717]">
+                            {language === 'bn' ? 'জরুরি বেড স্ট্যাটাস:' : 'Emergency Bed Status:'}
+                          </span>
                           {hosp.isBedVerified ? (
                             <div className="flex items-center space-x-1.5">
                               <span
@@ -388,17 +401,17 @@ export const NearbyHospitalFinder: React.FC = () => {
                                     : 'bg-rose-100 text-rose-800'
                                 }`}
                               >
-                                {hosp.availableBeds} টি সাধারণ বেড খালি
+                                {language === 'bn' ? `${hosp.availableBeds} টি সাধারণ বেড খালি` : `${hosp.availableBeds} General Beds Free`}
                               </span>
                               {(hosp.icuBedsAvailable ?? 0) > 0 && (
                                 <span className="px-2 py-0.5 rounded-md bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] text-xs font-black">
-                                  {hosp.icuBedsAvailable} টি ICU
+                                  {language === 'bn' ? `${hosp.icuBedsAvailable} টি ICU` : `${hosp.icuBedsAvailable} ICU Beds`}
                                 </span>
                               )}
                             </div>
                           ) : (
                             <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[#555555] font-bold text-[11px]">
-                              Availability not verified — contact hospital
+                              {language === 'bn' ? 'বেড তথ্য অপ্রমাণিত — হাসপাতালে যোগাযোগ করুন' : 'Availability not verified — contact hospital'}
                             </span>
                           )}
                         </div>
@@ -429,7 +442,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                             className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#2E7D32] hover:bg-[#256B2A] text-white font-bold transition-all shadow-xs"
                           >
                             <Phone className="w-3.5 h-3.5" />
-                            <span>কল করুন ({hosp.phone})</span>
+                            <span>{language === 'bn' ? `কল করুন (${hosp.phone})` : `Call (${hosp.phone})`}</span>
                           </a>
 
                           <a
@@ -439,7 +452,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                             className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F1F8F2] border border-[#D5E8D7] text-[#171717] font-bold transition-colors"
                           >
                             <ExternalLink className="w-3.5 h-3.5 text-[#555555]" />
-                            <span>ডিরেকশন (Directions)</span>
+                            <span>{language === 'bn' ? 'ডিরেকশন (Directions)' : 'Directions'}</span>
                           </a>
                         </div>
 
@@ -451,7 +464,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                           className="font-bold text-[#2E7D32] hover:underline flex items-center space-x-1"
                         >
                           <MapPin className="w-3.5 h-3.5" />
-                          <span>ম্যাপে অবস্থান দেখুন</span>
+                          <span>{language === 'bn' ? 'ম্যাপে অবস্থান দেখুন' : 'View on Map'}</span>
                         </button>
                       </div>
                     </div>
@@ -467,14 +480,14 @@ export const NearbyHospitalFinder: React.FC = () => {
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-black text-[#171717] flex items-center space-x-2">
                   <Navigation className="w-4 h-4 text-[#2E7D32]" />
-                  <span>লাইভ ইন্টারেক্টিভ রাডার ম্যাপ</span>
+                  <span>{language === 'bn' ? 'লাইভ ইন্টারেক্টিভ রাডার ম্যাপ' : 'Live Interactive Radar Map'}</span>
                 </h3>
                 {selectedHospital && (
                   <button
                     onClick={() => setSelectedHospital(null)}
                     className="text-[11px] font-bold text-[#555555] hover:text-[#171717]"
                   >
-                    রিসেট জুম
+                    {language === 'bn' ? 'রিসেট জুম' : 'Reset Zoom'}
                   </button>
                 )}
               </div>
@@ -506,7 +519,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                       href={`tel:${selectedHospital.phone.replace(/[^0-9+]/g, '')}`}
                       className="flex-1 text-center py-1.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-lg font-bold"
                     >
-                      📞 সরাসরি কল করুন
+                      {language === 'bn' ? '📞 সরাসরি কল করুন' : '📞 Call Hospital'}
                     </a>
                     <a
                       href={selectedHospital.mapsUrl}
@@ -514,7 +527,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                       rel="noopener noreferrer"
                       className="flex-1 text-center py-1.5 bg-white border border-[#D5E8D7] hover:bg-[#F1F8F2] text-[#171717] rounded-lg font-bold"
                     >
-                      🗺️ গুগল ম্যাপস
+                      {language === 'bn' ? '🗺️ গুগল ম্যাপস' : '🗺️ Google Maps'}
                     </a>
                   </div>
                   <button
@@ -527,7 +540,7 @@ export const NearbyHospitalFinder: React.FC = () => {
                 </div>
               ) : (
                 <p className="text-[11px] text-[#555555] text-center italic">
-                  ম্যাপের কোনো পিন বা হাসপাতালের কার্ডে ক্লিক করে বিস্তারিত জানুন।
+                  {language === 'bn' ? 'ম্যাপের কোনো পিন বা হাসপাতালের কার্ডে ক্লিক করে বিস্তারিত জানুন।' : 'Click any map pin or hospital card to view details.'}
                 </p>
               )}
             </div>

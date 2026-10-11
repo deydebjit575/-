@@ -208,7 +208,9 @@ export const MedicalTimeline: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">তারিখ</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'তারিখ' : 'Date'}
+                    </label>
                     <input
                       type="date"
                       value={newDate}
@@ -218,7 +220,9 @@ export const MedicalTimeline: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#171717] mb-1">ধরণ</label>
+                    <label className="block text-xs font-bold text-[#171717] mb-1">
+                      {language === 'bn' ? 'ধরণ' : 'Event Type'}
+                    </label>
                     <select
                       value={newType}
                       onChange={e => setNewType(e.target.value as any)}
@@ -235,7 +239,9 @@ export const MedicalTimeline: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">চিকিৎসক বা স্বাস্থ্য কেন্দ্র</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'চিকিৎসক বা স্বাস্থ্য কেন্দ্র' : 'Doctor or Facility'}
+                  </label>
                   <input
                     type="text"
                     placeholder="e.g., Apollo Hospital / Dr. A. K. Banerjee"
@@ -246,7 +252,9 @@ export const MedicalTimeline: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#171717] mb-1">বিবরণ / পরামর্শ</label>
+                  <label className="block text-xs font-bold text-[#171717] mb-1">
+                    {language === 'bn' ? 'বিবরণ / পরামর্শ' : 'Description / Notes'}
+                  </label>
                   <textarea
                     rows={3}
                     placeholder="Clinical notes, medications prescribed..."

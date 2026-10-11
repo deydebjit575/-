@@ -35,11 +35,17 @@ export const AiHealthCheckin: React.FC = () => {
 
     setIsAnalyzing(true);
     setTimeout(() => {
-      const result = assessSymptomsAI(selectedSymptoms, patientProfile.age || 70);
+      const result = assessSymptomsAI(selectedSymptoms, patientProfile.age || 70, language);
       setAssessmentResult(result);
       setIsAnalyzing(false);
     }, 600);
   };
+
+  React.useEffect(() => {
+    if (assessmentResult && selectedSymptoms.length > 0) {
+      setAssessmentResult(assessSymptomsAI(selectedSymptoms, patientProfile.age || 70, language));
+    }
+  }, [language]);
 
   const handleReset = () => {
     setSelectedSymptoms([]);
@@ -53,7 +59,7 @@ export const AiHealthCheckin: React.FC = () => {
         <div className="bg-[#E8F5E9] rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-xs space-y-3">
           <div className="flex items-center space-x-2 text-[#2E7D32] font-bold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
-            <span>MediVault AI Health Check-in (স্মার্ট স্বাস্থ্য মূল্যায়ন)</span>
+            <span>{language === 'bn' ? 'মেডিভল্ট এআই স্বাস্থ্য চেক-ইন' : 'MediVault AI Health Check-in'}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#171717]">
             {language === 'bn' ? 'এআই স্বাস্থ্য চেক-ইন ও উপসর্গ মূল্যায়ন' : 'AI Health Symptom Check-in'}
@@ -68,9 +74,13 @@ export const AiHealthCheckin: React.FC = () => {
           <div className="p-4 rounded-2xl bg-[#F1F8F2] border border-[#D5E8D7] text-xs text-[#171717] flex items-start space-x-3 mt-4">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block text-sm text-[#171717]">চিকিৎসাগত সতর্কবার্তা (Medical Disclaimer):</span>
+              <span className="font-bold block text-sm text-[#171717]">
+                {language === 'bn' ? 'চিকিৎসাগত সতর্কবার্তা:' : 'Medical Disclaimer:'}
+              </span>
               <p className="mt-0.5 leading-relaxed text-[#555555]">
-                এই এআই মূল্যায়ন কোনো নিশ্চিত বা চূড়ান্ত মেডিকেল ডায়াগনোসিস নয়। তীব্র বুকে ব্যথা, মারাত্মক শ্বাসকষ্ট, বা আকস্মিক প্যারালাইসিসের ক্ষেত্রে অবিলম্বে নিচে থাকা <strong>"জরুরি SOS"</strong> বা <strong>112</strong> নম্বরে যোগাযোগ করুন।
+                {language === 'bn'
+                  ? 'এই এআই মূল্যায়ন কোনো নিশ্চিত বা চূড়ান্ত মেডিকেল ডায়াগনোসিস নয়। তীব্র বুকে ব্যথা, মারাত্মক শ্বাসকষ্ট, বা আকস্মিক প্যারালাইসিসের ক্ষেত্রে অবিলম্বে নিচে থাকা "জরুরি SOS" বা 112 নম্বরে যোগাযোগ করুন।'
+                  : 'This AI symptom assessment is an informational tool and does not constitute a formal diagnosis. For acute chest tightness, severe breathlessness, or neurological changes, immediately trigger Emergency SOS or dial 112.'}
               </p>
             </div>
           </div>
@@ -83,7 +93,7 @@ export const AiHealthCheckin: React.FC = () => {
               {language === 'bn' ? 'বর্তমান উপসর্গসমূহ নির্বাচন করুন:' : 'Select Symptoms You Are Experiencing:'}
             </h3>
             <span className="text-xs text-[#2E7D32] font-bold">
-              {selectedSymptoms.length} টি নির্বাচিত
+              {selectedSymptoms.length} {language === 'bn' ? 'টি নির্বাচিত' : 'Selected'}
             </span>
           </div>
 
@@ -121,7 +131,7 @@ export const AiHealthCheckin: React.FC = () => {
               className="px-4 py-2 rounded-xl border border-[#D5E8D7] bg-white text-xs font-bold text-[#555555] hover:bg-[#F1F8F2] flex items-center space-x-1 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>রিসেট করুন</span>
+              <span>{language === 'bn' ? 'রিসেট করুন' : 'Reset'}</span>
             </button>
 
             <button
@@ -134,7 +144,11 @@ export const AiHealthCheckin: React.FC = () => {
               }`}
             >
               <Sparkles className="w-4 h-4" />
-              <span>{isAnalyzing ? 'বিশ্লেষণ চলছে...' : 'স্বাস্থ্য মূল্যায়ন শুরু করুন'}</span>
+              <span>
+                {isAnalyzing
+                  ? (language === 'bn' ? 'বিশ্লেষণ চলছে...' : 'Analyzing Symptoms...')
+                  : (language === 'bn' ? 'স্বাস্থ্য মূল্যায়ন শুরু করুন' : 'Start Health Assessment')}
+              </span>
             </button>
           </div>
         </div>
@@ -154,8 +168,18 @@ export const AiHealthCheckin: React.FC = () => {
                   <Activity className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[11px] uppercase font-bold text-[#555555]">মূল্যায়ন ঝুঁকি মাত্রা:</span>
-                  <h3 className="text-xl font-black text-[#171717]">{assessmentResult.riskLevel}</h3>
+                  <span className="text-[11px] uppercase font-bold text-[#555555]">
+                    {language === 'bn' ? 'মূল্যায়ন ঝুঁকি মাত্রা:' : 'Assessment Risk Level:'}
+                  </span>
+                  <h3 className="text-xl font-black text-[#171717]">
+                    {language === 'bn'
+                      ? (assessmentResult.riskLevel === 'Emergency Alert'
+                          ? '🚨 জরুরি সতর্কতা (Emergency Alert)'
+                          : assessmentResult.riskLevel === 'Seek Prompt Care'
+                          ? '⚠️ দ্রুত পরামর্শ নিন (Seek Prompt Care)'
+                          : 'স্বাভাবিক / মৃদু ঝুঁকি (Low Risk)')
+                      : assessmentResult.riskLevel}
+                  </h3>
                 </div>
               </div>
 
@@ -165,20 +189,24 @@ export const AiHealthCheckin: React.FC = () => {
                   className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs animate-pulse flex items-center space-x-2 cursor-pointer"
                 >
                   <PhoneCall className="w-4 h-4" />
-                  <span>তাৎক্ষণিক জরুরি SOS পাঠান</span>
+                  <span>{language === 'bn' ? 'তাৎক্ষণিক জরুরি SOS পাঠান' : 'Initiate Emergency SOS'}</span>
                 </button>
               )}
             </div>
 
             {/* Primary Analysis */}
             <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] text-xs leading-relaxed space-y-1 shadow-2xs">
-              <span className="font-bold text-[#171717] block text-sm">প্রাথমিক পর্যবেক্ষণ:</span>
+              <span className="font-bold text-[#171717] block text-sm">
+                {language === 'bn' ? 'প্রাথমিক পর্যবেক্ষণ:' : 'Primary Assessment:'}
+              </span>
               <p className="text-[#555555]">{assessmentResult.primaryAssessment}</p>
             </div>
 
             {/* Recommended Actions */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#171717] block">করণীয় পদক্ষেপ:</span>
+              <span className="text-xs font-bold text-[#171717] block">
+                {language === 'bn' ? 'করণীয় পদক্ষেপ:' : 'Recommended Actions:'}
+              </span>
               <ul className="space-y-1.5 text-xs text-[#555555] list-disc pl-5">
                 {assessmentResult.recommendedActions.map((action, i) => (
                   <li key={i}>{action}</li>
@@ -188,7 +216,9 @@ export const AiHealthCheckin: React.FC = () => {
 
             {/* Lifestyle & Home Care */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#171717] block">জীবনধারা ও প্রাথমিক যত্ন:</span>
+              <span className="text-xs font-bold text-[#171717] block">
+                {language === 'bn' ? 'জীবনধারা ও প্রাথমিক যত্ন:' : 'Lifestyle & Home Care Guidance:'}
+              </span>
               <ul className="space-y-1.5 text-xs text-[#555555] list-disc pl-5">
                 {assessmentResult.lifestyleAndHomeCare.map((care, i) => (
                   <li key={i}>{care}</li>
@@ -199,14 +229,16 @@ export const AiHealthCheckin: React.FC = () => {
             {/* Suggested Speciality */}
             <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] text-xs flex items-center justify-between shadow-2xs">
               <div>
-                <span className="text-[#2E7D32] font-bold block">পরামর্শযোগ্য চিকিৎসক বিভাগ:</span>
+                <span className="text-[#2E7D32] font-bold block">
+                  {language === 'bn' ? 'পরামর্শযোগ্য চিকিৎসক বিভাগ:' : 'Recommended Specialist Department:'}
+                </span>
                 <span className="text-[#171717] font-semibold">{assessmentResult.suggestedDoctorSpeciality}</span>
               </div>
               <button
                 onClick={() => navigateTo('nearby-hospitals')}
                 className="px-4 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl font-bold text-xs transition-colors cursor-pointer"
               >
-                নিকটস্থ হাসপাতাল খুঁজুন →
+                {language === 'bn' ? 'নিকটস্থ হাসপাতাল খুঁজুন →' : 'Find Nearby Hospitals →'}
               </button>
             </div>
           </div>
