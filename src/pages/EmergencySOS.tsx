@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useApp } from '../context/AppContext';
 import {
@@ -21,29 +21,64 @@ import {
   Check,
   Lock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  RefreshCw,
+  GitBranch,
+  Search,
+  Filter,
+  CheckCircle
 } from 'lucide-react';
-import { MedicalDocument } from '../types';
+import { MedicalDocument, VerifiedHospital, Hospital } from '../types';
+import {
+  getVerifiedHospitalsByLocation,
+  allVerifiedHospitals,
+  isMatchingHospital
+} from '../data/verifiedHospitals';
 
 export const EmergencySOS: React.FC = () => {
   const { language, t, speak } = useLanguage();
   const {
     currentUser,
     patientProfile,
+    updatePatientProfile,
     medicalDocuments,
     hospitals,
+    selectedSearchLocation,
+    setSelectedSearchLocation,
     submitEmergencySosRequest,
     navigateTo,
     activeEmergencyRequest,
     selectedNearbyHospital,
+    setSelectedNearbyHospital,
     pageParams,
-    showToast
+    showToast,
+    toggleAutoRerouting
   } = useApp();
 
-  // 1. Target Hospital Selection
-  const [selectedHospitalId, setSelectedHospitalId] = useState(
-    pageParams?.hospitalId || selectedNearbyHospital?.id || hospitals[0]?.id || 'pan-01'
-  );
+  // 1. Patient Location Integration
+  const initialPatientLocation =
+    patientProfile.location ||
+    currentUser?.location ||
+    selectedSearchLocation ||
+    '';
+
+  const [currentLocation, setCurrentLocation] = useState<string>(initialPatientLocation);
+  const [locationInputValue, setLocationInputValue] = useState<string>(initialPatientLocation);
+  const [isEditingLocation, setIsEditingLocation] = useState<boolean>(!initialPatientLocation.trim());
+
+  // Search & Sorting state for Hospital Selection
+  const [hospitalSearchQuery, setHospitalSearchQuery] = useState<string>('');
+  const [hospitalSortBy, setHospitalSortBy] = useState<'distance' | 'icu' | 'totalBeds' | 'name'>('distance');
+
+  // Selected Target Hospital ID
+  const [selectedHospitalId, setSelectedHospitalId] = useState<string>(() => {
+    return (
+      pageParams?.hospitalId ||
+      localStorage.getItem('susthayan_selected_hospital_id') ||
+      selectedNearbyHospital?.id ||
+      'pan-01'
+    );
+  });
 
   // 2. Patient Information State
   const [patientName, setPatientName] = useState(
@@ -95,7 +130,10 @@ export const EmergencySOS: React.FC = () => {
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [showOptionalDetails, setShowOptionalDetails] = useState(true);
 
-  // 6. Consent & Submission Guards
+  // 6. Smart Auto-Rerouting Toggle (Defaults to patient profile preference, OFF for new patients)
+  const [autoRerouteEnabled, setAutoRerouteEnabled] = useState(() => Boolean(patientProfile.autoRerouteEnabled));
+
+  // 7. Consent & Submission Guards
   const [isConsentAgreed, setIsConsentAgreed] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -155,9 +193,124 @@ export const EmergencySOS: React.FC = () => {
     );
   };
 
+  // Candidate partner hospitals based on patient location
+  const rawHospitalsForLocation = useMemo(() => {
+    if (!currentLocation || !currentLocation.trim()) {
+      return [];
+    }
+    return getVerifiedHospitalsByLocation(currentLocation, gpsCoordinates);
+  }, [currentLocation, gpsCoordinates]);
+
+  // Filtered and sorted partner hospitals
+  const processedHospitals = useMemo(() => {
+    let list = [...rawHospitalsForLocation];
+
+    if (hospitalSearchQuery.trim()) {
+      const q = hospitalSearchQuery.toLowerCase().trim();
+      list = list.filter(
+        h =>
+          h.name.toLowerCase().includes(q) ||
+          h.nameBn.includes(q) ||
+          h.address.toLowerCase().includes(q) ||
+          h.locality.toLowerCase().includes(q) ||
+          h.area.toLowerCase().includes(q) ||
+          h.specialities.some(s => s.toLowerCase().includes(q))
+      );
+    }
+
+    list.sort((a, b) => {
+      if (hospitalSortBy === 'distance') {
+        return (a.distanceKm ?? 999) - (b.distanceKm ?? 999);
+      }
+      if (hospitalSortBy === 'icu') {
+        return (b.icuBedsAvailable || 0) - (a.icuBedsAvailable || 0);
+      }
+      if (hospitalSortBy === 'totalBeds') {
+        return (b.availableBeds || 0) - (a.availableBeds || 0);
+      }
+      if (hospitalSortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
+    });
+
+    return list;
+  }, [rawHospitalsForLocation, hospitalSearchQuery, hospitalSortBy]);
+
+  // Exactly 10 destination partner hospitals when >= 10 exist, otherwise all matching hospitals
+  const displayedHospitals = useMemo(() => {
+    if (processedHospitals.length >= 10) {
+      return processedHospitals.slice(0, 10);
+    }
+    return processedHospitals;
+  }, [processedHospitals]);
+
+  // Keep selectedHospital synchronized and auto-select nearest if current selection is invalid
+  useEffect(() => {
+    if (displayedHospitals.length > 0) {
+      const isCurrentValid = displayedHospitals.some(h => isMatchingHospital(h.id, selectedHospitalId));
+      if (!isCurrentValid && !pageParams?.hospitalId) {
+        const nextId = displayedHospitals[0].id;
+        setSelectedHospitalId(nextId);
+        localStorage.setItem('susthayan_selected_hospital_id', nextId);
+      }
+    }
+  }, [displayedHospitals, selectedHospitalId, pageParams?.hospitalId]);
+
+  const selectedHospital: VerifiedHospital | Hospital =
+    displayedHospitals.find(h => isMatchingHospital(h.id, selectedHospitalId)) ||
+    allVerifiedHospitals.find(h => isMatchingHospital(h.id, selectedHospitalId)) ||
+    hospitals.find(h => isMatchingHospital(h.id, selectedHospitalId)) ||
+    displayedHospitals[0] ||
+    hospitals[0];
+
+  const handleSelectHospital = (hosp: VerifiedHospital | Hospital) => {
+    setSelectedHospitalId(hosp.id);
+    localStorage.setItem('susthayan_selected_hospital_id', hosp.id);
+    setSelectedNearbyHospital(hosp);
+    showToast(
+      'info',
+      language === 'bn' ? 'গন্তব্য হাসপাতাল নির্বাচিত' : 'Destination Partner Hospital Selected',
+      hosp.name
+    );
+  };
+
+  const handleSaveLocation = (newLoc: string) => {
+    const trimmed = newLoc.trim();
+    if (!trimmed) {
+      showToast(
+        'error',
+        language === 'bn' ? 'অবস্থান প্রদান আবশ্যক' : 'Location Required',
+        language === 'bn' ? 'অনুগ্রহ করে আপনার শহর, এলাকা বা পিন কোড লিখুন।' : 'Please enter your city, area, or PIN code.'
+      );
+      return;
+    }
+    setCurrentLocation(trimmed);
+    setLocationInputValue(trimmed);
+    setIsEditingLocation(false);
+    updatePatientProfile({ location: trimmed });
+    setSelectedSearchLocation(trimmed);
+    setManualAddress(trimmed);
+    showToast(
+      'success',
+      language === 'bn' ? 'অবস্থান হালনাগাদ হয়েছে' : 'Location Updated & Saved',
+      trimmed
+    );
+  };
+
   // Submit Emergency Request
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedHospitalId || !selectedHospital) {
+      setValidationError(
+        language === 'bn'
+          ? 'অনুগ্রহ করে অনুরোধ জমা দেওয়ার পূর্বে একটি গন্তব্য পার্টনার হাসপাতাল নির্বাচন করুন।'
+          : 'Please select a Destination Partner Hospital before submitting your emergency request.'
+      );
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+      return;
+    }
 
     if (!chiefComplaint.trim()) {
       setValidationError(
@@ -196,6 +349,7 @@ export const EmergencySOS: React.FC = () => {
       await submitEmergencySosRequest({
         hospitalId: selectedHospitalId,
         consentGranted: isConsentAgreed,
+        autoRerouteEnabled,
         sharedDocIds: selectedDocIds,
         ambulanceRequested,
         chiefComplaint: chiefComplaint.trim(),
@@ -219,8 +373,6 @@ export const EmergencySOS: React.FC = () => {
       showToast('error', 'Submission Failed', 'Please try again or call 112 directly.');
     }
   };
-
-  const selectedHospital = hospitals.find(h => h.id === selectedHospitalId) || hospitals[0];
 
   return (
     <div className="min-h-screen bg-white py-8 px-4 sm:px-6">
@@ -293,51 +445,356 @@ export const EmergencySOS: React.FC = () => {
 
         {/* MAIN SOS FORM */}
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* SECTION 1: TARGET HOSPITAL SELECTION */}
-          <div className="bg-[#E8F5E9] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm space-y-4">
-            <div className="flex items-center space-x-2 text-[#171717] font-black text-base">
-              <Building className="w-5 h-5 text-[#2E7D32]" />
-              <span>{language === 'bn' ? '১. গন্তব্য হাসপাতাল নির্বাচন করুন' : '1. Select Destination Partner Hospital'}</span>
+          {/* SECTION 1: DESTINATION PARTNER HOSPITAL SELECTION */}
+          <div className="bg-[#E8F5E9] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm space-y-6" id="select-destination-hospital">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-2 text-[#171717] font-black text-lg">
+                <Building className="w-6 h-6 text-[#2E7D32]" />
+                <span>{language === 'bn' ? '১. গন্তব্য পার্টনার হাসপাতাল নির্বাচন করুন' : '1. Select Destination Partner Hospital'}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="px-3 py-1 rounded-full bg-white text-[#2E7D32] border border-[#D5E8D7] text-xs font-bold shadow-2xs">
+                  {language === 'bn' ? '১০টি পার্টনার হাসপাতাল নেটওয়ার্ক' : '10-Hospital Partner Network'}
+                </span>
+              </div>
             </div>
 
-            <p className="text-xs text-[#555555]">
+            <p className="text-xs text-[#555555] leading-relaxed">
               {language === 'bn'
-                ? 'অনুরোধটি নির্বাচিত হাসপাতালের ট্রায়াজ ও ইমার্জেন্সি ভর্তি ডেস্কে প্রেরিত হবে:'
-                : 'Your emergency request will be transmitted directly to this verified hospital desk:'}
+                ? 'আপনার প্রোফাইলে সংরক্ষিত এলাকার ভিত্তিতে নিকটবর্তী ১০টি যাচাইকৃত পার্টনার হাসপাতাল তালিকাভুক্ত করা হয়েছে। জরুরি পরিস্থিতিতে রোগীর সমস্যা ও ট্রায়াজ ডেটা সরাসরি নির্বাচিত হাসপাতালে পাঠানো হবে:'
+                : 'Displaying relevant partner hospitals based on your saved location, ranked primarily by geographic proximity with verified emergency ICU capacity:'}
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {hospitals.map(hosp => (
-                <div
-                  key={hosp.id}
-                  onClick={() => setSelectedHospitalId(hosp.id)}
-                  className={`p-4 rounded-2xl border cursor-pointer transition-all ${
-                    selectedHospitalId === hosp.id
-                      ? 'bg-white border-[#2E7D32] shadow-sm ring-2 ring-[#2E7D32]/30'
-                      : 'bg-white border-[#D5E8D7] hover:border-[#2E7D32]'
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-bold text-[#171717] text-sm">{hosp.name}</h4>
-                      <p className="text-[11px] text-[#555555]">{hosp.area || 'West Bengal'}</p>
-                    </div>
-                    <span className="text-xs font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-lg border border-[#D5E8D7]">
-                      {hosp.distanceKm} km
-                    </span>
+            {/* PATIENT LOCATION INTEGRATION & QUICK CHANGER */}
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-[#E8F5E9] text-[#2E7D32] flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-[#2E7D32]" />
                   </div>
-                  <div className="flex items-center justify-between text-xs text-[#555555] mt-3 pt-2 border-t border-[#D5E8D7]">
-                    <span>
-                      {language === 'bn' ? 'আইসিইউ:' : 'ICU Beds:'}{' '}
-                      <strong className="text-[#2E7D32] font-black">
-                        {hosp.icuBedsAvailable} {language === 'bn' ? 'বেড' : 'Beds'}
-                      </strong>
+                  <div>
+                    <span className="text-[10px] text-[#555555] uppercase font-bold tracking-wider block">
+                      {language === 'bn' ? 'রোগীর সংরক্ষিত অবস্থান (Patient Saved Location)' : 'Patient Saved Location'}
                     </span>
-                    <span>~{hosp.estimatedTravelMins} {language === 'bn' ? 'মিনিট' : 'mins ETA'}</span>
+                    <p className="text-sm font-black text-[#171717]">
+                      {currentLocation || (language === 'bn' ? 'অবস্থান নির্ধারণ করা হয়নি (অনুরোধ আবশ্যক)' : 'No location set (City/Area/PIN required)')}
+                    </p>
                   </div>
                 </div>
-              ))}
+
+                <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingLocation(prev => !prev)}
+                    className="px-3 py-1.5 bg-[#F1F8F2] hover:bg-[#E8F5E9] text-[#2E7D32] rounded-xl text-xs font-bold border border-[#D5E8D7] transition-all flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>{isEditingLocation ? (language === 'bn' ? 'বাতিল' : 'Cancel') : (language === 'bn' ? 'অবস্থান পরিবর্তন' : 'Change Location')}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Missing Location Prompt or Inline Location Editor */}
+              {(!currentLocation.trim() || isEditingLocation) && (
+                <div className="p-3.5 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] space-y-3 animate-in fade-in">
+                  <div className="flex items-start space-x-2 text-xs text-[#171717]">
+                    <Info className="w-4 h-4 text-[#2E7D32] shrink-0 mt-0.5" />
+                    <p className="text-xs">
+                      {language === 'bn'
+                        ? 'নিকটস্থ পার্টনার হাসপাতাল আবিষ্কার করতে আপনার শহর, এলাকা বা ৬ ডিজিটের পিন কোড প্রদান করুন:'
+                        : 'Please provide your City, Area, or 6-digit PIN code (e.g., Panihati, Dum Dum, 700114, 700028) to identify relevant partner hospitals:'}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      placeholder={language === 'bn' ? 'শহর, এলাকা বা পিন কোড লিখুন (যেমন: Panihati, 700114)...' : 'Enter city, area, or PIN code (e.g. Panihati, Dum Dum, 700114)...'}
+                      value={locationInputValue}
+                      onChange={e => setLocationInputValue(e.target.value)}
+                      className="flex-1 px-3.5 py-2 rounded-xl bg-white border border-[#D5E8D7] text-xs font-bold text-[#171717] focus:ring-2 focus:ring-[#2E7D32]/20 focus:border-[#2E7D32] outline-hidden"
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSaveLocation(locationInputValue);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleSaveLocation(locationInputValue)}
+                      className="px-4 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-black transition-all shrink-0 cursor-pointer"
+                    >
+                      {language === 'bn' ? 'অবস্থান সংরক্ষণ ও হাসপাতাল খুঁজুন' : 'Save & Find Hospitals'}
+                    </button>
+                  </div>
+
+                  {/* Quick Locality Presets */}
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className="text-[11px] font-bold text-[#555555] mr-1">
+                      {language === 'bn' ? 'দ্রুত নির্বাচন:' : 'Quick Select:'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveLocation('Panihati, West Bengal')}
+                      className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-[#171717] border border-[#D5E8D7] rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                    >
+                      Panihati (Location A • 700114)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSaveLocation('Dum Dum, West Bengal')}
+                      className="px-2.5 py-1 bg-white hover:bg-blue-50 text-[#171717] border border-[#D5E8D7] rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                    >
+                      Dum Dum (Location B • 700028)
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* SEARCH & SORT TOOLBAR */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Search by Hospital Name */}
+              <div className="sm:col-span-2 relative">
+                <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={hospitalSearchQuery}
+                  onChange={e => setHospitalSearchQuery(e.target.value)}
+                  placeholder={language === 'bn' ? 'হাসপাতালের নাম বা বিভাগ দিয়ে ফিল্টার করুন...' : 'Search hospital name, address, or speciality...'}
+                  className="w-full pl-10 pr-4 py-2.5 bg-white rounded-xl border border-[#D5E8D7] text-xs font-medium text-[#171717] focus:ring-2 focus:ring-[#2E7D32]/20 focus:border-[#2E7D32] outline-hidden"
+                />
+                {hospitalSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setHospitalSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#555555] hover:text-[#171717] cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Sort By Dropdown */}
+              <div className="relative">
+                <select
+                  value={hospitalSortBy}
+                  onChange={e => setHospitalSortBy(e.target.value as any)}
+                  className="w-full px-3 py-2.5 bg-white rounded-xl border border-[#D5E8D7] text-xs font-bold text-[#171717] focus:ring-2 focus:ring-[#2E7D32]/20 focus:border-[#2E7D32] outline-hidden appearance-none cursor-pointer"
+                >
+                  <option value="distance">{language === 'bn' ? 'দূরত্ব অনুযায়ী (নিকটবর্তী আগে)' : 'Proximity (Nearest First)'}</option>
+                  <option value="icu">{language === 'bn' ? 'সর্বোচ্চ আইসিইউ শয্যা' : 'Emergency ICU Beds (High to Low)'}</option>
+                  <option value="totalBeds">{language === 'bn' ? 'সর্বোচ্চ মোট শয্যা' : 'Total Available Beds (High to Low)'}</option>
+                  <option value="name">{language === 'bn' ? 'হাসপাতালের নাম (A-Z)' : 'Hospital Name (A to Z)'}</option>
+                </select>
+                <ChevronDown className="w-4 h-4 text-[#555555] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* FEWER THAN 10 MATCHES NOTICE (IF APPLICABLE) */}
+            {displayedHospitals.length > 0 && displayedHospitals.length < 10 && (
+              <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-2xl text-amber-900 text-xs flex items-center space-x-2">
+                <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0" />
+                <span>
+                  {language === 'bn'
+                    ? `বিজ্ঞপ্তি: এই অবস্থানের জন্য ১০ টির কম যোগ্য পার্টনার হাসপাতাল পাওয়া গেছে (${displayedHospitals.length} টি ম্যাচ প্রদর্শিত)। কেবলমাত্র বাস্তব যাচাইকৃত পার্টনার হাসপাতালই প্রদর্শিত হচ্ছে।`
+                    : `Notice: Fewer than 10 eligible partner hospitals were found for this query (${displayedHospitals.length} matches found). Only verified real-world partner hospitals are displayed.`}
+                </span>
+              </div>
+            )}
+
+            {/* EMPTY STATE (0 MATCHES) */}
+            {displayedHospitals.length === 0 && (
+              <div className="p-8 bg-white rounded-2xl border border-[#D5E8D7] text-center space-y-2">
+                <Building className="w-8 h-8 text-[#555555] mx-auto opacity-50" />
+                <h4 className="font-bold text-sm text-[#171717]">
+                  {language === 'bn' ? 'কোনো পার্টনার হাসপাতাল পাওয়া যায়নি' : 'No Eligible Partner Hospitals Found'}
+                </h4>
+                <p className="text-xs text-[#555555]">
+                  {language === 'bn'
+                    ? 'আপনার বর্তমান অবস্থান বা অনুসন্ধান শব্দের জন্য কোনো হাসপাতাল মেলেনি। অনুগ্রহ করে অনুসন্ধান ফিল্টার রিসেট করুন বা এলাকা পরিবর্তন করুন।'
+                    : 'No hospitals matched your current location or filter. Please adjust your search keyword or change your location.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setHospitalSearchQuery('');
+                    handleSaveLocation('Panihati, West Bengal');
+                  }}
+                  className="mt-2 px-4 py-2 bg-[#E8F5E9] text-[#2E7D32] hover:bg-[#D5E8D7] rounded-xl text-xs font-bold border border-[#D5E8D7] transition-all cursor-pointer"
+                >
+                  {language === 'bn' ? 'পানিহাটি নেটওয়ার্ক রিসেট করুন' : 'Reset to Panihati Network (10 Hospitals)'}
+                </button>
+              </div>
+            )}
+
+            {/* EXACTLY 10 DESTINATION PARTNER HOSPITALS GRID */}
+            {displayedHospitals.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {displayedHospitals.map((hosp, idx) => {
+                  const isSelected = isMatchingHospital(hosp.id, selectedHospitalId);
+                  return (
+                    <div
+                      key={hosp.id}
+                      onClick={() => handleSelectHospital(hosp)}
+                      className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between ${
+                        isSelected
+                          ? 'bg-[#F1F8F2] border-2 border-[#2E7D32] shadow-sm ring-2 ring-[#2E7D32]/30'
+                          : 'bg-white border-[#D5E8D7] hover:border-[#2E7D32] hover:shadow-xs'
+                      }`}
+                    >
+                      <div className="space-y-2.5">
+                        {/* Header: Rank, Name, and Distance */}
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center space-x-1.5 flex-wrap">
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-gray-100 text-gray-700 font-mono">
+                                #{idx + 1}
+                              </span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]">
+                                {hosp.type || 'Hospital'}
+                              </span>
+                              {isSelected && (
+                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#2E7D32] text-white flex items-center space-x-0.5 shadow-2xs">
+                                  <Check className="w-3 h-3 stroke-[3]" />
+                                  <span>{language === 'bn' ? 'নির্বাচিত' : 'Selected'}</span>
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-bold text-[#171717] text-sm leading-snug">
+                              {hosp.name}
+                            </h4>
+                            {hosp.nameBn && (
+                              <p className="text-xs text-[#555555] font-bengali">
+                                {hosp.nameBn}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="text-xs font-black text-[#2E7D32] bg-white px-2.5 py-1 rounded-xl border border-[#D5E8D7] shadow-2xs inline-block">
+                              {hosp.distanceKm} km
+                            </span>
+                            <span className="block text-[10px] text-[#555555] mt-0.5">
+                              ~{hosp.travelTimeMins || Math.round(hosp.distanceKm * 2.5)} mins ETA
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Area & Address */}
+                        <div className="text-xs text-[#555555] flex items-start space-x-1.5">
+                          <MapPin className="w-3.5 h-3.5 text-[#2E7D32] shrink-0 mt-0.5" />
+                          <p className="text-[11px] leading-tight line-clamp-2">
+                            {hosp.address}
+                          </p>
+                        </div>
+
+                        {/* Emergency Resources: Verified ICU & Available Beds */}
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#D5E8D7] text-xs">
+                          <div className="p-2 bg-white rounded-xl border border-[#D5E8D7] space-y-0.5">
+                            <span className="text-[10px] text-[#555555] block">
+                              {language === 'bn' ? 'যাচাইকৃত আইসিইউ (ICU):' : 'Verified ICU Beds:'}
+                            </span>
+                            <p className="font-black text-[#2E7D32] text-xs">
+                              {hosp.icuBedsAvailable || 0} {language === 'bn' ? 'টি শয্যা প্রস্তুত' : 'Beds Ready'}
+                            </p>
+                          </div>
+                          <div className="p-2 bg-white rounded-xl border border-[#D5E8D7] space-y-0.5">
+                            <span className="text-[10px] text-[#555555] block">
+                              {language === 'bn' ? 'জরুরি সাধারণ শয্যা:' : 'Available Beds:'}
+                            </span>
+                            <p className="font-black text-[#171717] text-xs">
+                              {hosp.availableBeds || 12} {language === 'bn' ? 'টি খালি' : 'Available'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Contact Information */}
+                        {hosp.phone && (
+                          <div className="flex items-center justify-between text-[11px] text-[#555555]">
+                            <span className="flex items-center space-x-1">
+                              <PhoneCall className="w-3 h-3 text-[#2E7D32]" />
+                              <span>{language === 'bn' ? 'জরুরি হেল্পলাইন:' : 'Helpline:'}</span>
+                            </span>
+                            <a
+                              href={`tel:${hosp.phone.replace(/[^0-9]/g, '')}`}
+                              onClick={e => e.stopPropagation()}
+                              className="font-mono font-bold text-[#2E7D32] hover:underline"
+                            >
+                              {hosp.phone}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Clear "Select Hospital" Action Button */}
+                      <div className="pt-3 mt-2 border-t border-[#D5E8D7]">
+                        <button
+                          type="button"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleSelectHospital(hosp);
+                          }}
+                          className={`w-full py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#2E7D32] text-white shadow-xs'
+                              : 'bg-white hover:bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]'
+                          }`}
+                        >
+                          {isSelected ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>{language === 'bn' ? 'গন্তব্য নির্বাচিত হয়েছে' : 'Destination Partner Selected'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>{language === 'bn' ? 'হাসপাতাল নির্বাচন করুন' : 'Select Hospital'}</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* CLEAR CONFIRMATION BANNER */}
+            {selectedHospital && (
+              <div className="p-4 bg-white rounded-2xl border-2 border-[#2E7D32] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#2E7D32] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Check className="w-5 h-5 stroke-[3]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7]">
+                        {language === 'bn' ? 'নিশ্চিত নির্বাচিত গন্তব্য' : 'Confirmed Selected Destination'}
+                      </span>
+                      <span className="text-xs text-[#555555]">
+                        ~{selectedHospital.distanceKm} km • ~{(selectedHospital as any).travelTimeMins || (selectedHospital as any).estimatedTravelMins || 4} mins
+                      </span>
+                    </div>
+                    <h4 className="font-black text-sm sm:text-base text-[#171717] mt-0.5">
+                      Selected Destination: {selectedHospital.name}
+                    </h4>
+                    <p className="text-xs text-[#555555] line-clamp-1">
+                      {selectedHospital.address}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right sm:text-right shrink-0">
+                  <span className="text-xs font-bold text-[#2E7D32] block">
+                    {selectedHospital.icuBedsAvailable} {language === 'bn' ? 'টি আইসিইউ বেড প্রস্তুত' : 'ICU Beds Verified'}
+                  </span>
+                  <span className="text-[11px] text-[#555555] font-mono">
+                    {selectedHospital.phone}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* SECTION 2: PATIENT INFORMATION & LOCATION */}
@@ -345,6 +802,30 @@ export const EmergencySOS: React.FC = () => {
             <div className="flex items-center space-x-2 text-[#171717] font-black text-base">
               <Users className="w-5 h-5 text-[#2E7D32]" />
               <span>{language === 'bn' ? '২. রোগীর প্রাথমিক তথ্য ও অবস্থান' : '2. Patient Identity & Emergency Location'}</span>
+            </div>
+
+            {/* Synchronized Selected Destination Partner Hospital in Section 2 */}
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center space-x-3">
+                <Building className="w-5 h-5 text-[#2E7D32] shrink-0" />
+                <div>
+                  <span className="text-[10px] text-[#555555] block uppercase font-bold">
+                    {language === 'bn' ? 'নির্বাচিত গন্তব্য পার্টনার হাসপাতাল' : 'Destination Partner Hospital'}
+                  </span>
+                  <h4 className="text-sm font-black text-[#171717]">{selectedHospital.name}</h4>
+                  <p className="text-[11px] text-[#555555]">{selectedHospital.address} • Approx. {selectedHospital.distanceKm} km</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById('select-destination-hospital');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-3 py-1.5 bg-[#E8F5E9] hover:bg-[#D5E8D7] text-[#2E7D32] font-bold text-xs rounded-xl border border-[#D5E8D7] transition-colors shrink-0 cursor-pointer"
+              >
+                {language === 'bn' ? 'গন্তব্য পরিবর্তন করুন' : 'Change Destination'}
+              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs">
@@ -842,14 +1323,106 @@ export const EmergencySOS: React.FC = () => {
             )}
           </div>
 
-          {/* SECTION 6: DATA DISCLOSURE CONSENT & SUBMISSION */}
+          {/* SECTION 6: SMART AUTO-REROUTING TOGGLE */}
+          <div className="bg-[#E8F5E9] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm space-y-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-[#171717] font-black text-base">
+                <RefreshCw className={`w-5 h-5 text-[#2E7D32] ${autoRerouteEnabled ? 'animate-spin' : ''}`} />
+                <span>
+                  {language === 'bn'
+                    ? '৬. স্মার্ট অটো-রিরাউটিং (Smart Auto-Rerouting)'
+                    : '6. Smart Auto-Rerouting for Hospital Requests'}
+                </span>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+                autoRerouteEnabled
+                  ? 'bg-[#2E7D32] text-white border-[#2E7D32]'
+                  : 'bg-white text-[#555555] border-[#D5E8D7]'
+              }`}>
+                {autoRerouteEnabled
+                  ? (language === 'bn' ? 'সক্রিয় (Active)' : 'ENABLED')
+                  : (language === 'bn' ? 'নিষ্ক্রিয় (OFF)' : 'DISABLED')}
+              </span>
+            </div>
+
+            {/* Clear explanation of what information will be shared before enabling */}
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-2 text-xs">
+              <div className="flex items-center space-x-2 text-[#2E7D32] font-bold">
+                <Info className="w-4 h-4 shrink-0" />
+                <span>
+                  {language === 'bn'
+                    ? 'অটো-রিরাউটিং সক্ষম করার আগে তথ্য শেয়ারিং বিবরণ:'
+                    : 'Information Sharing Disclosure & Privacy Safeguards:'}
+                </span>
+              </div>
+              <p className="text-[#555555] leading-relaxed">
+                {language === 'bn'
+                  ? 'এই সুবিধা সক্রিয় করলে: যদি নির্বাচিত হাসপাতাল আপনার জরুরি অনুরোধ প্রত্যাখ্যান করে বা গ্রহণে অপারগ হয়, তবে আপনার জমা দেওয়া জরুরি স্বাস্থ্য সমস্যা, লক্ষণ, বর্তমান অবস্থান এবং নির্বাচিত মেডিভল্ট নথিগুলি স্বয়ংক্রিয়ভাবে নিকটবর্তী পরবর্তী উপযুক্ত ও শয্যাযুক্ত হাসপাতালে পাঠিয়ে দেওয়া হবে। কোনো অপ্রাপ্তকারী হাসপাতালের কাছে আপনার নথি প্রকাশ করা হবে না এবং পূর্ববর্তী হাসপাতালের প্রবেশাধিকার তাৎক্ষণিকভাবে বাতিল করা হবে।'
+                  : 'Before enabling this feature, note: If this hospital declines, MediGrid will forward your emergency request details, reported symptoms, location, and authorized MediVault documents to the next suitable nearby hospital. Only the receiving hospital receives a time-limited 4-hour token. Non-receiving hospitals have zero access, and the declining hospital\'s access is immediately revoked.'}
+              </p>
+            </div>
+
+            {/* THE TOGGLE SWITCH */}
+            <div className="p-5 bg-white rounded-2xl border border-[#D5E8D7] shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1.5 flex-1 pr-2">
+                <label
+                  htmlFor="auto-reroute-toggle"
+                  className="font-black text-xs sm:text-sm text-[#171717] block cursor-pointer select-none"
+                >
+                  {language === 'bn'
+                    ? 'হাসপাতাল অপারগ হলে আমার অনুরোধ স্বয়ংক্রিয়ভাবে পরবর্তী হাসপাতালে প্রেরণ করুন'
+                    : 'Automatically forward my request if a hospital declines'}
+                </label>
+                <p className="text-[11px] sm:text-xs text-[#555555] leading-relaxed font-normal">
+                  {language === 'bn'
+                    ? 'যদি এই হাসপাতাল আপনার অনুরোধ গ্রহণে অপারগ হয়, তবে সুস্থায়ন (MediGrid) স্বয়ংক্রিয়ভাবে আপনার অনুরোধ এবং নির্বাচিত মেডিকেল নথিগুলি নিকটস্থ পরবর্তী উপযুক্ত হাসপাতালে পাঠিয়ে দেবে।'
+                    : 'If this hospital declines your request, MediGrid will automatically send your request and selected documents to the next suitable hospital.'}
+                </p>
+              </div>
+
+              {/* Accessible interactive toggle switch */}
+              <div className="flex items-center space-x-3 shrink-0 self-end sm:self-center">
+                <span className="text-[11px] font-bold text-[#555555] uppercase">
+                  {autoRerouteEnabled ? (language === 'bn' ? 'চালু' : 'ON') : (language === 'bn' ? 'বন্ধ' : 'OFF')}
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  id="auto-reroute-toggle"
+                  aria-checked={autoRerouteEnabled}
+                  onClick={() => {
+                    const next = !autoRerouteEnabled;
+                    setAutoRerouteEnabled(next);
+                    toggleAutoRerouting(next);
+                  }}
+                  className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#2E7D32] focus:ring-offset-2 ${
+                    autoRerouteEnabled ? 'bg-[#2E7D32]' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className="sr-only">
+                    {language === 'bn'
+                      ? 'হাসপাতাল অপারগ হলে স্বয়ংক্রিয়ভাবে অনুরোধ পরবর্তী হাসপাতালে প্রেরণ'
+                      : 'Automatically forward my request if a hospital declines'}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      autoRerouteEnabled ? 'translate-x-7' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 7: DATA DISCLOSURE CONSENT & SUBMISSION */}
           <div className="bg-[#E8F5E9] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm space-y-5">
             <div className="flex items-center space-x-2 text-[#171717] font-black text-base">
               <ShieldCheck className="w-5 h-5 text-[#2E7D32]" />
               <span>
                 {language === 'bn'
-                  ? '৬. তথ্য প্রকাশ সম্মতি ও অনুরোধ জমা'
-                  : '6. Emergency Data Disclosure & Consent'}
+                  ? '৭. তথ্য প্রকাশ সম্মতি ও অনুরোধ জমা'
+                  : '7. Emergency Data Disclosure & Consent'}
               </span>
             </div>
 

@@ -19,7 +19,8 @@ import {
   HospitalStaffAccount,
   AmbulanceStatus,
   DocumentCategory,
-  EmergencyRequestStatus
+  EmergencyRequestStatus,
+  AutoRerouteHistoryEntry
 } from '../types';
 import {
   mockHospitalStaffUser,
@@ -30,7 +31,8 @@ import {
   mockEmergencyRequests,
   mockAccessGrants,
   mockNotifications,
-  mockAuditLogs
+  mockAuditLogs,
+  defaultPatientAccounts
 } from '../data/mockData';
 import { sendEmergencySmsAlerts } from '../services/smsService';
 
@@ -69,6 +71,7 @@ interface AppContextType {
   // Patient Profile
   patientProfile: PatientHealthProfile;
   updatePatientProfile: (updated: Partial<PatientHealthProfile>) => void;
+  toggleAutoRerouting: (enabled?: boolean) => void;
 
   // Medical Documents (MediVault)
   medicalDocuments: MedicalDocument[];
@@ -113,6 +116,7 @@ interface AppContextType {
   submitEmergencySosRequest: (payload: {
     hospitalId: string;
     consentGranted: boolean;
+    autoRerouteEnabled?: boolean;
     sharedDocIds?: string[];
     ambulanceRequested?: boolean;
     chiefComplaint: string;
@@ -184,6 +188,10 @@ interface AppContextType {
     sharedDocIds?: string[],
     hoursValid?: number
   ) => Promise<EmergencyRequest>;
+  manuallyRerouteEmergencyRequest: (
+    requestId: string,
+    targetHospitalId: string
+  ) => Promise<EmergencyRequest | null>;
 
   // Access Grants & Patient Consent Management
   accessGrants: DocumentAccessGrant[];
@@ -231,7 +239,8 @@ export const normalizePhone = (phone: string): string => {
 // Local DB Helper
 function getStoredUsers(): Record<string, UserAccount> {
   const data = localStorage.getItem('susthayan_users_db');
-  return data ? JSON.parse(data) : {};
+  const stored = data ? JSON.parse(data) : {};
+  return { ...defaultPatientAccounts, ...stored };
 }
 
 function saveStoredUsers(users: Record<string, UserAccount>) {
@@ -261,6 +270,7 @@ function createBlankProfile(
     emergencyContacts: [],
     vitalsHistory: [],
     isProfileComplete: Boolean(fullName),
+    autoRerouteEnabled: false,
     updatedAt: new Date().toISOString()
   };
 }
@@ -356,7 +366,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.some((h: any) => h.id?.startsWith('dum-'))) {
+        if (Array.isArray(parsed) && parsed.length >= 20) {
           return parsed;
         }
       } catch (e) {}
@@ -529,11 +539,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const cleanPhone = normalizePhone(phone);
     const savedProf = localStorage.getItem(`susthayan_profile_${cleanPhone}`);
     if (savedProf) {
-      setPatientProfile(JSON.parse(savedProf));
+      const parsed = JSON.parse(savedProf);
+      setPatientProfile(parsed);
+      if (parsed.location) {
+        setSelectedSearchLocation(parsed.location);
+        localStorage.setItem('susthayan_search_loc', parsed.location);
+      }
     } else {
       const newProf = createBlankProfile(profile.uid, profile.displayName, cleanPhone, profile.age, profile.location);
       setPatientProfile(newProf);
       localStorage.setItem(`susthayan_profile_${cleanPhone}`, JSON.stringify(newProf));
+      if (newProf.location) {
+        setSelectedSearchLocation(newProf.location);
+        localStorage.setItem('susthayan_search_loc', newProf.location);
+      }
     }
 
     const savedDocs = localStorage.getItem(`susthayan_docs_${cleanPhone}`);
@@ -744,13 +763,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         localStorage.setItem(`susthayan_profile_${userPhone}`, JSON.stringify(updatedProfile));
       }
 
-      if (currentUser && (updated.fullName || updated.location || updated.age || updated.phone)) {
+      if (currentUser && (updated.fullName || updated.location || updated.age || updated.phone || updated.autoRerouteEnabled !== undefined)) {
         const updatedUser: UserProfile = {
           ...currentUser,
           displayName: updated.fullName || currentUser.displayName,
           location: updated.location || currentUser.location,
           age: updated.age !== undefined ? updated.age : currentUser.age,
-          phone: updated.phone ? normalizePhone(updated.phone) : currentUser.phone
+          phone: updated.phone ? normalizePhone(updated.phone) : currentUser.phone,
+          autoRerouteEnabled: updated.autoRerouteEnabled !== undefined ? updated.autoRerouteEnabled : currentUser.autoRerouteEnabled
         };
         setCurrentUser(updatedUser);
         localStorage.setItem('susthayan_current_user', JSON.stringify(updatedUser));
@@ -761,10 +781,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ...users[currentUser.phone],
             fullName: updatedUser.displayName,
             location: updatedUser.location || users[currentUser.phone].location,
-            age: updatedUser.age || users[currentUser.phone].age
+            age: updatedUser.age || users[currentUser.phone].age,
+            autoRerouteEnabled: updatedUser.autoRerouteEnabled
           };
           saveStoredUsers(users);
         }
+      }
+
+      if (updated.location) {
+        setSelectedSearchLocation(updated.location);
+        localStorage.setItem('susthayan_search_loc', updated.location);
       }
 
       return updatedProfile;
@@ -772,6 +798,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     addAuditLog('UPDATE_PATIENT_PROFILE', 'Updated personal health profile');
     showToast('success', 'Profile Updated Successfully');
+  };
+
+  // Smart Auto-Rerouting Toggle Handler (Persists in profile, DB, and syncs in-flight request)
+  const toggleAutoRerouting = (enabled?: boolean) => {
+    const nextState = enabled !== undefined ? enabled : !patientProfile.autoRerouteEnabled;
+
+    // 1. Update patient profile and persist
+    updatePatientProfile({ autoRerouteEnabled: nextState });
+
+    // 2. Synchronize active in-flight request if present
+    setEmergencyRequests(prev =>
+      prev.map(r => {
+        if (r.status !== 'COMPLETED' && r.status !== 'CANCELLED') {
+          return {
+            ...r,
+            autoRerouteEnabled: nextState
+          };
+        }
+        return r;
+      })
+    );
+
+    // 3. User feedback, audit log and notification
+    if (nextState) {
+      addAuditLog('AUTO_REROUTE_ENABLED', 'Patient enabled Smart Auto-Rerouting (Consent granted for partner hospitals)');
+      showToast('success', 'Smart Auto-Rerouting Enabled', 'If a hospital declines, MediGrid will automatically forward to the next partner hospital.');
+      const notif: AppNotification = {
+        id: `notif-${Date.now()}`,
+        recipientId: 'all',
+        title: 'Smart Auto-Rerouting Enabled',
+        titleBn: 'স্মার্ট অটো-রিরাউটিং সক্রিয় করা হয়েছে',
+        message: 'Smart Auto-Rerouting is now ON. Requests declined by a hospital will automatically forward to the next eligible partner hospital.',
+        messageBn: 'স্মার্ট অটো-রিরাউটিং চালু করা হয়েছে। কোনো হাসপাতাল অপারগ হলে অনুরোধটি স্বয়ংক্রিয়ভাবে পরবর্তী উপযুক্ত হাসপাতালে পাঠানো হবে।',
+        type: 'system',
+        timestamp: new Date().toISOString(),
+        isRead: false
+      };
+      setNotifications(n => [notif, ...n]);
+    } else {
+      addAuditLog('AUTO_REROUTE_DISABLED', 'Patient disabled Smart Auto-Rerouting. Automatic forwarding stopped.');
+      showToast('info', 'Smart Auto-Rerouting Disabled', 'Automatic request forwarding has been stopped. Manual selection required if declined.');
+      const notif: AppNotification = {
+        id: `notif-${Date.now()}`,
+        recipientId: 'all',
+        title: 'Smart Auto-Rerouting Disabled',
+        titleBn: 'স্মার্ট অটো-রিরাউটিং নিষ্ক্রিয় করা হয়েছে',
+        message: 'Smart Auto-Rerouting is now OFF. If a hospital declines, you will need to manually select another hospital.',
+        messageBn: 'স্মার্ট অটো-রিরাউটিং বন্ধ করা হয়েছে। কোনো হাসপাতাল অপারগ হলে আপনাকে নিজে অন্য হাসপাতাল নির্বাচন করতে হবে।',
+        type: 'system',
+        timestamp: new Date().toISOString(),
+        isRead: false
+      };
+      setNotifications(n => [notif, ...n]);
+    }
   };
 
   const addMedicalDocument = (doc: Omit<MedicalDocument, 'id' | 'uploadDate'>): MedicalDocument => {
@@ -986,6 +1066,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const submitEmergencySosRequest = async (payload: {
     hospitalId: string;
     consentGranted: boolean;
+    autoRerouteEnabled?: boolean;
     sharedDocIds?: string[];
     ambulanceRequested?: boolean;
     chiefComplaint: string;
@@ -1081,6 +1162,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         status: 'REQUESTED',
         etaMinutes: 0
       } : undefined,
+
+      // Smart Auto-Rerouting fields
+      autoRerouteEnabled: payload.autoRerouteEnabled ?? false,
+      attemptCount: 1,
+      declinedHospitalIds: [],
+      originalHospitalId: selectedHosp.id,
+      originalHospitalName: selectedHosp.name,
+      autoRerouteHistory: [
+        {
+          attemptNumber: 1,
+          hospitalId: selectedHosp.id,
+          hospitalName: selectedHosp.name,
+          timestamp: new Date().toISOString(),
+          status: 'SUBMITTED',
+          notes: 'Initial emergency request submitted by patient'
+        }
+      ],
+
       hospitalNotes: '',
       smsSentToContacts: (patientProfile.emergencyContacts?.length || 0) > 0,
       clarificationMessages: []
@@ -1256,6 +1355,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setEmergencyRequests(prev =>
       prev.map(r => {
         if (r.id === requestId) {
+          const currentHist = r.autoRerouteHistory || [];
+          const updatedHist = currentHist.map(h =>
+            (isMatchingHospital(h.hospitalId, r.selectedHospitalId) || h.attemptNumber === (r.attemptCount || 1))
+              ? {
+                  ...h,
+                  status: 'ACCEPTED' as const,
+                  respondedAt: new Date().toISOString(),
+                  notes: `Accepted for clinical coordination by ${staffName}`
+                }
+              : h
+          );
+
           return {
             ...r,
             status: 'ACCEPTED_FOR_COORDINATION',
@@ -1263,7 +1374,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             assignedStaffName: staffName,
             statusMessage: `Hospital Accepted for Coordination. Intended Department: ${department}. Bed Confirmed: ${bedConfirmed ? 'Yes' : 'Pending Verification'}. Reviewed by ${staffName}. (Note: Acceptance is not guaranteed admission until formally confirmed).`,
             hospitalNotes: notes || r.hospitalNotes,
-            ambulanceDetails: r.ambulanceDetails ? { ...r.ambulanceDetails, status: 'ACCEPTED' } : undefined
+            ambulanceDetails: r.ambulanceDetails ? { ...r.ambulanceDetails, status: 'ACCEPTED' } : undefined,
+            autoRerouteHistory: updatedHist.length > 0 ? updatedHist : r.autoRerouteHistory
           };
         }
         return r;
@@ -1288,40 +1400,294 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('success', 'Emergency Request Accepted for Coordination', `${department}`);
   };
 
-  // Hospital Declines or Unable to Accommodate
+  // Hospital Declines or Unable to Accommodate with Smart Auto-Rerouting
   const declineEmergencyRequest = (requestId: string, reason: string) => {
     const staffName = currentUser?.displayName || 'Emergency Duty Officer';
     const hospitalName = currentUser?.hospitalName || 'Hospital';
+
+    const targetReq = emergencyRequests.find(r => r.id === requestId);
+    if (!targetReq) return;
+
+    // Terminal guard: do not process decline if request was already accepted, cancelled or exhausted
+    if (
+      targetReq.status === 'ACCEPTED' ||
+      targetReq.status === 'ACCEPTED_FOR_COORDINATION' ||
+      targetReq.status === 'ADMISSION_CONFIRMED' ||
+      targetReq.status === 'CANCELLED' ||
+      targetReq.status === 'NO_ELIGIBLE_HOSPITALS'
+    ) {
+      return;
+    }
+
+    // SCENARIO 1: Auto-rerouting is OFF (or patient has disabled it in their profile)
+    const isAutoRerouteActive = Boolean(
+      targetReq.autoRerouteEnabled && (patientProfile.autoRerouteEnabled !== false)
+    );
+
+    if (!isAutoRerouteActive) {
+      const currentHist = targetReq.autoRerouteHistory || [];
+      const updatedHist = currentHist.map(h =>
+        (isMatchingHospital(h.hospitalId, targetReq.selectedHospitalId) || h.attemptNumber === (targetReq.attemptCount || 1))
+          ? {
+              ...h,
+              status: 'DECLINED' as const,
+              declineReason: reason,
+              respondedAt: new Date().toISOString(),
+              notes: `Declined by ${hospitalName}: ${reason}`
+            }
+          : h
+      );
+
+      setEmergencyRequests(prev =>
+        prev.map(r => {
+          if (r.id === requestId) {
+            return {
+              ...r,
+              status: 'DECLINED',
+              rejectionReason: reason,
+              autoRerouteHistory: updatedHist.length > 0 ? updatedHist : [
+                {
+                  attemptNumber: 1,
+                  hospitalId: r.selectedHospitalId,
+                  hospitalName: r.selectedHospitalName,
+                  timestamp: r.timestamp,
+                  status: 'DECLINED',
+                  declineReason: reason,
+                  respondedAt: new Date().toISOString(),
+                  notes: `Declined by ${hospitalName}: ${reason}`
+                }
+              ],
+              statusMessage: `Hospital unable to accommodate: ${reason}. Auto-forwarding is OFF. Please select an alternative hospital manually or call 112.`
+            };
+          }
+          return r;
+        })
+      );
+
+      const notif: AppNotification = {
+        id: `notif-${Date.now()}`,
+        recipientId: 'all',
+        title: 'Hospital Unable to Accommodate',
+        titleBn: 'হাসপাতাল গ্রহণে অপারগ',
+        message: `${hospitalName} cannot accommodate this emergency: ${reason}. Auto-forwarding is OFF. Please select an alternative facility.`,
+        messageBn: `${hospitalName} অনুরোধ গ্রহণ করতে পারেনি: ${reason}। অটো-রিরাউটিং বন্ধ রয়েছে। বিকল্প হাসপাতাল নির্বাচন করুন।`,
+        type: 'emergency',
+        timestamp: new Date().toISOString(),
+        isRead: false
+      };
+      setNotifications(prev => [notif, ...prev]);
+
+      addAuditLog('EMERGENCY_DECLINED_NO_FORWARD', `Staff ${staffName} declined Request ${requestId}. Auto-forwarding was OFF. Reason: ${reason}`);
+      showToast('warning', 'Unable to Accommodate Request', reason);
+      return;
+    }
+
+    // SCENARIO 2: Auto-rerouting is ON
+    const currentHospId = targetReq.selectedHospitalId;
+    const currentHospName = targetReq.selectedHospitalName;
+    const currentAttempt = targetReq.attemptCount || 1;
+    const prevDeclined = targetReq.declinedHospitalIds || [];
+
+    // Safe idempotency guard: prevent duplicate decline triggers on the same hospital
+    if (prevDeclined.some(d => isMatchingHospital(d, currentHospId))) {
+      return;
+    }
+
+    const updatedDeclinedIds = Array.from(new Set([...prevDeclined, currentHospId]));
+
+    // Update history trail for current declined hospital
+    const existingHist = targetReq.autoRerouteHistory || [
+      {
+        attemptNumber: 1,
+        hospitalId: targetReq.originalHospitalId || currentHospId,
+        hospitalName: targetReq.originalHospitalName || currentHospName,
+        timestamp: targetReq.timestamp,
+        status: 'SUBMITTED'
+      }
+    ];
+
+    const updatedHist = existingHist.map(h => {
+      if (isMatchingHospital(h.hospitalId, currentHospId) || h.attemptNumber === currentAttempt) {
+        return {
+          ...h,
+          status: 'DECLINED' as const,
+          declineReason: reason,
+          respondedAt: new Date().toISOString(),
+          notes: `Declined by ${currentHospName}: ${reason}`
+        };
+      }
+      return h;
+    });
+
+    // Identify next suitable hospital
+    // Filter out declined hospitals and current hospital
+    const eligibleHospitals = hospitals.filter(h => {
+      const isDeclined = updatedDeclinedIds.some(d => isMatchingHospital(d, h.id));
+      return !isDeclined && !isMatchingHospital(currentHospId, h.id);
+    }).sort((a, b) => {
+      // Prioritize capacity matching patient condition/severity
+      const reqNeedsIcu = targetReq.priority === 'CRITICAL' || targetReq.allocatedBedType === 'ICU';
+      const aBeds = reqNeedsIcu ? (a.icuBedsAvailable || 0) : (a.availableBeds || 0);
+      const bBeds = reqNeedsIcu ? (b.icuBedsAvailable || 0) : (b.availableBeds || 0);
+
+      if (aBeds > 0 && bBeds <= 0) return -1;
+      if (bBeds > 0 && aBeds <= 0) return 1;
+
+      // Location match priority (Panihati vs Dum Dum)
+      const userLoc = (patientProfile.location || targetReq.patientAddress || '').toLowerCase();
+      const aLocMatch = userLoc.includes('panihati') ? a.id.startsWith('pan') : (userLoc.includes('dum dum') || userLoc.includes('dumdum')) ? a.id.startsWith('dum') : false;
+      const bLocMatch = userLoc.includes('panihati') ? b.id.startsWith('pan') : (userLoc.includes('dum dum') || userLoc.includes('dumdum')) ? b.id.startsWith('dum') : false;
+      if (aLocMatch && !bLocMatch) return -1;
+      if (!aLocMatch && bLocMatch) return 1;
+
+      // Distance
+      const distA = a.distanceKm ?? 999;
+      const distB = b.distanceKm ?? 999;
+      if (distA !== distB) return distA - distB;
+
+      // Travel time
+      const timeA = a.estimatedTravelMins ?? 999;
+      const timeB = b.estimatedTravelMins ?? 999;
+      return timeA - timeB;
+    });
+
+    // If no eligible hospitals remain
+    if (eligibleHospitals.length === 0) {
+      const finalHist: AutoRerouteHistoryEntry[] = [
+        ...updatedHist,
+        {
+          attemptNumber: currentAttempt + 1,
+          hospitalId: 'none',
+          hospitalName: 'No Eligible Hospitals Found',
+          timestamp: new Date().toISOString(),
+          status: 'DECLINED',
+          notes: 'All candidate hospitals exhausted or unavailable'
+        }
+      ];
+
+      setEmergencyRequests(prev =>
+        prev.map(r => {
+          if (r.id === requestId) {
+            return {
+              ...r,
+              status: 'NO_ELIGIBLE_HOSPITALS',
+              rejectionReason: reason,
+              declinedHospitalIds: updatedDeclinedIds,
+              autoRerouteHistory: finalHist,
+              statusMessage: `No eligible hospitals found. All nearby facilities have declined or are at full capacity. Last decline: ${currentHospName} ("${reason}"). Please call 112 or select manually.`
+            };
+          }
+          return r;
+        })
+      );
+
+      const notif: AppNotification = {
+        id: `notif-${Date.now()}`,
+        recipientId: 'all',
+        title: 'No Eligible Hospitals Remaining',
+        titleBn: 'উপযুক্ত কোনো হাসপাতাল পাওয়া যায়নি',
+        message: `Auto-rerouting stopped: No eligible hospitals remaining after ${currentAttempt} attempts. Please call 112 or select another hospital manually.`,
+        messageBn: `${currentAttempt}টি প্রচেষ্টার পর উপযুক্ত কোনো হাসপাতাল পাওয়া যায়নি। অনুগ্রহ করে ১১২-এ কল করুন অথবা অন্য হাসপাতাল নির্বাচন করুন।`,
+        type: 'emergency',
+        timestamp: new Date().toISOString(),
+        actionUrl: `emergency-tracking?id=${requestId}`,
+        isRead: false
+      };
+      setNotifications(prev => [notif, ...prev]);
+
+      addAuditLog('AUTO_REROUTE_EXHAUSTED', `Auto-rerouting for request ${requestId} stopped after ${currentAttempt} attempts. No eligible hospitals left.`);
+      showToast('error', 'No Eligible Hospitals Found', 'Please call 112 or select another facility manually.');
+      return;
+    }
+
+    // Forward to next eligible hospital
+    const nextHosp = eligibleHospitals[0];
+    const nextAttempt = currentAttempt + 1;
+    const forwardTime = new Date().toISOString();
+
+    // Secure Document and Access Grant Transfer
+    // Revoke previous hospital's grant token so it cannot access documents anymore
+    if (targetReq.accessGrantToken) {
+      const oldGrant = accessGrants.find(g => g.token === targetReq.accessGrantToken);
+      if (oldGrant) {
+        revokeAccessGrant(oldGrant.id, `Transferred to ${nextHosp.name} via Smart Auto-Reroute`);
+      }
+    }
+
+    // Create fresh time-limited grant for next hospital with same permitted docs
+    const nextGrantToken = `GRANT-${nextHosp.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    if (targetReq.consentStatementAgreed) {
+      createAccessGrant(
+        nextHosp.id,
+        nextHosp.name,
+        targetReq.sharedDocIds || [],
+        4,
+        true,
+        requestId,
+        ['prescriptions', 'blood_reports', 'diagnostic_reports', 'hospital_records', 'insurance'],
+        true
+      );
+    }
+
+    const newHistoryEntry: AutoRerouteHistoryEntry = {
+      attemptNumber: nextAttempt,
+      hospitalId: nextHosp.id,
+      hospitalName: nextHosp.name,
+      timestamp: forwardTime,
+      status: 'AWAITING_RESPONSE',
+      notes: `Automatically forwarded after ${currentHospName} declined ("${reason}")`
+    };
+
+    const finalHist: AutoRerouteHistoryEntry[] = [...updatedHist, newHistoryEntry];
 
     setEmergencyRequests(prev =>
       prev.map(r => {
         if (r.id === requestId) {
           return {
             ...r,
-            status: 'UNABLE_TO_ACCOMMODATE',
-            rejectionReason: reason,
-            statusMessage: `Hospital unable to accommodate at this time: ${reason}. Please view verified alternative hospitals or dial 112 immediately.`
+            selectedHospitalId: nextHosp.id,
+            selectedHospitalName: nextHosp.name,
+            status: 'AWAITING_RESPONSE',
+            statusMessage: `Automatically forwarded to ${nextHosp.name} (Attempt ${nextAttempt}). Previous hospital (${currentHospName}) declined: "${reason}". Awaiting ${nextHosp.name} triage response.`,
+            attemptCount: nextAttempt,
+            declinedHospitalIds: updatedDeclinedIds,
+            forwardingTimestamp: forwardTime,
+            accessGrantToken: nextGrantToken,
+            autoRerouteHistory: finalHist,
+            clinicalAssessment: undefined, // Clear old hospital's triage assessment
+            clarificationMessages: [],
+            ambulanceDetails: r.ambulanceRequested ? {
+              id: `AMB-${nextHosp.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-01`,
+              operatorName: `${nextHosp.name} EMS Dispatch`,
+              driverName: 'Not yet assigned',
+              driverPhone: 'Pending dispatch',
+              vehicleNumber: 'Pending dispatch',
+              status: 'REQUESTED',
+              etaMinutes: nextHosp.estimatedTravelMins || 10
+            } : undefined
           };
         }
         return r;
       })
     );
 
+    // Notify patient
     const notif: AppNotification = {
       id: `notif-${Date.now()}`,
       recipientId: 'all',
-      title: 'Hospital Unable to Accommodate',
-      titleBn: 'হাসপাতাল গ্রহণে অপারগ',
-      message: `${hospitalName} cannot accommodate this emergency: ${reason}. Please select an alternative facility.`,
-      messageBn: `${hospitalName} অনুরোধ গ্রহণ করতে পারেনি: ${reason}। বিকল্প হাসপাতাল নির্বাচন করুন।`,
+      title: 'Request Automatically Forwarded',
+      titleBn: 'অনুরোধ স্বয়ংক্রিয়ভাবে পরবর্তী হাসপাতালে প্রেরিত',
+      message: `${currentHospName} declined (${reason}). Your request has been automatically forwarded to ${nextHosp.name} (Attempt ${nextAttempt}).`,
+      messageBn: `${currentHospName} গ্রহণে অপারগ (${reason})। আপনার অনুরোধটি স্বয়ংক্রিয়ভাবে ${nextHosp.name}-এ পাঠানো হয়েছে (প্রচেষ্টা ${nextAttempt})।`,
       type: 'emergency',
-      timestamp: new Date().toISOString(),
+      timestamp: forwardTime,
+      actionUrl: `emergency-tracking?id=${requestId}`,
       isRead: false
     };
     setNotifications(prev => [notif, ...prev]);
 
-    addAuditLog('EMERGENCY_UNABLE_TO_ACCOMMODATE', `Staff ${staffName} declined Request ${requestId}. Reason: ${reason}`);
-    showToast('warning', 'Unable to Accommodate Request', reason);
+    addAuditLog('AUTO_REROUTE_FORWARDED', `Request ${requestId} forwarded from ${currentHospName} to ${nextHosp.name} (Attempt ${nextAttempt}). Reason: ${reason}`);
+    showToast('warning', `Forwarded to ${nextHosp.name}`, `Attempt ${nextAttempt}: Forwarded after ${currentHospName} declined.`);
   };
 
   const rejectEmergencyRequest = (requestId: string, reason: string = 'No ICU Bed Available at this time') => {
@@ -1550,6 +1916,103 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newReq = await triggerEmergencySos(newHospitalId, true, sharedDocIds);
     showToast('success', 'Switched to New Hospital', `Fresh, independent access grant created for ${newReq.selectedHospitalName}`);
     return newReq;
+  };
+
+  // Manual Re-routing Option (when automatic forwarding stops or fallback requested)
+  const manuallyRerouteEmergencyRequest = async (
+    requestId: string,
+    targetHospitalId: string
+  ): Promise<EmergencyRequest | null> => {
+    const targetReq = emergencyRequests.find(r => r.id === requestId);
+    if (!targetReq) return null;
+
+    const newHosp = hospitals.find(h => isMatchingHospital(h.id, targetHospitalId)) || hospitals[0];
+    const prevHospitalName = targetReq.selectedHospitalName;
+    const forwardTime = new Date().toISOString();
+    const nextAttempt = (targetReq.attemptCount || 1) + 1;
+
+    // Revoke old grant token
+    if (targetReq.accessGrantToken) {
+      const oldGrant = accessGrants.find(g => g.token === targetReq.accessGrantToken);
+      if (oldGrant) {
+        revokeAccessGrant(oldGrant.id, `Patient manually switched destination to ${newHosp.name}`);
+      }
+    }
+
+    // Create fresh time-limited grant for new hospital
+    const nextGrantToken = `GRANT-${newHosp.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+    if (targetReq.consentStatementAgreed) {
+      createAccessGrant(
+        newHosp.id,
+        newHosp.name,
+        targetReq.sharedDocIds || [],
+        4,
+        true,
+        requestId,
+        ['prescriptions', 'blood_reports', 'diagnostic_reports', 'hospital_records', 'insurance'],
+        true
+      );
+    }
+
+    const currentHist = targetReq.autoRerouteHistory || [];
+    const newHistoryEntry: AutoRerouteHistoryEntry = {
+      attemptNumber: nextAttempt,
+      hospitalId: newHosp.id,
+      hospitalName: newHosp.name,
+      timestamp: forwardTime,
+      status: 'AWAITING_RESPONSE',
+      notes: `Manually rerouted by patient from ${prevHospitalName}`
+    };
+
+    let updatedReq: EmergencyRequest | null = null;
+    setEmergencyRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
+          updatedReq = {
+            ...r,
+            selectedHospitalId: newHosp.id,
+            selectedHospitalName: newHosp.name,
+            status: 'AWAITING_RESPONSE',
+            statusMessage: `Manually routed to ${newHosp.name} (Attempt ${nextAttempt}). Awaiting triage review and clinical assessment.`,
+            attemptCount: nextAttempt,
+            forwardingTimestamp: forwardTime,
+            accessGrantToken: nextGrantToken,
+            autoRerouteHistory: [...currentHist, newHistoryEntry],
+            clinicalAssessment: undefined,
+            clarificationMessages: [],
+            ambulanceDetails: r.ambulanceRequested ? {
+              id: `AMB-${newHosp.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-01`,
+              operatorName: `${newHosp.name} EMS Dispatch`,
+              driverName: 'Not yet assigned',
+              driverPhone: 'Pending dispatch',
+              vehicleNumber: 'Pending dispatch',
+              status: 'REQUESTED',
+              etaMinutes: newHosp.estimatedTravelMins || 10
+            } : undefined
+          };
+          return updatedReq;
+        }
+        return r;
+      })
+    );
+
+    const notif: AppNotification = {
+      id: `notif-${Date.now()}`,
+      recipientId: 'all',
+      title: 'Emergency Request Rerouted Manually',
+      titleBn: 'জরুরি অনুরোধ ম্যানুয়ালি পুনর্নির্দেশিত',
+      message: `Your emergency request has been successfully rerouted to ${newHosp.name}.`,
+      messageBn: `আপনার জরুরি অনুরোধটি সফলভাবে ${newHosp.name}-এ পুনর্নির্দেশ করা হয়েছে।`,
+      type: 'emergency',
+      timestamp: forwardTime,
+      actionUrl: `emergency-tracking?id=${requestId}`,
+      isRead: false
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    addAuditLog('MANUAL_REROUTE', `Request ${requestId} manually rerouted to ${newHosp.name} (Attempt ${nextAttempt})`);
+    showToast('success', `Rerouted to ${newHosp.name}`, 'Emergency triage team notified.');
+    return updatedReq;
   };
 
   // Create Access Grant
@@ -1833,6 +2296,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         navigateTo,
         patientProfile,
         updatePatientProfile,
+        toggleAutoRerouting,
         medicalDocuments,
         addMedicalDocument,
         deleteMedicalDocument,
@@ -1871,6 +2335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         cancelEmergencyRequest,
         updateAmbulanceStatus,
         switchEmergencyHospital,
+        manuallyRerouteEmergencyRequest,
         accessGrants,
         createAccessGrant,
         revokeAccessGrant,

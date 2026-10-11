@@ -573,12 +573,38 @@ export function getVerifiedHospitalsByLocation(
   location: string,
   userCoordinates?: { lat: number; lng: number } | null
 ): VerifiedHospital[] {
+  if (!location || !location.trim()) {
+    return [];
+  }
+
   const locLower = location.toLowerCase().trim();
 
+  const isDumDumArea =
+    locLower.includes('dum dum') ||
+    locLower.includes('dumdum') ||
+    locLower.includes('nagerbazar') ||
+    locLower.includes('airport') ||
+    locLower.includes('teghoria') ||
+    locLower.includes('cantonment') ||
+    locLower.includes('motijheel') ||
+    locLower.includes('gorabazar') ||
+    ['700028', '700080', '700074', '700079', '700052', '700030', '700055', '700065'].some(p => locLower.includes(p));
+
+  const isPanihatiArea =
+    locLower.includes('panihati') ||
+    locLower.includes('sodepur') ||
+    locLower.includes('agarpara') ||
+    locLower.includes('khardaha') ||
+    locLower.includes('ghola') ||
+    locLower.includes('belgharia') ||
+    locLower.includes('kamarhati') ||
+    locLower.includes('baranagar') ||
+    ['700114', '700110', '700111', '700058', '700056', '700109', '700115', '700036', '700118'].some(p => locLower.includes(p));
+
   let matched: VerifiedHospital[] = [];
-  if (locLower.includes('dum dum') || locLower.includes('dumdum') || locLower.includes('nagerbazar') || locLower.includes('airport') || locLower.includes('teghoria')) {
+  if (isDumDumArea) {
     matched = [...verifiedDumDumHospitals];
-  } else if (locLower.includes('panihati') || locLower.includes('sodepur') || locLower.includes('agarpara') || locLower.includes('khardaha') || locLower.includes('ghola') || locLower.includes('belgharia') || locLower.includes('kamarhati')) {
+  } else if (isPanihatiArea) {
     matched = [...verifiedPanihatiHospitals];
   } else {
     // Custom location search over all facilities matching query
@@ -591,7 +617,7 @@ export function getVerifiedHospitalsByLocation(
         h.area.toLowerCase().includes(locLower) ||
         h.specialities.some(s => s.toLowerCase().includes(locLower))
     );
-    matched = results.length > 0 ? results : [...allVerifiedHospitals];
+    matched = results;
   }
 
   // If user coordinates provided, calculate actual distances and sort nearest first

@@ -25,12 +25,15 @@ export type EmergencyRequestStatus =
   | 'SUBMITTED'
   | 'PENDING'
   | 'PENDING_REVIEW'
+  | 'AWAITING_RESPONSE'
   | 'UNDER_ASSESSMENT'
   | 'UNDER_REVIEW'
   | 'MORE_INFORMATION_REQUIRED'
   | 'ACCEPTED_FOR_COORDINATION'
   | 'ACCEPTED'
+  | 'AUTOMATICALLY_FORWARDED'
   | 'UNABLE_TO_ACCOMMODATE'
+  | 'NO_ELIGIBLE_HOSPITALS'
   | 'REJECTED'
   | 'DECLINED'
   | 'BED_CONFIRMATION_PENDING'
@@ -44,6 +47,17 @@ export type EmergencyRequestStatus =
   | 'AMBULANCE_DISPATCHED'
   | 'PICKUP_IN_PROGRESS'
   | 'COMPLETED';
+
+export interface AutoRerouteHistoryEntry {
+  attemptNumber: number;
+  hospitalId: string;
+  hospitalName: string;
+  timestamp: string;
+  status: 'SUBMITTED' | 'FORWARDED' | 'DECLINED' | 'ACCEPTED' | 'AWAITING_RESPONSE';
+  declineReason?: string;
+  respondedAt?: string;
+  notes?: string;
+}
 
 export type TriagePriority = 'P1_RESUSCITATION' | 'P2_EMERGENT' | 'P3_URGENT' | 'P4_STANDARD';
 
@@ -107,6 +121,7 @@ export interface UserAccount {
   passwordHash?: string;
   role: UserRole;
   createdAt: string;
+  autoRerouteEnabled?: boolean;
 }
 
 export interface UserProfile {
@@ -123,6 +138,7 @@ export interface UserProfile {
   hospitalNameBn?: string;
   staffDesignation?: string;
   createdAt: string;
+  autoRerouteEnabled?: boolean;
 }
 
 export interface HospitalStaffAccount {
@@ -209,6 +225,7 @@ export interface PatientHealthProfile {
     spO2: number;
   }[];
   isProfileComplete: boolean;
+  autoRerouteEnabled?: boolean;
   updatedAt: string;
 }
 
@@ -395,6 +412,15 @@ export interface EmergencyRequest {
   // Clinical assessment & hospital triage fields
   clinicalAssessment?: HospitalClinicalAssessment;
   clarificationMessages?: ClarificationMessage[];
+
+  // Smart Auto-Rerouting fields
+  autoRerouteEnabled?: boolean;
+  autoRerouteHistory?: AutoRerouteHistoryEntry[];
+  attemptCount?: number;
+  declinedHospitalIds?: string[];
+  originalHospitalId?: string;
+  originalHospitalName?: string;
+  forwardingTimestamp?: string;
 
   hospitalNotes?: string;
   smsSentToContacts: boolean;

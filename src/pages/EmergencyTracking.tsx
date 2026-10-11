@@ -21,7 +21,13 @@ import {
   ChevronRight,
   ShieldCheck,
   FileText,
-  Activity
+  Activity,
+  RefreshCw,
+  GitBranch,
+  ArrowRight,
+  CornerDownRight,
+  Check,
+  X
 } from 'lucide-react';
 import { EmergencyRequestStatus } from '../types';
 
@@ -33,6 +39,7 @@ export const EmergencyTracking: React.FC = () => {
     pageParams,
     cancelEmergencyRequest,
     respondToClarification,
+    manuallyRerouteEmergencyRequest,
     hospitals,
     navigateTo,
     showToast
@@ -46,6 +53,7 @@ export const EmergencyTracking: React.FC = () => {
 
   const [clarificationReply, setClarificationReply] = useState('');
   const [isSendingReply, setIsSendingReply] = useState(false);
+  const [isRerouting, setIsRerouting] = useState(false);
 
   const [simulatedEta, setSimulatedEta] = useState(
     currentRequest?.ambulanceDetails?.etaMinutes || 8
@@ -109,14 +117,38 @@ export const EmergencyTracking: React.FC = () => {
           descEn: 'The hospital has sent a clarification question. Please review and reply below.',
           descBn: 'হাসপাতাল অতিরিক্ত তথ্যের জন্য একটি প্রশ্ন পাঠিয়েছে। অনুগ্রহ করে নিচে উত্তর দিন।'
         };
+      case 'AWAITING_RESPONSE':
+        return {
+          labelEn: 'Awaiting Response',
+          labelBn: 'সাড়াদানের অপেক্ষায়',
+          color: 'bg-blue-100 text-blue-900 border-blue-300 animate-pulse',
+          descEn: 'The request has been safely received/forwarded and is actively awaiting clinical response from the hospital triage desk.',
+          descBn: 'অনুরোধটি হাসপাতালে পৌঁছেছে এবং ট্রায়াজ ডেস্কে সাড়াদানের অপেক্ষায় রয়েছে।'
+        };
+      case 'AUTOMATICALLY_FORWARDED':
+        return {
+          labelEn: 'Automatically Forwarded',
+          labelBn: 'স্বয়ংক্রিয়ভাবে পুনর্নির্দেশিত',
+          color: 'bg-purple-100 text-purple-900 border-purple-300',
+          descEn: 'Request has been automatically forwarded to the next suitable hospital based on ICU capacity and proximity.',
+          descBn: 'অনুরোধটি শয্যা প্রাপ্যতা ও দূরত্বের ভিত্তিতে পরবর্তী উপযুক্ত হাসপাতালে স্বয়ংক্রিয়ভাবে পাঠানো হয়েছে।'
+        };
+      case 'NO_ELIGIBLE_HOSPITALS':
+        return {
+          labelEn: 'No Eligible Hospitals Found',
+          labelBn: 'উপযুক্ত কোনো হাসপাতাল পাওয়া যায়নি',
+          color: 'bg-rose-100 text-rose-900 border-rose-300 font-bold',
+          descEn: 'All eligible nearby hospitals have declined or no verified capacity remains. Please dial 112 or choose another hospital manually.',
+          descBn: 'নিকটবর্তী সকল হাসপাতাল অপারগ বা কোনো শয্যা খালি নেই। অনুগ্রহ করে ১১২-এ কল করুন অথবা বিকল্প হাসপাতাল ম্যানুয়ালি নির্বাচন করুন।'
+        };
       case 'ACCEPTED_FOR_COORDINATION':
       case 'ACCEPTED':
         return {
-          labelEn: 'Accepted for Coordination',
-          labelBn: 'সমন্বয়ের জন্য গৃহীত',
+          labelEn: 'Accepted',
+          labelBn: 'অনুরোধ গৃহীত',
           color: 'bg-[#E8F5E9] text-[#2E7D32] border-[#D5E8D7]',
           descEn: 'The hospital has accepted the case for emergency coordination. Note: This does not represent guaranteed admission or confirmed ICU bed until formally verified.',
-          descBn: 'হাসপাতাল প্রাথমিক সমন্বয়ের জন্য অনুরোধ গ্রহণ করেছে। চূড়ান্ত নিশ্চিতকরণ ছাড়া এটি গ্যারান্টিযুক্ত ভর্তি হিসেবে গণ্য নয়।'
+          descBn: 'হাসপাতাল চিকিৎসা সমন্বয়ের জন্য অনুরোধ গ্রহণ করেছে। চূড়ান্ত নিশ্চিতকরণ ছাড়া এটি গ্যারান্টিযুক্ত ভর্তি হিসেবে গণ্য নয়।'
         };
       case 'ADMISSION_CONFIRMED':
       case 'BED_CONFIRMED':
@@ -127,12 +159,12 @@ export const EmergencyTracking: React.FC = () => {
           descEn: 'Authorized hospital staff has formally verified bed availability and confirmed emergency admission.',
           descBn: 'হাসপাতাল কর্তৃপক্ষ শয্যা যাচাই করে জরুরি ভর্তি নিশ্চিত করেছেন।'
         };
+      case 'DECLINED':
       case 'UNABLE_TO_ACCOMMODATE':
       case 'REJECTED':
-      case 'DECLINED':
         return {
-          labelEn: 'Unable to Accommodate',
-          labelBn: 'গ্রহণে অপারগ',
+          labelEn: 'Declined',
+          labelBn: 'অনুরোধ প্রত্যাখ্যাত / অপারগ',
           color: 'bg-rose-100 text-rose-900 border-rose-300',
           descEn: 'The hospital cannot accommodate the request. Please view alternative facilities below or call 112 immediately.',
           descBn: 'হাসপাতাল বর্তমানে রোগী গ্রহণে অপারগ। অনুগ্রহ করে বিকল্প হাসপাতাল দেখুন বা অবিলম্বে ১১২-এ কল করুন।'
@@ -199,9 +231,26 @@ export const EmergencyTracking: React.FC = () => {
         {/* HEADER EMERGENCY TRACKING BANNER */}
         <div className="bg-[#E8F5E9] text-[#171717] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className={`px-3 py-1 rounded-full border text-xs font-black uppercase tracking-wider ${statusBadge.color}`}>
-              ● {language === 'bn' ? statusBadge.labelBn : statusBadge.labelEn}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`px-3 py-1 rounded-full border text-xs font-black uppercase tracking-wider ${statusBadge.color}`}>
+                ● {language === 'bn' ? statusBadge.labelBn : statusBadge.labelEn}
+              </span>
+              {currentRequest.autoRerouteEnabled ? (
+                <span className="px-3 py-1 rounded-full bg-[#2E7D32] text-white text-xs font-bold flex items-center space-x-1 shadow-xs">
+                  <RefreshCw className="w-3.5 h-3.5 shrink-0" />
+                  <span>{language === 'bn' ? 'অটো-রিরাউটিং: সক্রিয়' : 'Auto-Rerouting: Enabled'}</span>
+                  {currentRequest.attemptCount && currentRequest.attemptCount > 1 && (
+                    <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px] ml-1">
+                      {language === 'bn' ? `প্রচেষ্টা ${currentRequest.attemptCount}` : `Attempt ${currentRequest.attemptCount}`}
+                    </span>
+                  )}
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full bg-white text-[#555555] border border-[#D5E8D7] text-xs font-bold">
+                  {language === 'bn' ? 'অটো-রিরাউটিং: বন্ধ' : 'Auto-Rerouting: OFF'}
+                </span>
+              )}
+            </div>
             <span className="font-mono text-xs text-[#555555] bg-white px-2.5 py-1 rounded-lg border border-[#D5E8D7]">
               Request ID: <strong className="text-[#2E7D32]">{currentRequest.id}</strong>
             </span>
@@ -255,6 +304,269 @@ export const EmergencyTracking: React.FC = () => {
               </a>
             )}
           </div>
+        </div>
+
+        {/* ================= SECTION: SMART AUTO-REROUTING TIMELINE & AUDIT TRAIL ================= */}
+        <div className="bg-[#E8F5E9] rounded-3xl p-6 sm:p-8 border border-[#D5E8D7] shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center space-x-2 text-[#171717] font-black text-base sm:text-lg">
+              <RefreshCw className="w-5 h-5 text-[#2E7D32]" />
+              <span>
+                {language === 'bn'
+                  ? 'স্মার্ট অটো-রিরাউটিং ও অনুরোধের টাইমলাইন (Request Timeline)'
+                  : 'Smart Auto-Rerouting Progression & Request Timeline'}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="px-3 py-1 rounded-full bg-white text-[#2E7D32] border border-[#D5E8D7] text-xs font-bold">
+                {language === 'bn'
+                  ? `মোট প্রচেষ্টা: ${currentRequest.attemptCount || 1}`
+                  : `Forwarding Attempt: ${currentRequest.attemptCount || 1}`}
+              </span>
+            </div>
+          </div>
+
+          {/* Metric cards: Original Hospital, Current Hospital, Attempts, Auto Policy */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1">
+              <span className="text-[10px] text-[#555555] uppercase block font-bold">
+                {language === 'bn' ? 'আসল হাসপাতাল (Original):' : 'Original Hospital:'}
+              </span>
+              <h4 className="font-bold text-[#171717] text-xs line-clamp-1">
+                {currentRequest.originalHospitalName || currentRequest.selectedHospitalName}
+              </h4>
+              <span className="text-[10px] text-[#555555] block">
+                {language === 'bn' ? 'প্রাথমিক গন্তব্য' : 'Initial Destination'}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1">
+              <span className="text-[10px] text-[#2E7D32] uppercase block font-bold">
+                {language === 'bn' ? 'বর্তমান প্রাপক হাসপাতাল:' : 'Current Receiving Hospital:'}
+              </span>
+              <h4 className="font-bold text-[#2E7D32] text-xs line-clamp-1">
+                {currentRequest.selectedHospitalName}
+              </h4>
+              <span className="text-[10px] text-[#555555] block">
+                {language === 'bn' ? 'সক্রিয় মূল্যায়ন চলছে' : 'Active Clinical Queue'}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1">
+              <span className="text-[10px] text-[#555555] uppercase block font-bold">
+                {language === 'bn' ? 'প্রচেষ্টার সংখ্যা (Attempts):' : 'Forwarding Attempts:'}
+              </span>
+              <div className="font-black text-[#171717] text-base">
+                {currentRequest.attemptCount || 1}
+              </div>
+              <span className="text-[10px] text-[#555555] block">
+                {currentRequest.forwardingTimestamp
+                  ? `${language === 'bn' ? 'সর্বশেষ:' : 'Last:'} ${new Date(currentRequest.forwardingTimestamp).toLocaleTimeString()}`
+                  : (language === 'bn' ? 'প্রথম প্রচেষ্টা' : 'Initial submission')}
+              </span>
+            </div>
+
+            <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-1">
+              <span className="text-[10px] text-[#555555] uppercase block font-bold">
+                {language === 'bn' ? 'অটো-ফরওয়ার্ডিং পলিসি:' : 'Auto-Rerouting Policy:'}
+              </span>
+              <div className="font-bold text-xs text-[#171717]">
+                {currentRequest.autoRerouteEnabled
+                  ? (language === 'bn' ? 'সক্রিয় (স্বয়ংক্রিয়)' : 'ON (Auto Multi-Hop)')
+                  : (language === 'bn' ? 'বন্ধ (একক হাসপাতাল)' : 'OFF (Manual Only)')}
+              </div>
+              <span className="text-[10px] text-[#555555] block">
+                {currentRequest.declinedHospitalIds && currentRequest.declinedHospitalIds.length > 0
+                  ? `${currentRequest.declinedHospitalIds.length} ${language === 'bn' ? 'হাসপাতাল অপারগ' : 'declined'}`
+                  : (language === 'bn' ? 'কোনো প্রত্যাখ্যান নেই' : '0 declines')}
+              </span>
+            </div>
+          </div>
+
+          {/* VISUAL REQUEST PROGRESSION STEPPER */}
+          <div className="p-5 bg-white rounded-2xl border border-[#D5E8D7] space-y-4">
+            <h4 className="text-xs font-bold text-[#171717] uppercase tracking-wider flex items-center space-x-1.5">
+              <GitBranch className="w-4 h-4 text-[#2E7D32]" />
+              <span>
+                {language === 'bn'
+                  ? 'অনুরোধ ট্র্যাকিং ও ফরওয়ার্ডিং ধাপসমূহ (Request Trail):'
+                  : 'Multi-Hospital Request Trail & Progression Steps:'}
+              </span>
+            </h4>
+
+            <div className="relative pl-6 sm:pl-8 space-y-6 before:absolute before:left-3.5 sm:before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-[#D5E8D7]">
+              {(() => {
+                const history = currentRequest.autoRerouteHistory && currentRequest.autoRerouteHistory.length > 0
+                  ? currentRequest.autoRerouteHistory
+                  : [
+                      {
+                        attemptNumber: 1,
+                        hospitalId: currentRequest.originalHospitalId || currentRequest.selectedHospitalId,
+                        hospitalName: currentRequest.originalHospitalName || currentRequest.selectedHospitalName,
+                        timestamp: currentRequest.timestamp,
+                        status: currentRequest.status === 'DECLINED' || currentRequest.status === 'UNABLE_TO_ACCOMMODATE' ? 'DECLINED' : 'AWAITING_RESPONSE',
+                        declineReason: currentRequest.rejectionReason,
+                        notes: 'Emergency request submitted'
+                      }
+                    ];
+
+                return history.map((entry, idx) => {
+                  const isLast = idx === history.length - 1;
+                  const isAccepted = entry.status === 'ACCEPTED' || currentRequest.status === 'ACCEPTED_FOR_COORDINATION' || currentRequest.status === 'ADMISSION_CONFIRMED';
+                  const isDeclined = entry.status === 'DECLINED';
+                  const isCurrentActive = isLast && !isDeclined && currentRequest.status !== 'NO_ELIGIBLE_HOSPITALS';
+
+                  return (
+                    <div key={idx} className="relative group text-xs space-y-1.5">
+                      {/* Step Circle Indicator */}
+                      <div className={`absolute -left-6 sm:-left-8 top-0.5 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black border-2 ${
+                        isAccepted
+                          ? 'bg-[#2E7D32] text-white border-[#2E7D32]'
+                          : isDeclined
+                          ? 'bg-rose-600 text-white border-rose-600'
+                          : isCurrentActive
+                          ? 'bg-blue-600 text-white border-blue-600 ring-4 ring-blue-100 animate-pulse'
+                          : 'bg-white text-[#2E7D32] border-[#2E7D32]'
+                      }`}>
+                        {isAccepted ? (
+                          <Check className="w-3.5 h-3.5" />
+                        ) : isDeclined ? (
+                          <X className="w-3.5 h-3.5" />
+                        ) : (
+                          entry.attemptNumber
+                        )}
+                      </div>
+
+                      {/* Step Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-sm text-[#171717]">
+                            {entry.hospitalName}
+                          </span>
+                          <span className="text-[10px] text-[#555555] bg-[#F1F8F2] px-2 py-0.5 rounded border border-[#D5E8D7]">
+                            {language === 'bn' ? `প্রচেষ্টা ${entry.attemptNumber}` : `Attempt ${entry.attemptNumber}`}
+                          </span>
+                        </div>
+                        <span className="font-mono text-[11px] text-[#555555]">
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+
+                      {/* Status Tag & Event Notes */}
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                          isAccepted
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : isDeclined
+                            ? 'bg-rose-100 text-rose-800 border-rose-300'
+                            : 'bg-blue-100 text-blue-800 border-blue-300'
+                        }`}>
+                          {entry.status === 'SUBMITTED'
+                            ? (language === 'bn' ? 'অনুরোধ জমা হয়েছে' : 'Submitted')
+                            : entry.status === 'DECLINED'
+                            ? (language === 'bn' ? 'হাসপাতাল অপারগ (Declined)' : 'Declined')
+                            : entry.status === 'ACCEPTED'
+                            ? (language === 'bn' ? 'গৃহীত (Accepted)' : 'Accepted')
+                            : entry.status === 'FORWARDED'
+                            ? (language === 'bn' ? 'স্বয়ংক্রিয়ভাবে পুনর্নির্দেশিত' : 'Automatically Forwarded')
+                            : (language === 'bn' ? 'সাড়াদানের অপেক্ষায়' : 'Awaiting Response')}
+                        </span>
+
+                        {isCurrentActive && (
+                          <span className="text-[10px] text-blue-700 font-semibold animate-pulse">
+                            ● {language === 'bn' ? 'বর্তমানে সক্রিয় ট্রায়াজ' : 'Current Active Destination'}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Decline Reason / Forwarding Detail */}
+                      {entry.declineReason && (
+                        <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 text-rose-900 text-xs mt-1">
+                          <p className="font-bold flex items-center space-x-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5 text-rose-700 shrink-0" />
+                            <span>
+                              {language === 'bn' ? 'হাসপাতালের কারণ:' : 'Decline Reason:'} "{entry.declineReason}"
+                            </span>
+                          </p>
+                          {currentRequest.autoRerouteEnabled && idx < history.length - 1 && (
+                            <p className="text-[11px] text-rose-700 mt-1 flex items-center space-x-1">
+                              <CornerDownRight className="w-3.5 h-3.5 shrink-0" />
+                              <span>
+                                {language === 'bn'
+                                  ? 'স্বয়ংক্রিয়ভাবে পরবর্তী উপযুক্ত হাসপাতালে স্থানান্তর করা হয়েছে।'
+                                  : 'MediGrid automatically identified the next suitable facility and forwarded all details.'}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {entry.notes && !entry.declineReason && (
+                        <p className="text-[11px] text-[#555555] italic">
+                          {entry.notes}
+                        </p>
+                      )}
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+
+          {/* IF NO ELIGIBLE HOSPITALS REMAIN -> PROMINENT NOTIFICATION & MANUAL SELECTOR */}
+          {currentRequest.status === 'NO_ELIGIBLE_HOSPITALS' && (
+            <div className="p-5 sm:p-6 bg-rose-100 border-2 border-rose-400 rounded-2xl space-y-4 text-rose-950 animate-in fade-in">
+              <div className="flex items-center space-x-2.5 font-black text-base text-rose-900">
+                <AlertTriangle className="w-6 h-6 text-rose-700 shrink-0" />
+                <span>
+                  {language === 'bn'
+                    ? 'উপযুক্ত কোনো হাসপাতাল পাওয়া যায়নি (No Eligible Hospitals Found)'
+                    : 'No Eligible Hospitals Remaining'}
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm font-semibold leading-relaxed text-rose-900">
+                {language === 'bn'
+                  ? 'আপনার নির্বাচিত রিসোর্স প্রয়োজনীয়তা ও দূরত্বের ভিত্তিতে এলাকার সকল যোগ্য হাসপাতাল অনুরোধ গ্রহণে অপারগ হয়েছে। স্বয়ংক্রিয় পুনর্নির্দেশ প্রক্রিয়া বন্ধ হয়েছে। সময় নষ্ট না করে জরুরি হেল্পলাইন ১১২-এ কল করুন অথবা নিচে অন্য কোনো হাসপাতাল ম্যানুয়ালি নির্বাচন করুন।'
+                  : 'All eligible nearby hospitals have declined or do not currently possess verified ICU capacity. Automatic re-routing has stopped. Please call 112 directly or manually choose another hospital below without needing to re-upload documents.'}
+              </p>
+
+              {/* Quick Manual Hospital Fallback Chooser */}
+              <div className="pt-2 border-t border-rose-300">
+                <span className="text-xs font-bold text-rose-900 block mb-2">
+                  {language === 'bn' ? 'ম্যানুয়ালি অন্য হাসপাতাল নির্বাচন করুন:' : 'Manually Select Another Hospital to Forward Request:'}
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {hospitals
+                    .filter(h => h.id !== currentRequest.selectedHospitalId)
+                    .map(hosp => (
+                      <div
+                        key={hosp.id}
+                        className="p-3 bg-white rounded-xl border border-rose-300 flex flex-col justify-between space-y-2"
+                      >
+                        <div>
+                          <h5 className="font-bold text-xs text-[#171717]">{hosp.name}</h5>
+                          <p className="text-[10px] text-[#555555]">{hosp.locality || hosp.address} • {hosp.distanceKm} km</p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={isRerouting}
+                          onClick={async () => {
+                            setIsRerouting(true);
+                            await manuallyRerouteEmergencyRequest(currentRequest.id, hosp.id);
+                            setIsRerouting(false);
+                          }}
+                          className="w-full py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-lg text-xs font-bold flex items-center justify-center space-x-1 cursor-pointer transition-colors shadow-xs"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${isRerouting ? 'animate-spin' : ''}`} />
+                          <span>{language === 'bn' ? 'এখানে পাঠান' : 'Forward to This Hospital'}</span>
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* SECTION: PATIENT REPORTED MEDICAL PROBLEM SUMMARY */}
@@ -494,19 +806,26 @@ export const EmergencyTracking: React.FC = () => {
                       </p>
                     </div>
 
-                    <div className="flex gap-2 pt-2 border-t border-[#D5E8D7]">
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#D5E8D7]">
                       <a
                         href={`tel:${altHosp.phone}`}
-                        className="flex-1 py-2 bg-[#2E7D32] text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1 shadow-xs"
+                        className="py-2 bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] rounded-xl font-bold text-xs flex items-center justify-center space-x-1"
                       >
-                        <PhoneCall className="w-3.5 h-3.5" />
-                        <span>{language === 'bn' ? 'সরাসরি কল' : 'Call Hospital'}</span>
+                        <PhoneCall className="w-3.5 h-3.5 text-[#2E7D32]" />
+                        <span>{language === 'bn' ? 'কল করুন' : 'Call Hospital'}</span>
                       </a>
                       <button
-                        onClick={() => navigateTo('emergency-sos', { hospitalId: altHosp.id })}
-                        className="flex-1 py-2 bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] rounded-xl font-bold text-xs"
+                        type="button"
+                        disabled={isRerouting}
+                        onClick={async () => {
+                          setIsRerouting(true);
+                          await manuallyRerouteEmergencyRequest(currentRequest.id, altHosp.id);
+                          setIsRerouting(false);
+                        }}
+                        className="py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl font-bold text-xs flex items-center justify-center space-x-1 shadow-xs cursor-pointer transition-colors"
                       >
-                        {language === 'bn' ? 'নতুন এসওএস' : 'Switch SOS'}
+                        <RefreshCw className={`w-3.5 h-3.5 ${isRerouting ? 'animate-spin' : ''}`} />
+                        <span>{language === 'bn' ? 'অনুরোধ পাঠান' : 'Forward Request'}</span>
                       </button>
                     </div>
                   </div>

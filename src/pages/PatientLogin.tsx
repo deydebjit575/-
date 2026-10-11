@@ -105,6 +105,40 @@ export const PatientLogin: React.FC = () => {
           </button>
         </form>
 
+        {/* Quick Patient Test Logins for Location-Based Testing */}
+        <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-2.5 text-center">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">
+              {language === 'bn' ? 'টেস্ট রোগী লগইন (অবস্থান পরীক্ষা):' : 'Location Test Logins (Acceptance 1 & 2):'}
+            </span>
+            <span className="text-[10px] text-[#2E7D32] font-bold">1-Click</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => loginWithPhone('9830011111', '1234')}
+              className="p-2.5 bg-[#F1F8F2] border border-[#D5E8D7] hover:border-[#2E7D32] hover:bg-[#E8F5E9] text-left rounded-xl transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-[#171717]">Patient A</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">Panihati</span>
+              </div>
+              <p className="text-[11px] text-[#555555] mt-0.5">অজয় মুখার্জী • Location A</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => loginWithPhone('9830022222', '1234')}
+              className="p-2.5 bg-[#F1F8F2] border border-[#D5E8D7] hover:border-[#2E7D32] hover:bg-[#E8F5E9] text-left rounded-xl transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-[#171717]">Patient B</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">Dum Dum</span>
+              </div>
+              <p className="text-[11px] text-[#555555] mt-0.5">বিমল সেনগুপ্ত • Location B</p>
+            </button>
+          </div>
+        </div>
+
         {/* Quick Staff/Admin Demo Portals */}
         <div className="p-4 bg-white rounded-2xl border border-[#D5E8D7] space-y-2.5 text-center">
           <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">

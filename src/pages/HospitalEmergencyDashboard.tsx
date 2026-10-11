@@ -28,7 +28,8 @@ import {
   X,
   Phone,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import {
   BedCategoryType,
@@ -680,6 +681,18 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                             {req.priority || 'STANDARD'} PRIORITY
                           </span>
 
+                          {/* Auto-Reroute Badge */}
+                          {req.autoRerouteEnabled && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] flex items-center space-x-1">
+                              <span>🔄 Auto-Reroute Active</span>
+                              {req.attemptCount && req.attemptCount > 1 && (
+                                <span className="bg-[#2E7D32] text-white px-1 rounded text-[9px]">
+                                  #{req.attemptCount}
+                                </span>
+                              )}
+                            </span>
+                          )}
+
                           {/* Ambulance Badge */}
                           {req.ambulanceRequested && (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white text-[#2E7D32] border border-[#D5E8D7] flex items-center space-x-1">
@@ -708,6 +721,46 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                           <span>Submitted: {new Date(req.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                       </div>
+
+                      {/* Prominent Smart Auto-Reroute Forwarding Notification Banner */}
+                      {((req.attemptCount && req.attemptCount > 1) || (req.autoRerouteHistory && req.autoRerouteHistory.length > 1)) && (
+                        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-xs text-amber-900 space-y-2">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center space-x-2 font-bold text-amber-900">
+                              <RefreshCw className="w-4 h-4 text-amber-700 animate-spin" style={{ animationDuration: '6s' }} />
+                              <span>Automatically Forwarded Emergency Request (Attempt #{req.attemptCount || 2})</span>
+                            </div>
+                            <span className="font-mono text-[11px] bg-amber-200/80 px-2 py-0.5 rounded font-bold text-amber-900">
+                              Originally Sent To: {req.originalHospitalName || 'Primary Facility'}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-amber-800">
+                            <strong>Forwarding Notice:</strong> Previous hospital was unable to accommodate. Patient emergency details, required resources, and authorized MediVault documents were forwarded automatically under patient consent.
+                          </p>
+
+                          {/* Forwarding Trail */}
+                          {req.autoRerouteHistory && req.autoRerouteHistory.length > 1 && (
+                            <div className="pt-1.5 border-t border-amber-200/80 flex items-center space-x-1.5 overflow-x-auto text-[10px]">
+                              <span className="font-bold uppercase text-amber-900">Forwarding Trail:</span>
+                              {req.autoRerouteHistory.map((step, sIdx) => (
+                                <React.Fragment key={sIdx}>
+                                  <span className={`px-2 py-0.5 rounded font-medium ${
+                                    step.status === 'DECLINED'
+                                      ? 'bg-rose-100 text-rose-800 line-through'
+                                      : step.status === 'ACCEPTED'
+                                      ? 'bg-emerald-100 text-emerald-800 font-bold'
+                                      : 'bg-white text-amber-900 border border-amber-300 font-bold'
+                                  }`}>
+                                    {step.hospitalName} {step.declineReason ? `(Declined: "${step.declineReason}")` : ''}
+                                  </span>
+                                  {sIdx < req.autoRerouteHistory!.length - 1 && <span>→</span>}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* Request Body & Content */}
                       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -1737,6 +1790,41 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
             {/* Modal Content Scrollable */}
             <div className="p-6 overflow-y-auto space-y-5 text-xs bg-white">
+              {/* Forwarding Trail if Rerouted */}
+              {detailModalRequest.autoRerouteHistory && detailModalRequest.autoRerouteHistory.length > 1 && (
+                <div className="p-4 bg-amber-50 rounded-2xl border border-amber-300 space-y-2 text-amber-900">
+                  <div className="flex items-center justify-between font-bold">
+                    <span className="flex items-center space-x-1.5">
+                      <RefreshCw className="w-4 h-4 text-amber-700 animate-spin" style={{ animationDuration: '6s' }} />
+                      <span>Smart Auto-Reroute Forwarding History</span>
+                    </span>
+                    <span className="text-[10px] bg-amber-200 px-2 py-0.5 rounded font-mono font-bold">
+                      Original: {detailModalRequest.originalHospitalName || 'Primary Facility'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 pt-1">
+                    {detailModalRequest.autoRerouteHistory.map((entry, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-white/80 border border-amber-200 text-[11px]">
+                        <div className="flex items-center space-x-2">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            entry.status === 'DECLINED' ? 'bg-rose-100 text-rose-800' : entry.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {entry.attemptNumber}
+                          </span>
+                          <span className="font-bold text-[#171717]">{entry.hospitalName}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className={`font-bold ${entry.status === 'DECLINED' ? 'text-rose-700' : entry.status === 'ACCEPTED' ? 'text-emerald-700' : 'text-amber-800'}`}>
+                            {entry.status === 'DECLINED' ? `Declined (${entry.declineReason || 'Full'})` : entry.status === 'ACCEPTED' ? 'Accepted' : 'Active Request'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Patient Core Specs */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <div className="p-3 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7]">
@@ -2063,6 +2151,23 @@ export const HospitalEmergencyDashboard: React.FC = () => {
             <p className="text-xs text-[#555555]">
               Please provide a clinical or operational reason. The patient will be notified immediately to re-route to an alternative hospital without delay.
             </p>
+
+            {/* Smart Auto-Rerouting Indicator */}
+            {actionTargetRequest.autoRerouteEnabled ? (
+              <div className="p-3 bg-[#E8F5E9] rounded-xl border border-[#D5E8D7] text-[#2E7D32] text-xs space-y-1">
+                <p className="font-bold flex items-center space-x-1.5">
+                  <span className="text-sm">🔄</span>
+                  <span>Smart Auto-Rerouting is ACTIVE for this patient</span>
+                </p>
+                <p className="text-[11px] text-[#555555]">
+                  Upon declining, MediGrid will automatically forward this request, emergency symptoms, and permitted MediVault records to the next suitable nearby hospital without requiring the patient to re-submit.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3 bg-[#F1F8F2] rounded-xl border border-[#D5E8D7] text-[#555555] text-xs">
+                <span>ℹ️ Auto-Rerouting is OFF for this request. The patient will be notified to manually select an alternative facility.</span>
+              </div>
+            )}
 
             <div className="space-y-3 text-xs">
               <div>
