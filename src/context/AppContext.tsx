@@ -18,7 +18,8 @@ import {
   LocationArea,
   HospitalStaffAccount,
   AmbulanceStatus,
-  DocumentCategory
+  DocumentCategory,
+  EmergencyRequestStatus
 } from '../types';
 import {
   mockHospitalStaffUser,
@@ -109,8 +110,53 @@ interface AppContextType {
     symptoms?: string,
     ambulanceReq?: boolean
   ) => Promise<EmergencyRequest>;
-  acceptEmergencyRequest: (requestId: string, bedType?: BedCategoryType, notes?: string) => void;
+  submitEmergencySosRequest: (payload: {
+    hospitalId: string;
+    consentGranted: boolean;
+    sharedDocIds?: string[];
+    ambulanceRequested?: boolean;
+    chiefComplaint: string;
+    mainSymptom?: string;
+    problemStartedAt?: string;
+    reportedSeverity?: 'Mild' | 'Moderate' | 'Severe' | 'Unsure';
+    consciousnessStatus?: 'Alert' | 'Confused' | 'Unresponsive' | 'Unsure';
+    breathingStatus?: 'Normal' | 'Difficulty Breathing' | 'Not Breathing Normally' | 'Unsure';
+    knownAllergies?: string[];
+    existingConditions?: string[];
+    currentMedications?: string;
+    relevantMedicalHistory?: string;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
+    manualAddress?: string;
+    locationSource?: 'GPS' | 'MANUAL';
+    coordinates?: { lat: number; lng: number };
+  }) => Promise<EmergencyRequest>;
+  saveClinicalAssessment: (
+    requestId: string,
+    assessment: import('../types').HospitalClinicalAssessment,
+    newStatus?: EmergencyRequestStatus
+  ) => void;
+  respondToClarification: (
+    requestId: string,
+    message: string,
+    sender: 'hospital' | 'patient',
+    senderName?: string
+  ) => void;
+  confirmAdmission: (
+    requestId: string,
+    department: import('../types').HospitalDepartment,
+    bedCategory: BedCategoryType,
+    notes?: string
+  ) => void;
+  acceptEmergencyRequest: (
+    requestId: string,
+    bedType?: BedCategoryType,
+    notes?: string,
+    department?: import('../types').HospitalDepartment,
+    bedConfirmed?: boolean
+  ) => void;
   rejectEmergencyRequest: (requestId: string, reason?: string) => void;
+  declineEmergencyRequest: (requestId: string, reason: string) => void;
   redirectEmergencyRequest: (requestId: string, redirectHospitalId: string, redirectHospitalName: string, reason: string) => void;
   markRequestUnderReview: (requestId: string) => void;
   timeoutEmergencyRequest: (requestId: string) => void;
@@ -918,7 +964,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return false;
   });
 
-  // Emergency SOS Trigger
+  // Emergency SOS Trigger (Legacy & Direct)
   const triggerEmergencySos = async (
     hospitalId: string,
     consentGranted: boolean,
@@ -926,13 +972,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     symptoms?: string,
     ambulanceReq: boolean = true
   ): Promise<EmergencyRequest> => {
-    const selectedHosp = hospitals.find(h => isMatchingHospital(h.id, hospitalId)) || hospitals[0];
+    return submitEmergencySosRequest({
+      hospitalId,
+      consentGranted,
+      sharedDocIds,
+      chiefComplaint: symptoms?.trim() || 'Emergency assistance requested via SUSTHAYAN Rapid SOS.',
+      mainSymptom: symptoms?.trim() || 'General Emergency',
+      ambulanceRequested: ambulanceReq
+    });
+  };
+
+  // Structured Patient Emergency SOS Submission
+  const submitEmergencySosRequest = async (payload: {
+    hospitalId: string;
+    consentGranted: boolean;
+    sharedDocIds?: string[];
+    ambulanceRequested?: boolean;
+    chiefComplaint: string;
+    mainSymptom?: string;
+    problemStartedAt?: string;
+    reportedSeverity?: 'Mild' | 'Moderate' | 'Severe' | 'Unsure';
+    consciousnessStatus?: 'Alert' | 'Confused' | 'Unresponsive' | 'Unsure';
+    breathingStatus?: 'Normal' | 'Difficulty Breathing' | 'Not Breathing Normally' | 'Unsure';
+    knownAllergies?: string[];
+    existingConditions?: string[];
+    currentMedications?: string;
+    relevantMedicalHistory?: string;
+    emergencyContactName?: string;
+    emergencyContactPhone?: string;
+    manualAddress?: string;
+    locationSource?: 'GPS' | 'MANUAL';
+    coordinates?: { lat: number; lng: number };
+  }): Promise<EmergencyRequest> => {
+    const selectedHosp = hospitals.find(h => isMatchingHospital(h.id, payload.hospitalId)) || hospitals[0];
     const requestId = `EMG-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const grantToken = `GRANT-${selectedHosp.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
-    // Create an explicit access grant for this hospital if consent was granted
-    if (consentGranted) {
-      const grantDocIds = sharedDocIds.length > 0 ? sharedDocIds : medicalDocuments.map(d => d.id);
+    // Create time-limited access grant for receiving hospital with selected docs only
+    if (payload.consentGranted) {
+      const grantDocIds = (payload.sharedDocIds && payload.sharedDocIds.length > 0)
+        ? payload.sharedDocIds
+        : [];
       createAccessGrant(
         selectedHosp.id,
         selectedHosp.name,
@@ -948,7 +1028,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const patientName = patientProfile.fullName?.trim() || currentUser?.displayName?.trim() || 'Patient';
     const patientAge = Number(patientProfile.age || currentUser?.age || 0);
     const patientPhone = patientProfile.phone || currentUser?.phone || '';
-    const patientAddress = patientProfile.location || selectedSearchLocation || 'Location shared via GPS';
+    const patientAddress = payload.manualAddress || patientProfile.location || selectedSearchLocation || 'Location shared via GPS';
 
     const newRequest: EmergencyRequest = {
       id: requestId,
@@ -959,27 +1039,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       patientBloodGroup: patientProfile.bloodGroup,
       patientPhone,
       patientAddress,
-      patientCoordinates: { lat: selectedHosp.latitude || 22.6958, lng: selectedHosp.longitude || 88.3742 },
+      patientCoordinates: payload.coordinates || { lat: selectedHosp.latitude || 22.6958, lng: selectedHosp.longitude || 88.3742 },
       locationConsentGiven: true,
-      symptomsDescription: symptoms?.trim() || 'Emergency assistance requested via SUSTHAYAN Emergency SOS.',
-      knownAllergies: patientProfile.knownAllergies || [],
-      existingConditions: patientProfile.existingConditions || [],
-      currentMedicationsSummary: patientProfile.currentMedications?.length > 0
+      locationSource: payload.locationSource || 'GPS',
+      // Structured patient-reported conditions
+      chiefComplaint: payload.chiefComplaint,
+      symptomsDescription: payload.chiefComplaint,
+      mainSymptom: payload.mainSymptom || 'Emergency Condition',
+      problemStartedAt: payload.problemStartedAt || 'Just now',
+      reportedSeverity: payload.reportedSeverity || 'Severe',
+      consciousnessStatus: payload.consciousnessStatus || 'Alert',
+      breathingStatus: payload.breathingStatus || 'Normal',
+      knownAllergies: payload.knownAllergies || patientProfile.knownAllergies || [],
+      existingConditions: payload.existingConditions || patientProfile.existingConditions || [],
+      currentMedicationsSummary: payload.currentMedications || (patientProfile.currentMedications?.length > 0
         ? patientProfile.currentMedications.map(m => `${m.name}${m.dosage ? ` (${m.dosage})` : ''}`).join(', ')
-        : '',
+        : ''),
+      relevantMedicalHistory: payload.relevantMedicalHistory || '',
+      emergencyContactName: payload.emergencyContactName || (patientProfile.emergencyContacts?.[0]?.name || ''),
+      emergencyContactPhone: payload.emergencyContactPhone || (patientProfile.emergencyContacts?.[0]?.phone || ''),
       selectedHospitalId: selectedHosp.id,
       selectedHospitalName: selectedHosp.name,
-      status: 'PENDING',
-      priority: 'URGENT',
-      statusMessage: `Emergency SOS received by ${selectedHosp.name}. Triage team evaluating bed & ambulance availability.`,
+      status: 'PENDING_REVIEW', // Explicit initial review status
+      priority: payload.reportedSeverity === 'Severe' || payload.consciousnessStatus === 'Unresponsive' || payload.breathingStatus === 'Not Breathing Normally' ? 'CRITICAL' : 'URGENT',
+      statusMessage: `Emergency request submitted to ${selectedHosp.name}. Awaiting triage review and clinical assessment.`,
       timestamp: new Date().toISOString(),
       responseTimeoutMinutes: 15,
       timeoutAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       accessGrantToken: grantToken,
-      accessGrantStatus: consentGranted ? 'ACTIVE' : 'PENDING',
-      sharedDocIds: consentGranted ? (sharedDocIds.length > 0 ? sharedDocIds : medicalDocuments.map(d => d.id)) : [],
-      ambulanceRequested: ambulanceReq,
-      ambulanceDetails: ambulanceReq ? {
+      accessGrantStatus: payload.consentGranted ? 'ACTIVE' : 'PENDING',
+      consentStatementAgreed: payload.consentGranted,
+      consentScope: payload.consentGranted ? ['prescriptions', 'blood_reports', 'diagnostic_reports', 'hospital_records'] : [],
+      sharedDocIds: payload.consentGranted ? (payload.sharedDocIds || []) : [],
+      ambulanceRequested: payload.ambulanceRequested ?? false,
+      ambulanceDetails: payload.ambulanceRequested ? {
         id: `AMB-${selectedHosp.id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()}-01`,
         operatorName: `${selectedHosp.name} EMS Dispatch`,
         driverName: 'Not yet assigned',
@@ -989,19 +1082,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         etaMinutes: 0
       } : undefined,
       hospitalNotes: '',
-      smsSentToContacts: (patientProfile.emergencyContacts?.length || 0) > 0
+      smsSentToContacts: (patientProfile.emergencyContacts?.length || 0) > 0,
+      clarificationMessages: []
     };
 
     setEmergencyRequests(prev => [newRequest, ...prev]);
 
-    // Send notifications
+    // Send notifications to hospital staff and patient
     const newNotif: AppNotification = {
       id: `notif-${Date.now()}`,
       recipientId: 'all',
-      title: 'Emergency SOS Submitted',
-      titleBn: 'জরুরি এসওএস প্রেরিত হয়েছে',
-      message: `Emergency SOS sent to ${selectedHosp.name}. ID: ${requestId}`,
-      messageBn: `${selectedHosp.name}-এ জরুরি এসওএস পাঠানো হয়েছে। আইডি: ${requestId}`,
+      title: 'Emergency Request Submitted',
+      titleBn: 'জরুরি অনুরোধ জমা দেওয়া হয়েছে',
+      message: `Emergency request ${requestId} submitted to ${selectedHosp.name}. Status: PENDING_REVIEW`,
+      messageBn: `${selectedHosp.name}-এ জরুরি অনুরোধ ${requestId} জমা হয়েছে। অবস্থা: পর্যালোচনার অপেক্ষায়`,
       type: 'emergency',
       timestamp: new Date().toISOString(),
       isRead: false,
@@ -1018,15 +1112,144 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
     }
 
-    addAuditLog('TRIGGER_EMERGENCY_SOS', `Triggered SOS for Hospital ${selectedHosp.name} (Request ID: ${requestId}) with time-limited grant ${grantToken}`);
-    showToast('warning', 'EMERGENCY SOS SENT!', `Hospital: ${selectedHosp.name}`);
+    addAuditLog('CREATE_EMERGENCY_REQUEST', `Created Emergency Request ID ${requestId} for ${selectedHosp.name}. Problem: ${payload.chiefComplaint.substring(0, 60)}...`);
+    showToast('warning', 'EMERGENCY REQUEST SUBMITTED', `Hospital: ${selectedHosp.name}`);
 
     navigateTo('emergency-tracking', { id: requestId });
     return newRequest;
   };
 
-  // Hospital Accepts Emergency Request
-  const acceptEmergencyRequest = (requestId: string, bedType: BedCategoryType = 'ICU', notes?: string) => {
+  // Hospital Clinical Assessment & Triage
+  const saveClinicalAssessment = (
+    requestId: string,
+    assessment: import('../types').HospitalClinicalAssessment,
+    newStatus: EmergencyRequestStatus = 'UNDER_ASSESSMENT'
+  ) => {
+    setEmergencyRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
+          return {
+            ...r,
+            clinicalAssessment: assessment,
+            status: newStatus,
+            statusMessage: `Clinical Triage Recorded: ${assessment.triagePriority} • Recommended Department: ${assessment.recommendedDepartment} • Evaluated by ${assessment.assessedByStaffName}`,
+            allocatedBedType: assessment.bedRequirement !== 'Other' && assessment.bedRequirement !== 'Undetermined'
+              ? (assessment.bedRequirement === 'ICU' ? 'ICU' : 'GENERAL_WARD')
+              : r.allocatedBedType
+          };
+        }
+        return r;
+      })
+    );
+
+    const target = emergencyRequests.find(r => r.id === requestId);
+    const notif: AppNotification = {
+      id: `notif-${Date.now()}`,
+      recipientId: 'all',
+      title: 'Clinical Assessment Recorded',
+      titleBn: 'ক্লিনিক্যাল ট্রায়াজ মূল্যায়ন সম্পন্ন',
+      message: `Triage evaluation completed by hospital: ${assessment.triagePriority} for ${target?.selectedHospitalName || 'Hospital'}.`,
+      messageBn: `হাসপাতালের ট্রায়াজ মূল্যায়ন সম্পন্ন: ${assessment.triagePriority}।`,
+      type: 'emergency',
+      timestamp: new Date().toISOString(),
+      isRead: false
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    addAuditLog('CLINICAL_ASSESSMENT_SUBMITTED', `Assessment for request ${requestId} by ${assessment.assessedByStaffName}. Priority: ${assessment.triagePriority}, Dept: ${assessment.recommendedDepartment}, ICU: ${assessment.icuAssessmentRequired}`);
+    showToast('success', 'Clinical Assessment Saved', `Priority: ${assessment.triagePriority}`);
+  };
+
+  // Hospital & Patient Clarification Message Thread
+  const respondToClarification = (
+    requestId: string,
+    message: string,
+    sender: 'hospital' | 'patient',
+    senderName?: string
+  ) => {
+    if (!message.trim()) return;
+
+    const newMsg: import('../types').ClarificationMessage = {
+      id: `clarif-${Date.now()}`,
+      sender,
+      senderName: senderName || (sender === 'hospital' ? (currentUser?.displayName || 'Hospital Staff') : (currentUser?.displayName || 'Patient')),
+      message: message.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    setEmergencyRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
+          const currentMsgs = r.clarificationMessages || [];
+          const nextStatus: EmergencyRequestStatus = sender === 'hospital' ? 'MORE_INFORMATION_REQUIRED' : 'UNDER_ASSESSMENT';
+          return {
+            ...r,
+            clarificationMessages: [...currentMsgs, newMsg],
+            status: nextStatus,
+            statusMessage: sender === 'hospital'
+              ? `Hospital requested additional information: "${message.trim().substring(0, 50)}..."`
+              : `Patient submitted additional clarification. Case returned to active clinical review.`
+          };
+        }
+        return r;
+      })
+    );
+
+    addAuditLog('CLARIFICATION_MESSAGE', `[${sender.toUpperCase()}] Message on Request ${requestId}: ${message.trim().substring(0, 60)}`);
+    showToast('info', sender === 'hospital' ? 'Information Request Sent to Patient' : 'Clarification Sent to Hospital');
+  };
+
+  // Confirm Admission
+  const confirmAdmission = (
+    requestId: string,
+    department: import('../types').HospitalDepartment,
+    bedCategory: BedCategoryType,
+    notes?: string
+  ) => {
+    const staffName = currentUser?.displayName || 'Admissions Medical Officer';
+    const hospitalName = currentUser?.hospitalName || 'Hospital';
+
+    setEmergencyRequests(prev =>
+      prev.map(r => {
+        if (r.id === requestId) {
+          return {
+            ...r,
+            status: 'ADMISSION_CONFIRMED',
+            allocatedBedType: bedCategory,
+            assignedStaffName: staffName,
+            statusMessage: `Formal Hospital Admission Confirmed. Department: ${department}. Bed category: ${bedCategory}. Verified by ${staffName}.`,
+            hospitalNotes: notes || r.hospitalNotes
+          };
+        }
+        return r;
+      })
+    );
+
+    const notif: AppNotification = {
+      id: `notif-${Date.now()}`,
+      recipientId: 'all',
+      title: 'Hospital Admission Confirmed!',
+      titleBn: 'হাসপাতালে ভর্তি নিশ্চিত হয়েছে!',
+      message: `${hospitalName} confirmed formal admission to ${department} (${bedCategory} bed).`,
+      messageBn: `${hospitalName} আপনার ভর্তি নিশ্চিত করেছে: ${department} (${bedCategory} বেড)।`,
+      type: 'emergency',
+      timestamp: new Date().toISOString(),
+      isRead: false
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    addAuditLog('ADMISSION_CONFIRMED', `Staff ${staffName} confirmed admission for Request ${requestId} to ${department} (${bedCategory})`);
+    showToast('success', 'Admission Formally Confirmed', `${department} • ${bedCategory}`);
+  };
+
+  // Hospital Accepts Emergency Request for Coordination
+  const acceptEmergencyRequest = (
+    requestId: string,
+    bedType: BedCategoryType = 'ICU',
+    notes?: string,
+    department: import('../types').HospitalDepartment = 'Emergency Department',
+    bedConfirmed: boolean = false
+  ) => {
     const staffName = currentUser?.displayName || 'Emergency Triage Doctor';
     const hospitalName = currentUser?.hospitalName || 'Verified Hospital';
 
@@ -1035,10 +1258,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (r.id === requestId) {
           return {
             ...r,
-            status: 'ACCEPTED',
+            status: 'ACCEPTED_FOR_COORDINATION',
             allocatedBedType: bedType,
             assignedStaffName: staffName,
-            statusMessage: `Hospital Accepted Request. 1 ${bedType} bed allocated & triage bay prepped by ${staffName}.`,
+            statusMessage: `Hospital Accepted for Coordination. Intended Department: ${department}. Bed Confirmed: ${bedConfirmed ? 'Yes' : 'Pending Verification'}. Reviewed by ${staffName}. (Note: Acceptance is not guaranteed admission until formally confirmed).`,
             hospitalNotes: notes || r.hospitalNotes,
             ambulanceDetails: r.ambulanceDetails ? { ...r.ambulanceDetails, status: 'ACCEPTED' } : undefined
           };
@@ -1051,22 +1274,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const notif: AppNotification = {
       id: `notif-${Date.now()}`,
       recipientId: 'all',
-      title: 'Emergency Request ACCEPTED!',
-      titleBn: 'জরুরি অনুরোধ গৃহীত হয়েছে!',
-      message: `${hospitalName} has ACCEPTED your request and reserved 1 ${bedType} bed.`,
-      messageBn: `${hospitalName} আপনার অনুরোধ গ্রহণ করেছে এবং ১টি ${bedType} বেড প্রস্তুত রেখেছে।`,
+      title: 'Emergency Request Accepted for Coordination',
+      titleBn: 'জরুরি অনুরোধ সমন্বয়ের জন্য গৃহীত হয়েছে',
+      message: `${hospitalName} has accepted your request for clinical coordination. Department: ${department}.`,
+      messageBn: `${hospitalName} চিকিৎসা সমন্বয়ের জন্য আপনার অনুরোধ গ্রহণ করেছে। বিভাগ: ${department}।`,
       type: 'emergency',
       timestamp: new Date().toISOString(),
       isRead: false
     };
     setNotifications(prev => [notif, ...prev]);
 
-    addAuditLog('EMERGENCY_ACCEPTED', `Hospital staff ${staffName} accepted Request ID ${requestId} (Allocated: ${bedType})`);
-    showToast('success', 'Emergency Request Accepted', `1 ${bedType} Bed Allocated`);
+    addAuditLog('EMERGENCY_ACCEPTED', `Hospital staff ${staffName} accepted Request ID ${requestId} for coordination (Dept: ${department}, Bed Confirmed: ${bedConfirmed})`);
+    showToast('success', 'Emergency Request Accepted for Coordination', `${department}`);
   };
 
-  // Hospital Rejects Emergency Request
-  const rejectEmergencyRequest = (requestId: string, reason: string = 'No ICU Bed Available at this time') => {
+  // Hospital Declines or Unable to Accommodate
+  const declineEmergencyRequest = (requestId: string, reason: string) => {
     const staffName = currentUser?.displayName || 'Emergency Duty Officer';
     const hospitalName = currentUser?.hospitalName || 'Hospital';
 
@@ -1075,31 +1298,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (r.id === requestId) {
           return {
             ...r,
-            status: 'REJECTED',
+            status: 'UNABLE_TO_ACCOMMODATE',
             rejectionReason: reason,
-            statusMessage: `Hospital unable to accommodate at this time: ${reason}. Please revoke access and switch to an alternative hospital immediately.`
+            statusMessage: `Hospital unable to accommodate at this time: ${reason}. Please view verified alternative hospitals or dial 112 immediately.`
           };
         }
         return r;
       })
     );
 
-    // Notify patient
     const notif: AppNotification = {
       id: `notif-${Date.now()}`,
       recipientId: 'all',
-      title: 'Emergency Request Declined',
-      titleBn: 'জরুরি অনুরোধ প্রত্যাখ্যান করা হয়েছে',
-      message: `${hospitalName} reported no bed available (${reason}). You may revoke access and select another hospital.`,
-      messageBn: `${hospitalName} বর্তমানে বেড খালি নেই বলে জানিয়েছে (${reason})। বিকল্প হাসপাতাল বেছে নিন।`,
+      title: 'Hospital Unable to Accommodate',
+      titleBn: 'হাসপাতাল গ্রহণে অপারগ',
+      message: `${hospitalName} cannot accommodate this emergency: ${reason}. Please select an alternative facility.`,
+      messageBn: `${hospitalName} অনুরোধ গ্রহণ করতে পারেনি: ${reason}। বিকল্প হাসপাতাল নির্বাচন করুন।`,
       type: 'emergency',
       timestamp: new Date().toISOString(),
       isRead: false
     };
     setNotifications(prev => [notif, ...prev]);
 
-    addAuditLog('EMERGENCY_REJECTED', `Hospital staff ${staffName} declined Request ID ${requestId}. Reason: ${reason}`);
-    showToast('warning', 'Emergency Request Declined', reason);
+    addAuditLog('EMERGENCY_UNABLE_TO_ACCOMMODATE', `Staff ${staffName} declined Request ${requestId}. Reason: ${reason}`);
+    showToast('warning', 'Unable to Accommodate Request', reason);
+  };
+
+  const rejectEmergencyRequest = (requestId: string, reason: string = 'No ICU Bed Available at this time') => {
+    declineEmergencyRequest(requestId, reason);
   };
 
   // Hospital Redirects Emergency Request
@@ -1631,8 +1857,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         hospitalEmergencyRequests,
         activeEmergencyRequest,
         triggerEmergencySos,
+        submitEmergencySosRequest,
+        saveClinicalAssessment,
+        respondToClarification,
+        confirmAdmission,
         acceptEmergencyRequest,
         rejectEmergencyRequest,
+        declineEmergencyRequest,
         redirectEmergencyRequest,
         markRequestUnderReview,
         timeoutEmergencyRequest,

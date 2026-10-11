@@ -27,7 +27,8 @@ import {
   Sliders,
   X,
   Phone,
-  Info
+  Info,
+  AlertTriangle
 } from 'lucide-react';
 import {
   BedCategoryType,
@@ -35,7 +36,10 @@ import {
   DocumentAccessGrant,
   AmbulanceStatus,
   EmergencyRequestStatus,
-  MedicalDocument
+  MedicalDocument,
+  TriagePriority,
+  HospitalDepartment,
+  HospitalClinicalAssessment
 } from '../types';
 import { allVerifiedHospitals, isMatchingHospital } from '../data/verifiedHospitals';
 
@@ -52,6 +56,10 @@ export const HospitalEmergencyDashboard: React.FC = () => {
     switchHospitalStaffAccount,
     acceptEmergencyRequest,
     rejectEmergencyRequest,
+    declineEmergencyRequest,
+    saveClinicalAssessment,
+    respondToClarification,
+    confirmAdmission,
     redirectEmergencyRequest,
     markRequestUnderReview,
     updateBedAvailability,
@@ -70,6 +78,30 @@ export const HospitalEmergencyDashboard: React.FC = () => {
   const [detailModalRequest, setDetailModalRequest] = useState<EmergencyRequest | null>(null);
   const [docsModalRequest, setDocsModalRequest] = useState<EmergencyRequest | null>(null);
   const [previewingDoc, setPreviewingDoc] = useState<MedicalDocument | null>(null);
+
+  // Dedicated Clinical Triage & Emergency Assessment Screen Modal State
+  const [assessmentModalRequest, setAssessmentModalRequest] = useState<EmergencyRequest | null>(null);
+  const [triageNotes, setTriageNotes] = useState('');
+  const [triagePriority, setTriagePriority] = useState<TriagePriority>('P2_EMERGENT');
+  const [suspectedCareRequirement, setSuspectedCareRequirement] = useState('');
+  const [recommendedDept, setRecommendedDept] = useState<HospitalDepartment>('Emergency Department');
+  const [icuAssessmentRequired, setIcuAssessmentRequired] = useState<'Yes' | 'No' | 'Undetermined'>('Undetermined');
+  const [bedRequirement, setBedRequirement] = useState<'ICU' | 'Emergency Department' | 'General Ward' | 'Other' | 'Undetermined'>('Emergency Department');
+  const [bedConfirmedForRequest, setBedConfirmedForRequest] = useState(false);
+  const [requestInfoQuestion, setRequestInfoQuestion] = useState('');
+  const [declineReasonCategory, setDeclineReasonCategory] = useState('No suitable bed confirmed');
+
+  const handleOpenAssessmentModal = (req: EmergencyRequest) => {
+    setAssessmentModalRequest(req);
+    setTriageNotes(req.clinicalAssessment?.notes || '');
+    setTriagePriority(req.clinicalAssessment?.triagePriority || (req.priority === 'CRITICAL' ? 'P1_RESUSCITATION' : 'P2_EMERGENT'));
+    setSuspectedCareRequirement(req.clinicalAssessment?.suspectedCareRequirement || '');
+    setRecommendedDept(req.clinicalAssessment?.recommendedDepartment || 'Emergency Department');
+    setIcuAssessmentRequired(req.clinicalAssessment?.icuAssessmentRequired || 'Undetermined');
+    setBedRequirement(req.clinicalAssessment?.bedRequirement || 'Emergency Department');
+    setBedConfirmedForRequest(req.clinicalAssessment?.bedConfirmedStatus === 'CONFIRMED');
+    setRequestInfoQuestion('');
+  };
 
   // Search & Filters in Request Inbox
   const [searchQuery, setSearchQuery] = useState('');
@@ -690,14 +722,57 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                           <p className="text-[#555555] truncate">📍 {req.patientAddress || 'Location coordinates on file'}</p>
                         </div>
 
-                        {/* Emergency Complaint */}
-                        <div className="lg:col-span-5 space-y-1.5 text-xs">
-                          <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">
-                            Emergency Complaint / Chief Symptoms:
-                          </span>
-                          <p className="bg-white p-3 rounded-xl border border-[#D5E8D7] text-[#171717] leading-relaxed shadow-xs">
-                            {req.symptomsDescription || 'Acute medical emergency assistance requested.'}
-                          </p>
+                        {/* Emergency Complaint & Condition Parameters */}
+                        <div className="lg:col-span-5 space-y-2 text-xs">
+                          <div>
+                            <span className="text-[11px] font-bold text-[#555555] uppercase tracking-wider block">
+                              {language === 'bn' ? 'রোগীর বর্ণিত সমস্যা ও উপসর্গ:' : 'Patient-Reported Problem & Symptoms:'}
+                            </span>
+                            <p className="bg-white p-3 rounded-xl border border-[#D5E8D7] text-[#171717] font-medium leading-relaxed shadow-xs mt-1">
+                              {req.chiefComplaint || req.symptomsDescription || 'Acute medical emergency assistance requested.'}
+                            </p>
+                          </div>
+
+                          {/* Quick clinical parameter badges */}
+                          <div className="flex flex-wrap gap-1.5 text-[11px]">
+                            {req.reportedSeverity && (
+                              <span className="px-2 py-0.5 rounded-md bg-white border border-[#D5E8D7] font-semibold text-[#171717]">
+                                Severity: <strong className={req.reportedSeverity === 'Severe' ? 'text-rose-700' : 'text-[#2E7D32]'}>{req.reportedSeverity}</strong>
+                              </span>
+                            )}
+                            {req.consciousnessStatus && (
+                              <span className="px-2 py-0.5 rounded-md bg-white border border-[#D5E8D7] font-semibold text-[#171717]">
+                                Consciousness: <strong>{req.consciousnessStatus}</strong>
+                              </span>
+                            )}
+                            {req.breathingStatus && (
+                              <span className="px-2 py-0.5 rounded-md bg-white border border-[#D5E8D7] font-semibold text-[#171717]">
+                                Breathing: <strong className={req.breathingStatus !== 'Normal' ? 'text-rose-700' : 'text-[#171717]'}>{req.breathingStatus}</strong>
+                              </span>
+                            )}
+                            {req.problemStartedAt && (
+                              <span className="px-2 py-0.5 rounded-md bg-white border border-[#D5E8D7] text-[#555555]">
+                                Onset: {req.problemStartedAt}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Allergies & Conditions snippet */}
+                          {(req.knownAllergies?.length > 0 || req.existingConditions?.length > 0) && (
+                            <div className="p-2 bg-white rounded-lg border border-[#D5E8D7] text-[11px] space-y-0.5">
+                              {req.knownAllergies?.length > 0 && (
+                                <p className="text-rose-800">
+                                  <strong>Allergies:</strong> {req.knownAllergies.join(', ')}
+                                </p>
+                              )}
+                              {req.existingConditions?.length > 0 && (
+                                <p className="text-[#555555]">
+                                  <strong>Conditions:</strong> {req.existingConditions.join(', ')}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
                           {req.redirectReason && (
                             <p className="text-[11px] text-cyan-800 bg-cyan-50 p-2 rounded-lg border border-cyan-200">
                               Redirect Note: {req.redirectReason} (To: {req.redirectHospitalName || req.redirectHospitalId})
@@ -712,10 +787,18 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                         {/* Actions Area */}
                         <div className="lg:col-span-3 flex flex-col justify-between space-y-2">
+                          <button
+                            onClick={() => handleOpenAssessmentModal(req)}
+                            className="w-full py-2.5 px-3 rounded-xl bg-[#2E7D32] hover:bg-[#256B2A] text-white text-xs font-black shadow-xs transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+                          >
+                            <Activity className="w-4 h-4 text-white" />
+                            <span>{language === 'bn' ? 'ক্লিনিক্যাল ট্রায়াজ ও মূল্যায়ন' : 'Perform Clinical Triage'}</span>
+                          </button>
+
                           <div className="grid grid-cols-2 gap-2">
                             <button
                               onClick={() => setDetailModalRequest(req)}
-                              className="py-2 px-2.5 rounded-xl bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] text-xs font-bold transition-all flex items-center justify-center space-x-1"
+                              className="py-1.5 px-2.5 rounded-xl bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] text-xs font-bold transition-all flex items-center justify-center space-x-1"
                             >
                               <Eye className="w-3.5 h-3.5 text-[#2E7D32]" />
                               <span>Details</span>
@@ -723,67 +806,49 @@ export const HospitalEmergencyDashboard: React.FC = () => {
 
                             <button
                               onClick={() => handleOpenDocReview(req)}
-                              className="py-2 px-2.5 rounded-xl bg-white hover:bg-[#F1F8F2] text-[#2E7D32] border border-[#D5E8D7] text-xs font-bold transition-all flex items-center justify-center space-x-1"
+                              className="py-1.5 px-2.5 rounded-xl bg-white hover:bg-[#F1F8F2] text-[#2E7D32] border border-[#D5E8D7] text-xs font-bold transition-all flex items-center justify-center space-x-1"
                             >
                               <FileText className="w-3.5 h-3.5 text-[#2E7D32]" />
                               <span>Vault Docs</span>
                             </button>
                           </div>
 
-                          {/* Action Decision Buttons */}
-                          {(req.status === 'SUBMITTED' || req.status === 'PENDING' || req.status === 'UNDER_REVIEW') ? (
-                            <div className="space-y-1.5 pt-1">
-                              <div className="grid grid-cols-2 gap-1.5">
-                                <button
-                                  onClick={() => {
-                                    setActionTargetRequest(req);
-                                    setShowAcceptModal(true);
-                                  }}
-                                  className="py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center space-x-1"
-                                >
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                                  <span>Accept</span>
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    setActionTargetRequest(req);
-                                    setShowDeclineModal(true);
-                                  }}
-                                  className="py-2 bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold flex items-center justify-center space-x-1"
-                                >
-                                  <XCircle className="w-3.5 h-3.5 text-rose-600" />
-                                  <span>Decline</span>
-                                </button>
-                              </div>
+                          {/* Quick status indicator or actions */}
+                          {req.status === 'ACCEPTED_FOR_COORDINATION' || req.status === 'ACCEPTED' ? (
+                            <div className="p-2 bg-white rounded-xl border border-[#D5E8D7] text-[#2E7D32] text-xs font-bold text-center">
+                              ✓ Accepted for Coordination
+                            </div>
+                          ) : req.status === 'ADMISSION_CONFIRMED' ? (
+                            <div className="p-2 bg-emerald-100 rounded-xl border border-emerald-300 text-emerald-900 text-xs font-bold text-center">
+                              ✓ Admission Confirmed
+                            </div>
+                          ) : req.status === 'UNABLE_TO_ACCOMMODATE' || req.status === 'REJECTED' ? (
+                            <div className="p-2 bg-rose-50 rounded-xl border border-rose-200 text-rose-800 text-xs font-bold text-center">
+                              ✕ Unable to Accommodate
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-1.5 pt-1">
+                              <button
+                                onClick={() => {
+                                  setActionTargetRequest(req);
+                                  setShowAcceptModal(true);
+                                }}
+                                className="py-1.5 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center space-x-1"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                                <span>Accept</span>
+                              </button>
 
                               <button
                                 onClick={() => {
                                   setActionTargetRequest(req);
-                                  setShowRedirectModal(true);
+                                  setShowDeclineModal(true);
                                 }}
-                                className="w-full py-1.5 bg-white hover:bg-[#F1F8F2] text-[#171717] border border-[#D5E8D7] rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1"
+                                className="py-1.5 bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold flex items-center justify-center space-x-1"
                               >
-                                <ArrowRight className="w-3.5 h-3.5 text-[#2E7D32]" />
-                                <span>Redirect Hospital</span>
+                                <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Decline</span>
                               </button>
-
-                              {req.status !== 'UNDER_REVIEW' && (
-                                <button
-                                  onClick={() => markRequestUnderReview(req.id)}
-                                  className="w-full text-center text-[11px] text-[#555555] hover:text-[#2E7D32] transition-colors py-0.5"
-                                >
-                                  Mark Under Review
-                                </button>
-                              )}
-                            </div>
-                          ) : req.status === 'ACCEPTED' ? (
-                            <div className="p-2.5 bg-white rounded-xl border border-[#D5E8D7] text-[#2E7D32] text-xs font-bold text-center">
-                              ✓ Accepted ({req.allocatedBedType || 'Bed Allocated'})
-                            </div>
-                          ) : (
-                            <div className="p-2 bg-white rounded-xl border border-[#D5E8D7] text-[#555555] text-xs text-center font-medium">
-                              Case Concluded ({req.status})
                             </div>
                           )}
                         </div>
@@ -1234,6 +1299,418 @@ export const HospitalEmergencyDashboard: React.FC = () => {
         )}
 
       </div>
+
+      {/* ================= MODAL: HOSPITAL EMERGENCY TRIAGE & CLINICAL ASSESSMENT ================= */}
+      {assessmentModalRequest && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-3 sm:p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-3xl w-full border border-[#D5E8D7] shadow-2xl overflow-hidden text-[#171717] flex flex-col max-h-[92vh]">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-[#D5E8D7] bg-[#E8F5E9] flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-[#2E7D32] border border-[#D5E8D7]">
+                    🏥 Clinical Emergency Triage Desk
+                  </span>
+                  <span className="text-[11px] font-mono text-[#555555]">
+                    ID: <strong className="text-[#2E7D32]">{assessmentModalRequest.id}</strong>
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-[#171717]">
+                  {assessmentModalRequest.patientName}
+                </h3>
+                <p className="text-xs text-[#555555]">
+                  Status: <strong className="text-[#171717] uppercase">{assessmentModalRequest.status}</strong> • Submitted: {new Date(assessmentModalRequest.timestamp).toLocaleString()}
+                </p>
+              </div>
+              <button
+                onClick={() => setAssessmentModalRequest(null)}
+                className="p-2 rounded-xl bg-white text-[#555555] hover:text-[#171717] border border-[#D5E8D7] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs bg-white">
+              {/* 1. Patient Reported Condition Summary */}
+              <div className="bg-[#F1F8F2] rounded-2xl p-4 border border-[#D5E8D7] space-y-3">
+                <span className="text-[11px] font-black text-[#2E7D32] uppercase tracking-wider block">
+                  1. Patient-Reported Emergency Medical Problem:
+                </span>
+                <p className="p-3 bg-white rounded-xl border border-[#D5E8D7] text-sm font-semibold text-[#171717] leading-relaxed">
+                  "{assessmentModalRequest.chiefComplaint || assessmentModalRequest.symptomsDescription || 'Acute emergency assistance requested.'}"
+                </p>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-[11px]">
+                  <div className="p-2 bg-white rounded-lg border border-[#D5E8D7]">
+                    <span className="text-[10px] text-[#555555] block uppercase">Reported Severity</span>
+                    <strong className="text-[#171717]">{assessmentModalRequest.reportedSeverity || 'Severe'}</strong>
+                  </div>
+                  <div className="p-2 bg-white rounded-lg border border-[#D5E8D7]">
+                    <span className="text-[10px] text-[#555555] block uppercase">Consciousness</span>
+                    <strong className="text-[#171717]">{assessmentModalRequest.consciousnessStatus || 'Alert'}</strong>
+                  </div>
+                  <div className="p-2 bg-white rounded-lg border border-[#D5E8D7]">
+                    <span className="text-[10px] text-[#555555] block uppercase">Breathing Status</span>
+                    <strong className={assessmentModalRequest.breathingStatus !== 'Normal' ? 'text-rose-700 font-bold' : 'text-[#171717]'}>
+                      {assessmentModalRequest.breathingStatus || 'Normal'}
+                    </strong>
+                  </div>
+                  <div className="p-2 bg-white rounded-lg border border-[#D5E8D7]">
+                    <span className="text-[10px] text-[#555555] block uppercase">Problem Onset</span>
+                    <strong className="text-[#171717]">{assessmentModalRequest.problemStartedAt || 'Recent'}</strong>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                  <p className="text-[#171717] bg-white p-2 rounded-lg border border-[#D5E8D7]">
+                    <strong>Known Allergies:</strong> {assessmentModalRequest.knownAllergies?.length > 0 ? assessmentModalRequest.knownAllergies.join(', ') : 'None documented'}
+                  </p>
+                  <p className="text-[#171717] bg-white p-2 rounded-lg border border-[#D5E8D7]">
+                    <strong>Existing Conditions:</strong> {assessmentModalRequest.existingConditions?.length > 0 ? assessmentModalRequest.existingConditions.join(', ') : 'None documented'}
+                  </p>
+                </div>
+
+                {assessmentModalRequest.patientAddress && (
+                  <p className="text-[11px] text-[#555555] bg-white p-2 rounded-lg border border-[#D5E8D7]">
+                    📍 Incident Location: <strong>{assessmentModalRequest.patientAddress}</strong>
+                  </p>
+                )}
+              </div>
+
+              {/* 2. Decision Support Indicators (Red Flags) */}
+              <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 space-y-2">
+                <div className="flex items-center space-x-2 text-amber-900 font-black text-xs uppercase tracking-wider">
+                  <AlertTriangle className="w-4 h-4 text-amber-700" />
+                  <span>DECISION-SUPPORT INDICATORS (Clinical Decision Support Only)</span>
+                </div>
+                <p className="text-[11px] text-amber-900 leading-relaxed font-medium">
+                  Notice: These automated indicators highlight patient-reported red flags to support clinical review. They are decision-support indicators, NOT confirmed diagnoses or autonomous clinical triage decisions. A qualified healthcare professional must make the final clinical assessment and admission decision.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {assessmentModalRequest.reportedSeverity === 'Severe' && (
+                    <span className="px-2 py-0.5 rounded-md bg-white border border-rose-300 text-rose-800 text-[10px] font-bold">
+                      🚩 High Patient-Reported Severity
+                    </span>
+                  )}
+                  {assessmentModalRequest.breathingStatus !== 'Normal' && (
+                    <span className="px-2 py-0.5 rounded-md bg-white border border-rose-300 text-rose-800 text-[10px] font-bold">
+                      🚩 Abnormal / Difficult Breathing Flagged
+                    </span>
+                  )}
+                  {assessmentModalRequest.consciousnessStatus !== 'Alert' && (
+                    <span className="px-2 py-0.5 rounded-md bg-white border border-rose-300 text-rose-800 text-[10px] font-bold">
+                      🚩 Altered Mental / Consciousness Status Flagged
+                    </span>
+                  )}
+                  <span className="px-2 py-0.5 rounded-md bg-white border border-amber-300 text-amber-800 text-[10px] font-bold">
+                    ✓ Full Clinical Assessment Required by Duty MO
+                  </span>
+                </div>
+              </div>
+
+              {/* 3. Qualified Clinical Assessment Fields */}
+              <div className="bg-[#E8F5E9] rounded-2xl p-4 sm:p-5 border border-[#D5E8D7] space-y-4">
+                <span className="text-[11px] font-black text-[#171717] uppercase tracking-wider block">
+                  3. Hospital Staff Clinical Assessment & Admission Planning:
+                </span>
+
+                {/* Triage Priority Selector */}
+                <div>
+                  <label className="block text-[11px] font-bold text-[#171717] mb-1.5">
+                    Triage Priority Classification *:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {[
+                      { id: 'P1_RESUSCITATION', label: 'P1 - Immediate / Resuscitation', color: 'bg-rose-700 text-white border-rose-800' },
+                      { id: 'P2_EMERGENT', label: 'P2 - Very Urgent / Emergent', color: 'bg-amber-600 text-white border-amber-700' },
+                      { id: 'P3_URGENT', label: 'P3 - Urgent Care', color: 'bg-yellow-500 text-black border-yellow-600' },
+                      { id: 'P4_STANDARD', label: 'P4 - Standard / Non-Urgent', color: 'bg-[#2E7D32] text-white border-[#256B2A]' }
+                    ].map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setTriagePriority(p.id as any)}
+                        className={`p-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${
+                          triagePriority === p.id
+                            ? `${p.color} ring-2 ring-black/20 shadow-xs font-black`
+                            : 'bg-white text-[#555555] border-[#D5E8D7] hover:bg-[#F1F8F2]'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Department & ICU assessment */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] space-y-1">
+                    <label className="block text-[11px] font-bold text-[#171717]">
+                      Recommended Department *:
+                    </label>
+                    <select
+                      value={recommendedDept}
+                      onChange={e => setRecommendedDept(e.target.value as any)}
+                      className="w-full text-xs font-bold text-[#171717] bg-[#F1F8F2] border border-[#D5E8D7] rounded-lg p-2 focus:ring-1 focus:ring-[#2E7D32]"
+                    >
+                      <option value="Emergency Department">Emergency Department</option>
+                      <option value="General Medicine">General Medicine</option>
+                      <option value="Cardiology">Cardiology</option>
+                      <option value="Neurology">Neurology</option>
+                      <option value="Respiratory Medicine">Respiratory Medicine</option>
+                      <option value="Trauma and Orthopaedics">Trauma and Orthopaedics</option>
+                      <option value="Other">Other</option>
+                      <option value="Undetermined">Undetermined</option>
+                    </select>
+                  </div>
+
+                  <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] space-y-1">
+                    <label className="block text-[11px] font-bold text-[#171717]">
+                      ICU Assessment Required *:
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5 pt-1">
+                      {(['Yes', 'No', 'Undetermined'] as const).map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => setIcuAssessmentRequired(opt)}
+                          className={`py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            icuAssessmentRequired === opt
+                              ? 'bg-[#2E7D32] text-white shadow-xs'
+                              : 'bg-[#F1F8F2] text-[#555555] hover:bg-[#E8F5E9]'
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bed Requirement & Live Hospital Availability Verification */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] space-y-1">
+                    <label className="block text-[11px] font-bold text-[#171717]">
+                      Bed Requirement *:
+                    </label>
+                    <select
+                      value={bedRequirement}
+                      onChange={e => setBedRequirement(e.target.value as any)}
+                      className="w-full text-xs font-bold text-[#171717] bg-[#F1F8F2] border border-[#D5E8D7] rounded-lg p-2 focus:ring-1 focus:ring-[#2E7D32]"
+                    >
+                      <option value="ICU">ICU (Intensive Care Unit)</option>
+                      <option value="Emergency Department">Emergency Department (Observation)</option>
+                      <option value="General Ward">General Ward</option>
+                      <option value="Other">Other Specialized Unit</option>
+                      <option value="Undetermined">Undetermined</option>
+                    </select>
+                  </div>
+
+                  {/* Bed verification check against real bedRecords */}
+                  <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#171717]">Live Bed Availability:</span>
+                      <span className="text-[10px] text-[#2E7D32] font-semibold">Hospital Inventory</span>
+                    </div>
+                    {(() => {
+                      const matchedBed = currentHospitalBeds.find(b => b.category === (bedRequirement === 'ICU' ? 'ICU' : 'GENERAL_WARD'));
+                      const isAvail = matchedBed && matchedBed.availableCount > 0 && matchedBed.status === 'AVAILABLE';
+                      return (
+                        <div className="p-2 bg-[#F1F8F2] rounded-lg text-[11px] space-y-1 border border-[#D5E8D7]">
+                          <p>
+                            Category: <strong>{matchedBed?.category || bedRequirement}</strong> • Status:{' '}
+                            <strong className={isAvail ? 'text-[#2E7D32]' : 'text-rose-700'}>
+                              {isAvail ? `AVAILABLE (${matchedBed?.availableCount} beds)` : (matchedBed ? 'UNAVAILABLE (0 available)' : 'UNKNOWN')}
+                            </strong>
+                          </p>
+                          <div className="flex items-center space-x-2 pt-1">
+                            <input
+                              type="checkbox"
+                              id="bed-confirm-check"
+                              checked={bedConfirmedForRequest}
+                              onChange={e => setBedConfirmedForRequest(e.target.checked)}
+                              className="w-4 h-4 text-[#2E7D32] rounded focus:ring-[#2E7D32]"
+                            />
+                            <label htmlFor="bed-confirm-check" className="text-[11px] font-bold text-[#171717] cursor-pointer">
+                              Confirm Suitable Bed for this Request
+                            </label>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Clinical Notes & Suspected Care */}
+                <div className="space-y-2">
+                  <label className="block text-[11px] font-bold text-[#171717]">
+                    Initial Clinical Assessment Notes:
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={triageNotes}
+                    onChange={e => setTriageNotes(e.target.value)}
+                    placeholder="Enter qualified clinical observations, initial vitals, suspected pathology..."
+                    className="w-full text-xs text-[#171717] bg-white border border-[#D5E8D7] rounded-xl p-3 focus:ring-1 focus:ring-[#2E7D32]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold text-[#171717]">
+                    Suspected Care Requirement:
+                  </label>
+                  <input
+                    type="text"
+                    value={suspectedCareRequirement}
+                    onChange={e => setSuspectedCareRequirement(e.target.value)}
+                    placeholder="e.g. Immediate cardiac monitoring, stat ECG, IV analgesia, stroke protocol"
+                    className="w-full text-xs text-[#171717] bg-white border border-[#D5E8D7] rounded-xl p-2.5"
+                  />
+                </div>
+
+                <div className="p-3 bg-white rounded-xl border border-[#D5E8D7] flex items-center justify-between text-[11px] text-[#555555]">
+                  <span>Responsible Staff: <strong className="text-[#171717]">{currentUser.displayName}</strong> ({currentUser.staffDesignation || 'Triage Duty MO'})</span>
+                  <span>Timestamp: <strong>{new Date().toLocaleTimeString()}</strong></span>
+                </div>
+              </div>
+
+              {/* 4. Request Additional Information from Patient */}
+              <div className="bg-[#F1F8F2] rounded-2xl p-4 border border-[#D5E8D7] space-y-2">
+                <label className="block text-[11px] font-black text-[#171717] uppercase tracking-wider">
+                  4. Request More Information from Patient (Optional):
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={requestInfoQuestion}
+                    onChange={e => setRequestInfoQuestion(e.target.value)}
+                    placeholder="Ask patient clarification (e.g. Can the patient walk? Any blood-thinning meds taken today?)..."
+                    className="flex-1 text-xs text-[#171717] bg-white border border-[#D5E8D7] rounded-xl px-3 py-2"
+                  />
+                  <button
+                    type="button"
+                    disabled={!requestInfoQuestion.trim()}
+                    onClick={() => {
+                      respondToClarification(assessmentModalRequest.id, requestInfoQuestion.trim(), 'hospital', currentUser.displayName);
+                      setRequestInfoQuestion('');
+                      setAssessmentModalRequest(null);
+                    }}
+                    className="px-3.5 py-2 bg-purple-700 hover:bg-purple-800 disabled:bg-gray-300 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0"
+                  >
+                    Send to Patient
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Action Controls Footer */}
+            <div className="p-4 sm:p-5 border-t border-[#D5E8D7] bg-[#F1F8F2] flex flex-wrap items-center justify-between gap-2.5">
+              <button
+                type="button"
+                onClick={() => {
+                  const req = assessmentModalRequest;
+                  setAssessmentModalRequest(null);
+                  handleOpenDocReview(req);
+                }}
+                className="px-3.5 py-2 bg-white hover:bg-[#E8F5E9] text-[#2E7D32] border border-[#D5E8D7] rounded-xl text-xs font-bold flex items-center space-x-1"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Review MediVault Docs</span>
+              </button>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Save Draft Assessment */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const assessment: HospitalClinicalAssessment = {
+                      notes: triageNotes,
+                      triagePriority,
+                      suspectedCareRequirement,
+                      recommendedDepartment: recommendedDept,
+                      icuAssessmentRequired,
+                      bedRequirement,
+                      bedConfirmedStatus: bedConfirmedForRequest ? 'CONFIRMED' : 'PENDING',
+                      assessedByStaffName: currentUser.displayName,
+                      assessedByStaffId: currentUser.uid,
+                      assessmentTimestamp: new Date().toISOString()
+                    };
+                    saveClinicalAssessment(assessmentModalRequest.id, assessment, 'UNDER_ASSESSMENT');
+                    setAssessmentModalRequest(null);
+                  }}
+                  className="px-3.5 py-2 bg-white hover:bg-[#E8F5E9] text-[#171717] border border-[#D5E8D7] rounded-xl text-xs font-bold"
+                >
+                  Save Triage Draft
+                </button>
+
+                {/* Unable to Accommodate */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const req = assessmentModalRequest;
+                    setAssessmentModalRequest(null);
+                    setActionTargetRequest(req);
+                    setShowDeclineModal(true);
+                  }}
+                  className="px-3.5 py-2 bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 rounded-xl text-xs font-bold"
+                >
+                  Unable to Accommodate
+                </button>
+
+                {/* Accept for Coordination */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const assessment: HospitalClinicalAssessment = {
+                      notes: triageNotes,
+                      triagePriority,
+                      suspectedCareRequirement,
+                      recommendedDepartment: recommendedDept,
+                      icuAssessmentRequired,
+                      bedRequirement,
+                      bedConfirmedStatus: bedConfirmedForRequest ? 'CONFIRMED' : 'PENDING',
+                      assessedByStaffName: currentUser.displayName,
+                      assessedByStaffId: currentUser.uid,
+                      assessmentTimestamp: new Date().toISOString()
+                    };
+                    saveClinicalAssessment(assessmentModalRequest.id, assessment, 'ACCEPTED_FOR_COORDINATION');
+                    acceptEmergencyRequest(
+                      assessmentModalRequest.id,
+                      bedRequirement === 'ICU' ? 'ICU' : 'GENERAL_WARD',
+                      triageNotes,
+                      recommendedDept,
+                      bedConfirmedForRequest
+                    );
+                    setAssessmentModalRequest(null);
+                  }}
+                  className="px-4 py-2 bg-[#2E7D32] hover:bg-[#256B2A] text-white rounded-xl text-xs font-black shadow-xs flex items-center space-x-1"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  <span>Accept for Coordination</span>
+                </button>
+
+                {/* Confirm Formal Admission */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    confirmAdmission(
+                      assessmentModalRequest.id,
+                      recommendedDept,
+                      bedRequirement === 'ICU' ? 'ICU' : 'GENERAL_WARD',
+                      triageNotes
+                    );
+                    setAssessmentModalRequest(null);
+                  }}
+                  className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-black shadow-xs"
+                >
+                  Confirm Admission
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= MODAL: PATIENT REQUEST DETAILS (SECTION D) ================= */}
       {detailModalRequest && (

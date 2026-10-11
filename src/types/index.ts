@@ -24,10 +24,18 @@ export type DocumentCategory =
 export type EmergencyRequestStatus = 
   | 'SUBMITTED'
   | 'PENDING'
+  | 'PENDING_REVIEW'
+  | 'UNDER_ASSESSMENT'
   | 'UNDER_REVIEW'
+  | 'MORE_INFORMATION_REQUIRED'
+  | 'ACCEPTED_FOR_COORDINATION'
   | 'ACCEPTED'
+  | 'UNABLE_TO_ACCOMMODATE'
   | 'REJECTED'
   | 'DECLINED'
+  | 'BED_CONFIRMATION_PENDING'
+  | 'ADMISSION_CONFIRMED'
+  | 'REFERRED_TO_ANOTHER_FACILITY'
   | 'REDIRECTED'
   | 'TIMED_OUT'
   | 'CANCELLED'
@@ -36,6 +44,42 @@ export type EmergencyRequestStatus =
   | 'AMBULANCE_DISPATCHED'
   | 'PICKUP_IN_PROGRESS'
   | 'COMPLETED';
+
+export type TriagePriority = 'P1_RESUSCITATION' | 'P2_EMERGENT' | 'P3_URGENT' | 'P4_STANDARD';
+
+export type HospitalDepartment =
+  | 'Emergency Department'
+  | 'General Medicine'
+  | 'Cardiology'
+  | 'Neurology'
+  | 'Respiratory Medicine'
+  | 'Trauma and Orthopaedics'
+  | 'Other'
+  | 'Undetermined';
+
+export interface HospitalClinicalAssessment {
+  notes: string;
+  triagePriority: TriagePriority;
+  suspectedCareRequirement?: string;
+  recommendedDepartment: HospitalDepartment;
+  icuAssessmentRequired: 'Yes' | 'No' | 'Undetermined';
+  bedRequirement: 'ICU' | 'Emergency Department' | 'General Ward' | 'Other' | 'Undetermined';
+  bedConfirmedStatus?: 'CONFIRMED' | 'UNCONFIRMED' | 'NOT_AVAILABLE' | 'PENDING';
+  additionalInfoRequired?: string;
+  assessedByStaffName: string;
+  assessedByStaffId: string;
+  assessmentTimestamp: string;
+  decision?: 'ACCEPTED' | 'UNABLE_TO_ACCOMMODATE' | 'MORE_INFO_REQUESTED' | 'ADMISSION_CONFIRMED';
+  decisionReason?: string;
+}
+
+export interface ClarificationMessage {
+  id: string;
+  sender: 'hospital' | 'patient';
+  senderName: string;
+  message: string;
+  timestamp: string;
+}
 
 export type AmbulanceStatus =
   | 'IDLE'
@@ -334,6 +378,24 @@ export interface EmergencyRequest {
     currentLocation?: { lat: number; lng: number };
     dispatchTimestamp?: string;
   };
+  // Patient condition reporting fields
+  chiefComplaint?: string;
+  mainSymptom?: string;
+  problemStartedAt?: string;
+  reportedSeverity?: 'Mild' | 'Moderate' | 'Severe' | 'Unsure';
+  consciousnessStatus?: 'Alert' | 'Confused' | 'Unresponsive' | 'Unsure';
+  breathingStatus?: 'Normal' | 'Difficulty Breathing' | 'Not Breathing Normally' | 'Unsure';
+  relevantMedicalHistory?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  locationSource?: 'GPS' | 'MANUAL';
+  consentStatementAgreed?: boolean;
+  consentScope?: string[];
+
+  // Clinical assessment & hospital triage fields
+  clinicalAssessment?: HospitalClinicalAssessment;
+  clarificationMessages?: ClarificationMessage[];
+
   hospitalNotes?: string;
   smsSentToContacts: boolean;
   isSimulatedDemo?: boolean;

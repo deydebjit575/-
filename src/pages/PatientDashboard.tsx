@@ -67,7 +67,7 @@ export const PatientDashboard: React.FC = () => {
       id: 'sos',
       page: 'emergency-sos',
       title: language === 'bn' ? 'জরুরি এসওএস (SOS)' : 'Emergency SOS',
-      subtitle: language === 'bn' ? 'তাৎক্ষণিক ৩ সেকেন্ড সহায়তা' : 'Instant 1-tap dispatch',
+      subtitle: language === 'bn' ? 'শারীরিক অবস্থা ও ট্রায়াজ রিপোর্টিং' : 'Condition Reporting & Triage',
       icon: AlertOctagon,
       isEmergency: true
     },
