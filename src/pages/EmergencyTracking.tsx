@@ -494,7 +494,7 @@ export const EmergencyTracking: React.FC = () => {
                               <span>
                                 {language === 'bn'
                                   ? 'স্বয়ংক্রিয়ভাবে পরবর্তী উপযুক্ত হাসপাতালে স্থানান্তর করা হয়েছে।'
-                                  : 'MediGrid automatically identified the next suitable facility and forwarded all details.'}
+                                  : 'Susthayan automatically identified the next suitable facility and forwarded all details.'}
                               </span>
                             </p>
                           )}

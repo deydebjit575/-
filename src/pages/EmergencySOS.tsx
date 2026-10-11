@@ -1358,7 +1358,7 @@ export const EmergencySOS: React.FC = () => {
               <p className="text-[#555555] leading-relaxed">
                 {language === 'bn'
                   ? 'এই সুবিধা সক্রিয় করলে: যদি নির্বাচিত হাসপাতাল আপনার জরুরি অনুরোধ প্রত্যাখ্যান করে বা গ্রহণে অপারগ হয়, তবে আপনার জমা দেওয়া জরুরি স্বাস্থ্য সমস্যা, লক্ষণ, বর্তমান অবস্থান এবং নির্বাচিত মেডিভল্ট নথিগুলি স্বয়ংক্রিয়ভাবে নিকটবর্তী পরবর্তী উপযুক্ত ও শয্যাযুক্ত হাসপাতালে পাঠিয়ে দেওয়া হবে। কোনো অপ্রাপ্তকারী হাসপাতালের কাছে আপনার নথি প্রকাশ করা হবে না এবং পূর্ববর্তী হাসপাতালের প্রবেশাধিকার তাৎক্ষণিকভাবে বাতিল করা হবে।'
-                  : 'Before enabling this feature, note: If this hospital declines, MediGrid will forward your emergency request details, reported symptoms, location, and authorized MediVault documents to the next suitable nearby hospital. Only the receiving hospital receives a time-limited 4-hour token. Non-receiving hospitals have zero access, and the declining hospital\'s access is immediately revoked.'}
+                  : 'Before enabling this feature, note: If this hospital declines, Susthayan will forward your emergency request details, reported symptoms, location, and authorized MediVault documents to the next suitable nearby hospital. Only the receiving hospital receives a time-limited 4-hour token. Non-receiving hospitals have zero access, and the declining hospital\'s access is immediately revoked.'}
               </p>
             </div>
 
@@ -1375,8 +1375,8 @@ export const EmergencySOS: React.FC = () => {
                 </label>
                 <p className="text-[11px] sm:text-xs text-[#555555] leading-relaxed font-normal">
                   {language === 'bn'
-                    ? 'যদি এই হাসপাতাল আপনার অনুরোধ গ্রহণে অপারগ হয়, তবে সুস্থায়ন (MediGrid) স্বয়ংক্রিয়ভাবে আপনার অনুরোধ এবং নির্বাচিত মেডিকেল নথিগুলি নিকটস্থ পরবর্তী উপযুক্ত হাসপাতালে পাঠিয়ে দেবে।'
-                    : 'If this hospital declines your request, MediGrid will automatically send your request and selected documents to the next suitable hospital.'}
+                    ? 'যদি এই হাসপাতাল আপনার অনুরোধ গ্রহণে অপারগ হয়, তবে সুস্থায়ন স্বয়ংক্রিয়ভাবে আপনার অনুরোধ এবং নির্বাচিত মেডিকেল নথিগুলি নিকটস্থ পরবর্তী উপযুক্ত হাসপাতালে পাঠিয়ে দেবে।'
+                    : 'If this hospital declines your request, Susthayan will automatically send your request and selected documents to the next suitable hospital.'}
                 </p>
               </div>
 

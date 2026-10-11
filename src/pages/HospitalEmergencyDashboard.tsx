@@ -2160,7 +2160,7 @@ export const HospitalEmergencyDashboard: React.FC = () => {
                   <span>Smart Auto-Rerouting is ACTIVE for this patient</span>
                 </p>
                 <p className="text-[11px] text-[#555555]">
-                  Upon declining, MediGrid will automatically forward this request, emergency symptoms, and permitted MediVault records to the next suitable nearby hospital without requiring the patient to re-submit.
+                  Upon declining, Susthayan will automatically forward this request, emergency symptoms, and permitted MediVault records to the next suitable nearby hospital without requiring the patient to re-submit.
                 </p>
               </div>
             ) : (

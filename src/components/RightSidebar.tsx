@@ -13,7 +13,6 @@ import {
   AlertOctagon,
   Heart,
   Activity,
-  Users,
   Shield,
   FolderOpen,
   Bell,
@@ -79,9 +78,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({ isOpen, onClose }) =
 
   // 3. Extended Records & Health links
   const extendedPatientRecords = [
-    { page: 'emergency-contacts', label: language === 'bn' ? 'জরুরি পরিচিতজন' : 'Emergency Contacts', icon: Users },
     { page: 'timeline', label: language === 'bn' ? 'চিকিৎসা ইতিহাস' : 'Medical Timeline', icon: Activity },
-    { page: 'medical-summary', label: language === 'bn' ? 'স্বাস্থ্য সারসংক্ষেপ' : 'Health Summary', icon: Heart },
     { page: 'insurance-vault', label: language === 'bn' ? 'বীমা ও স্বাস্থ্য প্রকল্প' : 'Insurance & Schemes', icon: Shield },
     { page: 'id-vault', label: language === 'bn' ? 'পরিচয়পত্র ভল্ট' : 'ID Document Vault', icon: FolderOpen },
     { page: 'notifications', label: language === 'bn' ? 'বিজ্ঞপ্তি' : 'Notifications', icon: Bell },

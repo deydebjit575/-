@@ -183,8 +183,8 @@ export const PatientDashboard: React.FC = () => {
 
                 <p className="text-xs sm:text-sm text-[#444444] max-w-2xl leading-relaxed">
                   {language === 'bn'
-                    ? 'কোনো হাসপাতাল আপনার ভর্তির অনুরোধ গ্রহণে অপারগ হলে, MediGrid স্বয়ংক্রিয়ভাবে আপনার অনুরোধ এবং প্রয়োজনীয় নথি পরবর্তী উপযুক্ত পার্টনার হাসপাতালে পাঠিয়ে দেবে।'
-                    : 'If a hospital declines your admission request, MediGrid will automatically forward your request and documents to the next eligible partner hospital.'}
+                    ? 'কোনো হাসপাতাল আপনার ভর্তির অনুরোধ গ্রহণে অপারগ হলে, সুস্থায়ন স্বয়ংক্রিয়ভাবে আপনার অনুরোধ এবং প্রয়োজনীয় নথি পরবর্তী উপযুক্ত পার্টনার হাসপাতালে পাঠিয়ে দেবে।'
+                    : 'If a hospital declines your admission request, Susthayan will automatically forward your request and documents to the next eligible partner hospital.'}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-4 pt-1 text-xs text-[#555555]">
@@ -789,8 +789,8 @@ export const PatientDashboard: React.FC = () => {
                   </h4>
                   <p className="text-[#444444]">
                     {language === 'bn'
-                      ? 'যদি আপনার প্রাথমিক হাসপাতাল আইসিইউ বেড বা প্রয়োজনীয় চিকিৎসাসেবার অভাবে অনুরোধ গ্রহণে অপারগ হয়, MediGrid তাৎক্ষণিকভাবে নিকটস্থ যোগ্য পার্টনার হাসপাতালে আপনার অনুরোধ স্বয়ংক্রিয়ভাবে পাঠিয়ে দেবে। আপনাকে পুনরায় ফর্ম পূরণ বা নথি আপলোড করতে হবে না।'
-                      : 'If your selected hospital declines admission due to lack of ICU beds, general beds, or required emergency resources, MediGrid will automatically forward your request and documents to the next eligible partner hospital near your location.'}
+                      ? 'যদি আপনার প্রাথমিক হাসপাতাল আইসিইউ বেড বা প্রয়োজনীয় চিকিৎসাসেবার অভাবে অনুরোধ গ্রহণে অপারগ হয়, সুস্থায়ন তাৎক্ষণিকভাবে নিকটস্থ যোগ্য পার্টনার হাসপাতালে আপনার অনুরোধ স্বয়ংক্রিয়ভাবে পাঠিয়ে দেবে। আপনাকে পুনরায় ফর্ম পূরণ বা নথি আপলোড করতে হবে না।'
+                      : 'If your selected hospital declines admission due to lack of ICU beds, general beds, or required emergency resources, Susthayan will automatically forward your request and documents to the next eligible partner hospital near your location.'}
                   </p>
                 </div>
 

@@ -823,7 +823,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // 3. User feedback, audit log and notification
     if (nextState) {
       addAuditLog('AUTO_REROUTE_ENABLED', 'Patient enabled Smart Auto-Rerouting (Consent granted for partner hospitals)');
-      showToast('success', 'Smart Auto-Rerouting Enabled', 'If a hospital declines, MediGrid will automatically forward to the next partner hospital.');
+      showToast('success', 'Smart Auto-Rerouting Enabled', 'If a hospital declines, Susthayan will automatically forward to the next partner hospital.');
       const notif: AppNotification = {
         id: `notif-${Date.now()}`,
         recipientId: 'all',
